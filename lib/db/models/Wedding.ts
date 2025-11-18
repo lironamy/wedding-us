@@ -1,0 +1,128 @@
+import mongoose, { Schema, models, Types } from 'mongoose';
+
+export interface IWedding {
+  _id: string;
+  userId: Types.ObjectId | string;
+  groomName: string;
+  brideName: string;
+  eventDate: Date;
+  eventTime: string;
+  venue: string;
+  venueAddress: string;
+  venueCoordinates?: {
+    lat: number;
+    lng: number;
+  };
+  description?: string;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  theme: {
+    primaryColor: string;
+    secondaryColor: string;
+    fontFamily: string;
+  };
+  bitPhone?: string;
+  payboxPhone?: string;
+  uniqueUrl: string;
+  status: 'draft' | 'active' | 'completed' | 'archived';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const WeddingSchema = new Schema<IWedding>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'User ID is required'],
+    },
+    groomName: {
+      type: String,
+      required: [true, 'Groom name is required'],
+      trim: true,
+    },
+    brideName: {
+      type: String,
+      required: [true, 'Bride name is required'],
+      trim: true,
+    },
+    eventDate: {
+      type: Date,
+      required: [true, 'Event date is required'],
+    },
+    eventTime: {
+      type: String,
+      required: [true, 'Event time is required'],
+    },
+    venue: {
+      type: String,
+      required: [true, 'Venue is required'],
+      trim: true,
+    },
+    venueAddress: {
+      type: String,
+      required: [true, 'Venue address is required'],
+      trim: true,
+    },
+    venueCoordinates: {
+      lat: Number,
+      lng: Number,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    mediaUrl: {
+      type: String,
+    },
+    mediaType: {
+      type: String,
+      enum: ['image', 'video'],
+    },
+    theme: {
+      primaryColor: {
+        type: String,
+        default: '#C4A57B', // Elegant gold
+      },
+      secondaryColor: {
+        type: String,
+        default: '#2C3E50', // Dark blue-grey
+      },
+      fontFamily: {
+        type: String,
+        default: 'Assistant, sans-serif', // Hebrew-friendly font
+      },
+    },
+    bitPhone: {
+      type: String,
+      trim: true,
+    },
+    payboxPhone: {
+      type: String,
+      trim: true,
+    },
+    uniqueUrl: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    status: {
+      type: String,
+      enum: ['draft', 'active', 'completed', 'archived'],
+      default: 'draft',
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Create indexes
+WeddingSchema.index({ userId: 1 });
+WeddingSchema.index({ uniqueUrl: 1 });
+WeddingSchema.index({ eventDate: 1 });
+WeddingSchema.index({ status: 1 });
+
+const Wedding = models.Wedding || mongoose.model<IWedding>('Wedding', WeddingSchema);
+
+export default Wedding;
