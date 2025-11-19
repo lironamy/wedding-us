@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Alert } from '@/components/ui/Alert';
@@ -117,7 +118,7 @@ export function WhatsAppConnection() {
       setState({ status: 'disconnected' });
     } catch (error: any) {
       console.error('Error disconnecting WhatsApp:', error);
-      alert(error.message || 'שגיאה בניתוק WhatsApp');
+      toast.error(error.message || 'שגיאה בניתוק WhatsApp');
     } finally {
       setLoading(false);
     }

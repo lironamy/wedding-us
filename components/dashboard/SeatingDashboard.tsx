@@ -1,48 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
+import toast from 'react-hot-toast';
+import XLSX from 'xlsx-js-style';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Alert } from '@/components/ui/Alert';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { rootStore } from '@/lib/stores';
+import type { Table, Guest } from '@/lib/stores';
 
 interface SeatingDashboardProps {
   weddingId: string;
-}
-
-interface Table {
-  _id: string;
-  tableName: string;
-  tableNumber: number;
-  capacity: number;
-  tableType: 'adults' | 'kids' | 'mixed';
-  assignedGuests: Guest[];
-}
-
-interface Guest {
-  _id: string;
-  name: string;
-  phone: string;
-  rsvpStatus: string;
-  adultsAttending: number;
-  childrenAttending: number;
-  familyGroup?: string;
-}
-
-interface Statistics {
-  totalTables: number;
-  totalCapacity: number;
-  totalAssignedPeople: number;
-  totalConfirmedPeople: number;
-  unassignedGuestsCount: number;
-  unassignedPeople: number;
-  seatingProgress: number;
-  capacityUsage: number;
-  tablesByType: {
-    adults: number;
-    kids: number;
-    mixed: number;
-  };
-  tablesOverCapacity: number;
 }
 
 // Colors for guest badges
@@ -57,15 +27,15 @@ const guestColors = [
   'bg-red-500',
 ];
 
-export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
-  const [tables, setTables] = useState<Table[]>([]);
-  const [unassignedGuests, setUnassignedGuests] = useState<Guest[]>([]);
-  const [statistics, setStatistics] = useState<Statistics | null>(null);
-  const [loading, setLoading] = useState(true);
+export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
+  const tablesStore = rootStore.tablesStore;
+  const guestsStore = rootStore.guestsStore;
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const [editingTable, setEditingTable] = useState<Table | null>(null);
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Form state for creating/editing table
   const [tableForm, setTableForm] = useState({
@@ -75,73 +45,21 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
     tableType: 'mixed' as 'adults' | 'kids' | 'mixed',
   });
 
-  // Load data
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [tablesRes, statsRes, guestsRes] = await Promise.all([
-        fetch(`/api/tables?weddingId=${weddingId}`),
-        fetch(`/api/tables/statistics?weddingId=${weddingId}`),
-        fetch(`/api/guests?weddingId=${weddingId}&status=confirmed`),
-      ]);
-
-      const tablesData = await tablesRes.json();
-      const statsData = await statsRes.json();
-      const guestsData = await guestsRes.json();
-
-      if (tablesRes.ok) {
-        setTables(tablesData.tables || []);
-      }
-
-      if (statsRes.ok) {
-        setStatistics(statsData.statistics);
-      }
-
-      if (guestsRes.ok) {
-        const assignedIds = new Set(
-          tablesData.tables?.flatMap((t: Table) =>
-            t.assignedGuests.map((g: Guest) => g._id)
-          ) || []
-        );
-        const unassigned = (guestsData.guests || []).filter(
-          (g: Guest) => !assignedIds.has(g._id)
-        );
-        setUnassignedGuests(unassigned);
-      }
-    } catch (error) {
-      console.error('Error loading seating data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Initialize store with weddingId
   useEffect(() => {
-    loadData();
+    rootStore.setWeddingId(weddingId);
   }, [weddingId]);
 
   // Create table
   const handleCreateTable = async () => {
-    try {
-      const response = await fetch('/api/tables', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          weddingId,
-          ...tableForm,
-        }),
-      });
+    const result = await tablesStore.createTable(tableForm);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create table');
-      }
-
+    if (result.success) {
       setShowCreateModal(false);
-      setTableForm({ tableName: '', tableNumber: tables.length + 1, capacity: 10, tableType: 'mixed' });
-      loadData();
-    } catch (error: any) {
-      alert(error.message || 'שגיאה ביצירת שולחן');
+      setTableForm({ tableName: '', tableNumber: tablesStore.tables.length + 1, capacity: 10, tableType: 'mixed' });
+      toast.success('השולחן נוצר בהצלחה');
+    } else {
+      toast.error(result.error || 'שגיאה ביצירת שולחן');
     }
   };
 
@@ -149,101 +67,61 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
   const handleUpdateTable = async () => {
     if (!editingTable) return;
 
-    try {
-      const response = await fetch(`/api/tables/${editingTable._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tableForm),
-      });
+    const result = await tablesStore.updateTable(editingTable._id, tableForm);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update table');
-      }
-
+    if (result.success) {
       setEditingTable(null);
       setTableForm({ tableName: '', tableNumber: 1, capacity: 10, tableType: 'mixed' });
-      loadData();
-    } catch (error: any) {
-      alert(error.message || 'שגיאה בעדכון שולחן');
+      toast.success('השולחן עודכן בהצלחה');
+    } else {
+      toast.error(result.error || 'שגיאה בעדכון שולחן');
     }
   };
 
   // Delete table
   const handleDeleteTable = async (tableId: string) => {
-    if (!confirm('האם למחוק את השולחן? האורחים המשובצים יוסרו.')) return;
+    const confirmed = await showConfirm({
+      title: 'מחיקת שולחן',
+      message: 'האם למחוק את השולחן? האורחים המשובצים יוסרו.',
+      confirmText: 'מחק',
+      variant: 'danger',
+    });
 
-    try {
-      const response = await fetch(`/api/tables/${tableId}`, {
-        method: 'DELETE',
-      });
+    if (!confirmed) return;
 
-      if (!response.ok) {
-        throw new Error('Failed to delete table');
-      }
+    const result = await tablesStore.deleteTable(tableId);
 
-      loadData();
-    } catch (error) {
-      alert('שגיאה במחיקת שולחן');
+    if (result.success) {
+      toast.success('השולחן נמחק בהצלחה');
+    } else {
+      toast.error(result.error || 'שגיאה במחיקת שולחן');
     }
   };
 
   // Assign guest to table
   const handleAssignGuest = async (guestId: string, tableId: string) => {
-    try {
-      const response = await fetch(`/api/tables/${tableId}/assign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guestIds: [guestId],
-          action: 'add',
-        }),
-      });
+    const result = await tablesStore.assignGuest(guestId, tableId);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to assign guest');
+    if (result.success) {
+      if (result.isOverCapacity) {
+        toast(result.message, { icon: '⚠️' });
+      } else {
+        toast.success('האורח שובץ בהצלחה');
       }
-
-      if (data.isOverCapacity) {
-        alert(data.message);
-      }
-
-      loadData();
-    } catch (error: any) {
-      alert(error.message || 'שגיאה בשיבוץ אורח');
+    } else {
+      toast.error(result.error || 'שגיאה בשיבוץ אורח');
     }
   };
 
   // Remove guest from table
   const handleRemoveGuest = async (guestId: string, tableId: string) => {
-    try {
-      const response = await fetch(`/api/tables/${tableId}/assign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guestIds: [guestId],
-          action: 'remove',
-        }),
-      });
+    const result = await tablesStore.removeGuest(guestId, tableId);
 
-      if (!response.ok) {
-        throw new Error('Failed to remove guest');
-      }
-
-      loadData();
-    } catch (error) {
-      alert('שגיאה בהסרת אורח');
+    if (result.success) {
+      toast.success('האורח הוסר מהשולחן');
+    } else {
+      toast.error(result.error || 'שגיאה בהסרת אורח');
     }
-  };
-
-  // Calculate people at table
-  const getPeopleAtTable = (table: Table) => {
-    return table.assignedGuests.reduce((sum, guest) => {
-      return sum + (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
-    }, 0);
   };
 
   // Open edit modal
@@ -263,11 +141,140 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
     setShowAssignModal(true);
   };
 
+  // Export seating chart to Excel with styling
+  const handleExportSeating = () => {
+    // Styles
+    const headerStyle = {
+      fill: { fgColor: { rgb: 'FF9800' } },
+      font: { bold: true, color: { rgb: 'FFFFFF' } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+    };
+
+    const tableRowStyle = {
+      fill: { fgColor: { rgb: 'FFEB3B' } },
+      font: { bold: true },
+      alignment: { horizontal: 'center', vertical: 'center' },
+    };
+
+    const guestRowStyle = {
+      alignment: { horizontal: 'center', vertical: 'center' },
+    };
+
+    // Build data with styles
+    const wsData: any[][] = [];
+    const rowStyles: number[] = [];
+
+    // Header row
+    wsData.push(['מספר שולחן', 'שם שולחן', 'שם מוזמן', 'כמות', 'מקומות פנויים בשולחן']);
+    rowStyles.push(0);
+
+    // Add data for each table
+    tablesStore.tables.forEach((table) => {
+      const peopleAtTable = tablesStore.getPeopleAtTable(table);
+      const availableSeats = table.capacity - peopleAtTable;
+
+      // Table header row
+      wsData.push([
+        table.tableNumber,
+        table.tableName,
+        '',
+        '',
+        availableSeats,
+      ]);
+      rowStyles.push(1);
+
+      // Guest rows
+      table.assignedGuests.forEach((guest) => {
+        const guestCount = (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
+        wsData.push([
+          '',
+          '',
+          guest.name,
+          guestCount,
+          '',
+        ]);
+        rowStyles.push(2);
+      });
+    });
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Apply styles
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let R = range.s.r; R <= range.e.r; R++) {
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = { v: '' };
+
+        if (rowStyles[R] === 0) {
+          ws[cellAddress].s = headerStyle;
+        } else if (rowStyles[R] === 1) {
+          ws[cellAddress].s = tableRowStyle;
+        } else {
+          ws[cellAddress].s = guestRowStyle;
+        }
+      }
+    }
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 12 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 8 },
+      { wch: 20 },
+    ];
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Set workbook to RTL
+    if (!workbook.Workbook) workbook.Workbook = {};
+    if (!workbook.Workbook.Views) workbook.Workbook.Views = [{}];
+    workbook.Workbook.Views[0].RTL = true;
+
+    XLSX.utils.book_append_sheet(workbook, ws, 'סידורי ישיבה');
+
+    // Unassigned guests sheet
+    if (tablesStore.unassignedGuests.length > 0) {
+      const unassignedWsData: any[][] = [
+        ['שם מוזמן', 'כמות', 'טלפון'],
+      ];
+
+      tablesStore.unassignedGuests.forEach((guest) => {
+        const guestCount = (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
+        unassignedWsData.push([guest.name, guestCount, guest.phone]);
+      });
+
+      const unassignedWs = XLSX.utils.aoa_to_sheet(unassignedWsData);
+
+      // Style header
+      for (let C = 0; C < 3; C++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (unassignedWs[cellAddress]) {
+          unassignedWs[cellAddress].s = headerStyle;
+        }
+      }
+
+      unassignedWs['!cols'] = [
+        { wch: 20 },
+        { wch: 8 },
+        { wch: 15 },
+      ];
+
+      XLSX.utils.book_append_sheet(workbook, unassignedWs, 'לא משובצים');
+    }
+
+    // Download file
+    XLSX.writeFile(workbook, `seating_chart_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   // Generate seat positions around circle
   const getSeatPositions = (capacity: number, filled: number) => {
     const positions = [];
     for (let i = 0; i < capacity; i++) {
-      const angle = (i * 360) / capacity - 90; // Start from top
+      const angle = (i * 360) / capacity - 90;
       const radian = (angle * Math.PI) / 180;
       const x = 50 + 42 * Math.cos(radian);
       const y = 50 + 42 * Math.sin(radian);
@@ -280,12 +287,15 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
     return positions;
   };
 
-  if (loading) {
+  if (tablesStore.loading || guestsStore.loading) {
     return <div className="text-center py-8">טוען...</div>;
   }
 
+  const { tables, statistics, unassignedGuests } = tablesStore;
+
   return (
     <div className="space-y-6">
+      {ConfirmDialogComponent}
       {/* Statistics Cards */}
       {statistics && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -310,10 +320,16 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
         </div>
       )}
 
-      {/* Filter Buttons */}
+      {/* Action Buttons */}
       <div className="flex gap-2 flex-wrap">
-        <Button variant="outline" size="sm">מיין שולחנות</Button>
-        <Button variant="outline" size="sm">סטאטוס אורחים</Button>
+        <Button onClick={() => setShowCreateModal(true)}>
+          + הוסף שולחן
+        </Button>
+        {tables.length > 0 && (
+          <Button variant="outline" onClick={handleExportSeating}>
+            📥 ייצוא לאקסל
+          </Button>
+        )}
       </div>
 
       {/* Tables Visual Grid */}
@@ -324,7 +340,7 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {tables.map((table) => {
-            const peopleAtTable = getPeopleAtTable(table);
+            const peopleAtTable = tablesStore.getPeopleAtTable(table);
             const seatPositions = getSeatPositions(table.capacity, peopleAtTable);
 
             return (
@@ -422,20 +438,9 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
         </div>
       )}
 
-      {/* Add Table Button */}
-      <div className="fixed bottom-6 left-6">
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gold transition flex items-center gap-2 shadow-lg"
-        >
-          <span className="text-2xl">+</span>
-          <span className="text-sm">הוסף שולחן</span>
-        </button>
-      </div>
-
       {/* Create/Edit Table Modal */}
       {(showCreateModal || editingTable) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="max-w-md w-full p-6">
             <h2 className="text-xl font-bold mb-4">
               {editingTable ? 'ערוך שולחן' : 'צור שולחן חדש'}
@@ -525,14 +530,14 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
 
       {/* Assign Modal for specific table */}
       {showAssignModal && selectedTable && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b">
               <h2 className="text-xl font-bold">
                 שולחן {selectedTable.tableNumber} - {selectedTable.tableName}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
-                {getPeopleAtTable(selectedTable)}/{selectedTable.capacity} מקומות תפוסים
+                {tablesStore.getPeopleAtTable(selectedTable)}/{selectedTable.capacity} מקומות תפוסים
               </p>
             </div>
 
@@ -616,4 +621,4 @@ export function SeatingDashboard({ weddingId }: SeatingDashboardProps) {
       )}
     </div>
   );
-}
+});

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
+import { WhatsAppConnection } from '@/components/dashboard/WhatsAppConnection';
 import { AutomatedMessageSender } from '@/components/dashboard/AutomatedMessageSender';
 
 export const metadata = {
@@ -60,7 +61,10 @@ export default async function MessagesPage() {
         </div>
 
         <div className="space-y-8">
-        
+          {/* WhatsApp Connection */}
+          <div>
+            <WhatsAppConnection />
+          </div>
 
           {/* Automated Message Sender */}
           <div>
@@ -74,19 +78,19 @@ export default async function MessagesPage() {
           <ul className="space-y-2 text-sm text-blue-800">
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
-              <span>Twilio מספק שירות אמין ומקצועי לשליחת הודעות WhatsApp</span>
+              <span>התחבר ל-WhatsApp על ידי סריקת QR Code עם הטלפון שלך</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
-              <span>ניתן לשלוח הודעות במהירות של 1-3 שניות בין הודעות</span>
+              <span>מומלץ להשתמש במספר ייעודי (לא האישי) לשליחת הזמנות</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600">•</span>
+              <span>השאר 5-10 שניות בין הודעות למניעת חסימה</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
               <span>אל תסגור את הדפדפן במהלך שליחת הודעות</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-600">•</span>
-              <span>כל ההודעות נשמרות במערכת עם מעקב סטטוס</span>
             </li>
           </ul>
         </div>

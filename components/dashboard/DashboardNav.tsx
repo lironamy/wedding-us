@@ -108,6 +108,20 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               {item.label}
             </Link>
           ))}
+          {user.role === 'admin' && adminNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                isActive(item.href)
+                  ? 'bg-purple-600 text-white'
+                  : 'text-purple-600 hover:bg-purple-100'
+              }`}
+            >
+              <span className="ml-1">{item.icon}</span>
+              {item.label}
+            </Link>
+          ))}
         </div>
       </div>
     </nav>

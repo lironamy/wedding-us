@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import SessionProvider from "@/components/auth/SessionProvider";
 import { getSession } from "@/lib/auth/get-session";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "פלטפורמת הזמנות לחתונה | Wedding Platform",
@@ -25,6 +26,28 @@ export default async function RootLayout({
       <body className="antialiased">
         <SessionProvider session={session}>
           {children}
+          <Toaster
+            position="top-center"
+            reverseOrder={false}
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: '#333',
+                color: '#fff',
+                direction: 'rtl',
+              },
+              success: {
+                style: {
+                  background: '#10B981',
+                },
+              },
+              error: {
+                style: {
+                  background: '#EF4444',
+                },
+              },
+            }}
+          />
         </SessionProvider>
       </body>
     </html>

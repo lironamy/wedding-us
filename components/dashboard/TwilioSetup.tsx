@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Alert } from '@/components/ui/Alert';
@@ -14,7 +15,7 @@ export function TwilioSetup() {
 
   const handleTestMessage = async () => {
     if (!testPhone || !testMessage) {
-      alert('נא למלא מספר טלפון והודעה');
+      toast.error('נא למלא מספר טלפון והודעה');
       return;
     }
 

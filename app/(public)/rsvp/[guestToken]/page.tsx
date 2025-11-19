@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { Metadata } from 'next';
 import hebrewDate from 'hebrew-date';
 import dbConnect from '@/lib/db/mongodb';
 import Guest from '@/lib/db/models/Guest';
@@ -9,6 +10,66 @@ interface RSVPPageProps {
   params: Promise<{
     guestToken: string;
   }>;
+}
+
+// Generate metadata with Open Graph tags for WhatsApp preview
+export async function generateMetadata({ params }: RSVPPageProps): Promise<Metadata> {
+  const { guestToken } = await params;
+
+  await dbConnect();
+
+  const guest = await Guest.findOne({ uniqueToken: guestToken }).lean() as any;
+
+  if (!guest) {
+    return {
+      title: 'הזמנה לחתונה',
+    };
+  }
+
+  const wedding = await Wedding.findById(guest.weddingId).lean() as any;
+
+  if (!wedding) {
+    return {
+      title: 'הזמנה לחתונה',
+    };
+  }
+
+  const title = `הזמנה לחתונה של ${wedding.groomName} ו${wedding.brideName}`;
+  const description = `${guest.name}, אתם מוזמנים לחתונה שלנו! לחצו לאישור הגעה`;
+
+  // Format date for description
+  const eventDate = new Date(wedding.eventDate);
+  const formattedDate = eventDate.toLocaleDateString('he-IL', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  return {
+    title,
+    description: `${description} - ${formattedDate}`,
+    openGraph: {
+      title,
+      description: `${description} - ${formattedDate}`,
+      images: wedding.mediaUrl ? [
+        {
+          url: wedding.mediaUrl,
+          width: 1200,
+          height: 630,
+          alt: `${wedding.groomName} & ${wedding.brideName}`,
+        }
+      ] : [],
+      locale: 'he_IL',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: `${description} - ${formattedDate}`,
+      images: wedding.mediaUrl ? [wedding.mediaUrl] : [],
+    },
+  };
 }
 
 function convertNumberToHebrewDay(day: number) {

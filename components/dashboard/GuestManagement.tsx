@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
 import { Card } from '@/components/ui/Card';
 import { GuestForm } from './GuestForm';
 import { generateWhatsAppUrl } from '@/lib/utils/whatsapp';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface Guest {
   _id: string;
@@ -36,11 +38,14 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [familyFilter, setFamilyFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Load guests
   const loadGuests = async () => {
@@ -66,17 +71,20 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
     loadGuests();
   }, [weddingId]);
 
-  // Apply filters
+  // Apply filters and sorting
   useEffect(() => {
     let filtered = [...guests];
 
     // Search filter
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (guest) =>
-          guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          guest.name.toLowerCase().includes(term) ||
           guest.phone.includes(searchTerm) ||
-          (guest.familyGroup && guest.familyGroup.toLowerCase().includes(searchTerm.toLowerCase()))
+          (guest.email && guest.email.toLowerCase().includes(term)) ||
+          (guest.familyGroup && guest.familyGroup.toLowerCase().includes(term)) ||
+          (guest.notes && guest.notes.toLowerCase().includes(term))
       );
     }
 
@@ -90,8 +98,47 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
       filtered = filtered.filter((guest) => guest.familyGroup === familyFilter);
     }
 
+    // Sorting
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name, 'he');
+          break;
+        case 'status':
+          const statusOrder = { confirmed: 1, pending: 2, declined: 3 };
+          comparison = statusOrder[a.rsvpStatus] - statusOrder[b.rsvpStatus];
+          break;
+        case 'invitedCount':
+          comparison = a.invitedCount - b.invitedCount;
+          break;
+        case 'attending':
+          const aTotal = (a.adultsAttending || 0) + (a.childrenAttending || 0);
+          const bTotal = (b.adultsAttending || 0) + (b.childrenAttending || 0);
+          comparison = aTotal - bTotal;
+          break;
+        case 'family':
+          comparison = (a.familyGroup || '').localeCompare(b.familyGroup || '', 'he');
+          break;
+        default:
+          comparison = 0;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
     setFilteredGuests(filtered);
-  }, [searchTerm, statusFilter, familyFilter, guests]);
+  }, [searchTerm, statusFilter, familyFilter, sortBy, sortOrder, guests]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setFamilyFilter('all');
+    setSortBy('name');
+    setSortOrder('asc');
+  };
+
+  const hasActiveFilters = searchTerm || statusFilter !== 'all' || familyFilter !== 'all';
 
   // Get unique family groups
   const familyGroups = Array.from(
@@ -109,9 +156,14 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
   };
 
   const handleDelete = async (guestId: string) => {
-    if (!confirm('האם אתה בטוח שברצונך למחוק אורח זה?')) {
-      return;
-    }
+    const confirmed = await showConfirm({
+      title: 'מחיקת אורח',
+      message: 'האם אתה בטוח שברצונך למחוק אורח זה?',
+      confirmText: 'מחק',
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/guests/${guestId}`, {
@@ -124,14 +176,14 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
 
       loadGuests();
     } catch (err: any) {
-      alert('שגיאה במחיקת האורח');
+      toast.error('שגיאה במחיקת האורח');
     }
   };
 
   const copyRsvpLink = (token: string) => {
     const link = `${window.location.origin}/rsvp/${token}`;
     navigator.clipboard.writeText(link);
-    alert('הקישור הועתק ללוח');
+    toast.success('הקישור הועתק ללוח');
   };
 
   const sendWhatsApp = (guest: Guest) => {
@@ -144,6 +196,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
 
   return (
     <div className="space-y-6">
+      {ConfirmDialogComponent}
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card className="p-4">
@@ -185,6 +238,11 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
             ⬇️ הורד תבנית אקסל
           </a>
         </Button>
+        <Button variant="outline" asChild>
+          <a href="/api/guests/export" download>
+            📥 ייצוא לאקסל
+          </a>
+        </Button>
       </div>
 
       {/* Add/Edit Form Modal */}
@@ -208,12 +266,12 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
 
       {/* Filters */}
       <Card className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium mb-1">חיפוש</label>
             <Input
               type="text"
-              placeholder="שם, טלפון או משפחה..."
+              placeholder="שם, טלפון, אימייל, הערות..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -246,6 +304,39 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
               ))}
             </select>
           </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">מיון לפי</label>
+            <div className="flex gap-2">
+              <select
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="name">שם</option>
+                <option value="status">סטטוס</option>
+                <option value="invitedCount">מוזמנים</option>
+                <option value="attending">מגיעים</option>
+                <option value="family">קבוצה</option>
+              </select>
+              <button
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                title={sortOrder === 'asc' ? 'סדר עולה' : 'סדר יורד'}
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600">
+            מציג {filteredGuests.length} מתוך {guests.length} אורחים
+          </span>
+          {hasActiveFilters && (
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              ✕ נקה פילטרים
+            </Button>
+          )}
         </div>
       </Card>
 

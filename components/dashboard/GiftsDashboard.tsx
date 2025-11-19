@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Alert } from '@/components/ui/Alert';
@@ -82,7 +83,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
   // Add/update gift
   const handleAddGift = async () => {
     if (!giftForm.guestId) {
-      alert('נא לבחור אורח');
+      toast.error('נא לבחור אורח');
       return;
     }
 
@@ -103,7 +104,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
       setGiftForm({ guestId: '', amount: 0, method: 'bit' });
       loadData();
     } catch (error: any) {
-      alert(error.message || 'שגיאה בהוספת מתנה');
+      toast.error(error.message || 'שגיאה בהוספת מתנה');
     }
   };
 
@@ -303,7 +304,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
 
       {/* Add Gift Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <Card className="max-w-md w-full p-6">
             <h2 className="text-xl font-bold mb-4">הוסף מתנה</h2>
 

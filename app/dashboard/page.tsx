@@ -7,6 +7,7 @@ import Guest from '@/lib/db/models/Guest';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import CopyLinkButton from '@/components/dashboard/CopyLinkButton';
+import ExportPDFButton from '@/components/dashboard/ExportPDFButton';
 import { formatHebrewDate, getDaysUntilEvent } from '@/lib/utils/date';
 
 async function getDashboardData(userId: string) {
@@ -123,6 +124,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* Statistics */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-900">סטטיסטיקות</h2>
+        <ExportPDFButton />
+      </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard
           title="סה״כ אורחים"

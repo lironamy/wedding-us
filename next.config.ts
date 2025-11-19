@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverExternalPackages: ['whatsapp-web.js', 'puppeteer'],
+  turbopack: {},
 };
 
 export default nextConfig;

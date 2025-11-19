@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Alert } from '@/components/ui/Alert';
 import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
+import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface AutomatedMessageSenderProps {
   weddingId: string;
@@ -26,7 +28,8 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState<SendingProgress | null>(null);
   const [results, setResults] = useState<any>(null);
-  const [delayBetweenMessages, setDelayBetweenMessages] = useState(2); // seconds (Twilio can handle faster)
+  const [delayBetweenMessages, setDelayBetweenMessages] = useState(5); // seconds between messages
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Load guests
   const loadGuests = async () => {
@@ -87,15 +90,16 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
 
   const handleSendBulk = async () => {
     if (selectedGuests.length === 0) {
-      alert('נא לבחור לפחות אורח אחד');
+      toast.error('נא לבחור לפחות אורח אחד');
       return;
     }
 
-    const confirmed = window.confirm(
-      `האם לשלוח ${selectedGuests.length} הודעות?\n` +
-      `זמן משוער: ${Math.ceil((selectedGuests.length * delayBetweenMessages) / 60)} דקות\n\n` +
-      `שים לב: אל תסגור את הדפדפן במהלך השליחה!`
-    );
+    const confirmed = await showConfirm({
+      title: 'שליחת הודעות',
+      message: `האם לשלוח ${selectedGuests.length} הודעות?\nזמן משוער: ${Math.ceil((selectedGuests.length * delayBetweenMessages) / 60)} דקות\n\nשים לב: אל תסגור את הדפדפן במהלך השליחה!`,
+      confirmText: 'שלח',
+      variant: 'warning',
+    });
 
     if (!confirmed) return;
 
@@ -104,7 +108,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
       setProgress({ total: selectedGuests.length, sent: 0, failed: 0 });
       setResults(null);
 
-      const response = await fetch('/api/twilio/send-bulk', {
+      const response = await fetch('/api/whatsapp/send-bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -125,18 +129,15 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
       setProgress(null);
 
       // Show summary
-      alert(
-        `השליחה הושלמה!\n\n` +
-        `הצלחה: ${data.summary.successful}\n` +
-        `כשלון: ${data.summary.failed}\n` +
-        `סה"כ: ${data.summary.total}`
+      toast.success(
+        `השליחה הושלמה! הצלחה: ${data.summary.successful}, כשלון: ${data.summary.failed}, סה"כ: ${data.summary.total}`
       );
 
       // Clear selection
       setSelectedGuests([]);
       loadGuests();
     } catch (error: any) {
-      alert(error.message || 'שגיאה בשליחת הודעות');
+      toast.error(error.message || 'שגיאה בשליחת הודעות');
       setProgress(null);
     } finally {
       setSending(false);
@@ -151,6 +152,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
 
   return (
     <div className="space-y-6">
+      {ConfirmDialogComponent}
 
       {/* Sending Progress */}
       {sending && progress && (
@@ -286,7 +288,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
               disabled={sending}
             />
             <p className="text-xs text-gray-600 mt-1">
-              מומלץ: 1-3 שניות (Twilio אמין ומהיר)
+              מומלץ: 5-10 שניות למניעת חסימה
             </p>
           </div>
 
@@ -393,7 +395,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
             className="w-full"
           >
             {sending
-              ? 'שולח הודעות דרך Twilio...'
+              ? 'שולח הודעות...'
               : `שלח הודעות WhatsApp (${selectedGuests.length} אורחים)`}
           </Button>
         </div>

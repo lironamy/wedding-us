@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import WeddingForm from '@/components/dashboard/WeddingForm';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -137,7 +138,7 @@ export default function SettingsPage() {
                   navigator.clipboard.writeText(
                     `${process.env.NEXT_PUBLIC_APP_URL}/wedding/${wedding.uniqueUrl}`
                   );
-                  alert('הקישור הועתק ללוח!');
+                  toast.success('הקישור הועתק ללוח!');
                 }}
               >
                 העתק

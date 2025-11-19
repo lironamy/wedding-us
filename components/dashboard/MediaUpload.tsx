@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import Image from 'next/image';
@@ -44,14 +45,14 @@ export default function MediaUpload({
 
   const openUploadWidget = () => {
     if (!window.cloudinary) {
-      alert('Cloudinary לא נטען עדיין. אנא נסה שוב.');
+      toast.error('Cloudinary לא נטען עדיין. אנא נסה שוב.');
       return;
     }
 
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
     if (!cloudName) {
-      alert('Cloudinary לא מוגדר. אנא הוסף את המשתנים לקובץ .env.local');
+      toast.error('Cloudinary לא מוגדר. אנא הוסף את המשתנים לקובץ .env.local');
       return;
     }
 
@@ -92,7 +93,7 @@ export default function MediaUpload({
 
         if (error) {
           console.error('Upload error:', error);
-          alert('שגיאה בהעלאת הקובץ');
+          toast.error('שגיאה בהעלאת הקובץ');
           return;
         }
 
