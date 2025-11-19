@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['whatsapp-web.js', 'puppeteer'],
+  serverExternalPackages: ['whatsapp-web.js', 'puppeteer', 'puppeteer-core', '@sparticuz/chromium'],
   turbopack: {},
 };
 

@@ -1,5 +1,7 @@
 import { Client } from 'whatsapp-web.js';
 import qrcode from 'qrcode';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { MongoAuth } from './MongoAuth';
 
 type ClientStatus =
@@ -22,6 +24,7 @@ interface WhatsAppState {
 
 class WhatsAppService {
   private client: Client | null = null;
+  private browser: any = null;
   private state: WhatsAppState = { status: 'disconnected' };
   private qrCodeData: string | null = null;
   private mongoAuth: MongoAuth;
@@ -55,19 +58,18 @@ class WhatsAppService {
       // Load existing session from MongoDB
       const existingSession = await this.mongoAuth.getSession();
 
+      // Launch browser with @sparticuz/chromium for serverless environments
+      this.browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: { width: 1920, height: 1080 },
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
+
       this.client = new Client({
         session: existingSession as any,
         puppeteer: {
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--disable-gpu',
-          ],
+          browserWSEndpoint: this.browser.wsEndpoint(),
         },
       });
 
@@ -152,6 +154,16 @@ class WhatsAppService {
         // Ignore errors
       }
       this.client = null;
+    }
+
+    // Close browser
+    if (this.browser) {
+      try {
+        await this.browser.close();
+      } catch (e) {
+        // Ignore errors
+      }
+      this.browser = null;
     }
 
     // Delete session from MongoDB
