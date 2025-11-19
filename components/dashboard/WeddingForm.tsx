@@ -391,19 +391,15 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
           {formData.backgroundPattern && (
             <div className="mt-6">
               <p className="text-sm text-gray-600 mb-3">תצוגה מקדימה של הרקע:</p>
-              <div
-                className="h-40 rounded-lg border border-gray-200 overflow-hidden"
-                style={{
-                  backgroundImage: `url(${formData.backgroundPattern})`,
-                  backgroundSize: '150px',
-                  backgroundRepeat: 'repeat',
-                }}
-              >
-                <div className="h-full flex items-center justify-center bg-white bg-opacity-50 rounded-lg">
-                  <span className="text-lg font-semibold" style={{ color: formData.theme.primaryColor }}>
-                    {formData.groomName || 'חתן'} & {formData.brideName || 'כלה'}
-                  </span>
-                </div>
+              <div className="relative h-40 rounded-lg border border-gray-200 overflow-hidden">
+                <div
+                  className="absolute inset-0 z-0 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${formData.backgroundPattern})`,
+                    backgroundSize: '150px',
+                    backgroundRepeat: 'repeat',
+                  }}
+                />
               </div>
             </div>
           )}
@@ -453,23 +449,18 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
 
                 {/* Phone Screen Content */}
                 <div
-                  className="h-full overflow-y-auto pt-8"
+                  className="relative h-full overflow-y-auto pt-8"
                   style={{ fontFamily: formData.theme.fontFamily }}
                 >
                   {/* Background Pattern */}
                   {formData.backgroundPattern ? (
                     <div
-                      className="absolute inset-0"
-                      style={{
-                        backgroundImage: `url(${formData.backgroundPattern})`,
-                        backgroundSize: '150px',
-                        backgroundRepeat: 'repeat',
-                        opacity: 0.3,
-                      }}
+                      className="absolute inset-0 z-0 pointer-events-none"
+                     
                     />
                   ) : (
                     <div
-                      className="absolute inset-0"
+                      className="absolute inset-0 z-0 pointer-events-none"
                       style={{
                         background: `linear-gradient(135deg, ${formData.theme.primaryColor}15 0%, ${formData.theme.secondaryColor}15 100%)`,
                       }}
