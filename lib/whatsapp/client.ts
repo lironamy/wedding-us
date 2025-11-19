@@ -1,8 +1,9 @@
 import { Client } from 'whatsapp-web.js';
 import qrcode from 'qrcode';
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
 import { MongoAuth } from './MongoAuth';
+
+// Detect if running in serverless environment
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
 
 type ClientStatus =
   | 'disconnected'
@@ -58,19 +59,42 @@ class WhatsAppService {
       // Load existing session from MongoDB
       const existingSession = await this.mongoAuth.getSession();
 
-      // Launch browser with @sparticuz/chromium for serverless environments
-      this.browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: { width: 1920, height: 1080 },
-        executablePath: await chromium.executablePath(),
-        headless: true,
-      });
+      let puppeteerConfig: any;
+
+      if (isServerless) {
+        // Use @sparticuz/chromium for serverless (Vercel/AWS Lambda)
+        const chromium = await import('@sparticuz/chromium');
+        const puppeteerCore = await import('puppeteer-core');
+
+        this.browser = await puppeteerCore.default.launch({
+          args: chromium.default.args,
+          defaultViewport: { width: 1920, height: 1080 },
+          executablePath: await chromium.default.executablePath(),
+          headless: true,
+        });
+
+        puppeteerConfig = {
+          browserWSEndpoint: this.browser.wsEndpoint(),
+        };
+      } else {
+        // Use regular puppeteer for local development
+        puppeteerConfig = {
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+          ],
+        };
+      }
 
       this.client = new Client({
         session: existingSession as any,
-        puppeteer: {
-          browserWSEndpoint: this.browser.wsEndpoint(),
-        },
+        puppeteer: puppeteerConfig,
       });
 
       // QR Code event
