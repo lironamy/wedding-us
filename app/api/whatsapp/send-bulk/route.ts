@@ -4,8 +4,9 @@ import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Guest from '@/lib/db/models/Guest';
 import Wedding from '@/lib/db/models/Wedding';
-import whatsappService from '@/lib/whatsapp/client';
 import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
+
+const WHATSAPP_SERVER_URL = process.env.WHATSAPP_SERVER_URL || 'http://localhost:3001';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +20,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if WhatsApp is connected
-    if (!whatsappService.isReady()) {
+    const statusResponse = await fetch(`${WHATSAPP_SERVER_URL}/status`);
+    const statusData = await statusResponse.json();
+
+    if (statusData.status !== 'ready') {
       return NextResponse.json(
         { error: 'WhatsApp is not connected. Please connect first.' },
         { status: 400 }
@@ -105,11 +109,17 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    // Send messages
-    const result = await whatsappService.sendBulkMessages(
-      messages,
-      delayBetweenMessages
-    );
+    // Send messages to external WhatsApp server
+    const sendResponse = await fetch(`${WHATSAPP_SERVER_URL}/send-bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages,
+        delayMs: delayBetweenMessages,
+      }),
+    });
+
+    const result = await sendResponse.json();
 
     // Update guests with message sent status (optional)
     // You can add a field to track when messages were sent

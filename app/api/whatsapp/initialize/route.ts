@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
-import whatsappService from '@/lib/whatsapp/client';
+
+const WHATSAPP_SERVER_URL = process.env.WHATSAPP_SERVER_URL || 'http://localhost:3001';
 
 export async function POST() {
   try {
@@ -14,9 +15,13 @@ export async function POST() {
       );
     }
 
-    const state = await whatsappService.initialize();
+    const response = await fetch(`${WHATSAPP_SERVER_URL}/initialize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
 
-    return NextResponse.json(state);
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error initializing WhatsApp:', error);
     return NextResponse.json(

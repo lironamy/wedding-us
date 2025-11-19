@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
-import whatsappService from '@/lib/whatsapp/client';
+
+const WHATSAPP_SERVER_URL = process.env.WHATSAPP_SERVER_URL || 'http://localhost:3001';
 
 export async function POST() {
   try {
@@ -14,9 +15,12 @@ export async function POST() {
       );
     }
 
-    await whatsappService.disconnect();
+    const response = await fetch(`${WHATSAPP_SERVER_URL}/disconnect`, {
+      method: 'POST',
+    });
 
-    return NextResponse.json({ success: true });
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error disconnecting WhatsApp:', error);
     return NextResponse.json(

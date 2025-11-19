@@ -2,9 +2,6 @@ import { Client } from 'whatsapp-web.js';
 import qrcode from 'qrcode';
 import { MongoAuth } from './MongoAuth';
 
-// Detect if running in serverless environment
-const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
-
 type ClientStatus =
   | 'disconnected'
   | 'connecting'
@@ -25,7 +22,6 @@ interface WhatsAppState {
 
 class WhatsAppService {
   private client: Client | null = null;
-  private browser: any = null;
   private state: WhatsAppState = { status: 'disconnected' };
   private qrCodeData: string | null = null;
   private mongoAuth: MongoAuth;
@@ -59,26 +55,9 @@ class WhatsAppService {
       // Load existing session from MongoDB
       const existingSession = await this.mongoAuth.getSession();
 
-      let puppeteerConfig: any;
-
-      if (isServerless) {
-        // Use @sparticuz/chromium for serverless (Vercel/AWS Lambda)
-        const chromium = await import('@sparticuz/chromium');
-        const puppeteerCore = await import('puppeteer-core');
-
-        this.browser = await puppeteerCore.default.launch({
-          args: chromium.default.args,
-          defaultViewport: { width: 1920, height: 1080 },
-          executablePath: await chromium.default.executablePath(),
-          headless: true,
-        });
-
-        puppeteerConfig = {
-          browserWSEndpoint: this.browser.wsEndpoint(),
-        };
-      } else {
-        // Use regular puppeteer for local development
-        puppeteerConfig = {
+      this.client = new Client({
+        session: existingSession as any,
+        puppeteer: {
           headless: true,
           args: [
             '--no-sandbox',
@@ -89,12 +68,7 @@ class WhatsAppService {
             '--no-zygote',
             '--disable-gpu',
           ],
-        };
-      }
-
-      this.client = new Client({
-        session: existingSession as any,
-        puppeteer: puppeteerConfig,
+        },
       });
 
       // QR Code event
@@ -178,16 +152,6 @@ class WhatsAppService {
         // Ignore errors
       }
       this.client = null;
-    }
-
-    // Close browser
-    if (this.browser) {
-      try {
-        await this.browser.close();
-      } catch (e) {
-        // Ignore errors
-      }
-      this.browser = null;
     }
 
     // Delete session from MongoDB
