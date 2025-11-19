@@ -1,5 +1,6 @@
-import { Client, LocalAuth, Message } from 'whatsapp-web.js';
+import { Client } from 'whatsapp-web.js';
 import qrcode from 'qrcode';
+import { MongoAuth } from './MongoAuth';
 
 type ClientStatus =
   | 'disconnected'
@@ -23,9 +24,10 @@ class WhatsAppService {
   private client: Client | null = null;
   private state: WhatsAppState = { status: 'disconnected' };
   private qrCodeData: string | null = null;
+  private mongoAuth: MongoAuth;
 
   constructor() {
-    // Initialize on first use
+    this.mongoAuth = new MongoAuth('wedding-platform');
   }
 
   getState(): WhatsAppState {
@@ -50,10 +52,11 @@ class WhatsAppService {
     this.qrCodeData = null;
 
     try {
+      // Load existing session from MongoDB
+      const existingSession = await this.mongoAuth.getSession();
+
       this.client = new Client({
-        authStrategy: new LocalAuth({
-          dataPath: './.wwebjs_auth',
-        }),
+        session: existingSession || undefined,
         puppeteer: {
           headless: true,
           args: [
@@ -82,10 +85,19 @@ class WhatsAppService {
         }
       });
 
-      // Authenticated event
-      this.client.on('authenticated', () => {
+      // Authenticated event - save session to MongoDB
+      this.client.on('authenticated', async (session) => {
         console.log('WhatsApp authenticated');
         this.state = { status: 'authenticated' };
+
+        // Save session to MongoDB
+        if (session) {
+          try {
+            await this.mongoAuth.saveSession(session);
+          } catch (err) {
+            console.error('Error saving session to MongoDB:', err);
+          }
+        }
       });
 
       // Ready event
@@ -141,6 +153,14 @@ class WhatsAppService {
       }
       this.client = null;
     }
+
+    // Delete session from MongoDB
+    try {
+      await this.mongoAuth.deleteSession();
+    } catch (e) {
+      console.error('Error deleting session from MongoDB:', e);
+    }
+
     this.state = { status: 'disconnected' };
     this.qrCodeData = null;
   }
