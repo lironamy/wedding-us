@@ -134,7 +134,7 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
             <img
               src={wedding.mediaUrl}
               alt={`${wedding.groomName} & ${wedding.brideName}`}
-              className="w-full md:w-1/4 md:mx-auto h-[50vh] md:h-[60vh] object-cover"
+              className="w-full md:w-[520px] md:mx-auto h-[50vh] md:h-[60vh] object-cover"
             />
           )}
 
@@ -155,13 +155,13 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
         {/* Background Pattern */}
         {backgroundPattern ? (
           <div
-            className="absolute inset-0 z-0 bg-[#FFFFF6]"
+            className="  bg-[#FFFFF6]"
      
 
           />
         ) : (
           <div
-            className="absolute inset-0 z-0"
+            className=" "
             style={{
               background: `linear-gradient(180deg, ${theme.primaryColor}08 0%, ${theme.secondaryColor}08 100%)`,
             }}

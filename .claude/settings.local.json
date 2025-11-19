@@ -10,7 +10,8 @@
       "Bash(taskkill:*)",
       "Bash(nul)",
       "Bash(if exist .next rmdir /s /q .next)",
-      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\dashboard\\MessageDashboard.tsx\")"
+      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\dashboard\\MessageDashboard.tsx\")",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

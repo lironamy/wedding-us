@@ -393,7 +393,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
               <p className="text-sm text-gray-600 mb-3">תצוגה מקדימה של הרקע:</p>
               <div className="relative h-40 rounded-lg border border-gray-200 overflow-hidden">
                 <div
-                  className="absolute inset-0 z-0 bg-cover bg-center"
+                  className="  bg-cover bg-center"
                   style={{
                     backgroundImage: `url(${formData.backgroundPattern})`,
                     backgroundSize: '150px',
@@ -455,12 +455,12 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                   {/* Background Pattern */}
                   {formData.backgroundPattern ? (
                     <div
-                      className="absolute inset-0 z-0 pointer-events-none"
+                      className="  pointer-events-none"
                      
                     />
                   ) : (
                     <div
-                      className="absolute inset-0 z-0 pointer-events-none"
+                      className="  pointer-events-none"
                       style={{
                         background: `linear-gradient(135deg, ${formData.theme.primaryColor}15 0%, ${formData.theme.secondaryColor}15 100%)`,
                       }}
