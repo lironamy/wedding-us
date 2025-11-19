@@ -56,7 +56,7 @@ class WhatsAppService {
       const existingSession = await this.mongoAuth.getSession();
 
       this.client = new Client({
-        session: existingSession || undefined,
+        session: existingSession as any,
         puppeteer: {
           headless: true,
           args: [
