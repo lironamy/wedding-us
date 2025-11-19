@@ -80,6 +80,9 @@ export async function PUT(
 
     const body = await request.json();
 
+    // Debug: log the backgroundPattern being sent
+    console.log('Updating wedding with backgroundPattern:', body.backgroundPattern);
+
     // Update fields
     const allowedFields = [
       'groomName',
@@ -93,6 +96,7 @@ export async function PUT(
       'mediaUrl',
       'mediaType',
       'theme',
+      'backgroundPattern',
       'bitPhone',
       'payboxPhone',
       'status'
@@ -105,10 +109,15 @@ export async function PUT(
         } else {
           wedding[field] = body[field];
         }
+        // Mark field as modified for Mongoose to save it
+        wedding.markModified(field);
       }
     });
 
     await wedding.save();
+
+    // Debug: log what was saved
+    console.log('Saved wedding backgroundPattern:', wedding.backgroundPattern);
 
     return NextResponse.json(wedding, { status: 200 });
   } catch (error) {

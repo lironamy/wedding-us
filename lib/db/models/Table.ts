@@ -23,6 +23,9 @@ const TableSchema = new Schema<ITable>(
       type: String,
       required: [true, 'Table name is required'],
       trim: true,
+      // Ensure proper UTF-8 encoding
+      set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+      get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
     },
     tableNumber: {
       type: Number,

@@ -24,6 +24,7 @@ interface Wedding {
     secondaryColor: string;
     fontFamily: string;
   };
+  backgroundPattern?: string;
   bitPhone?: string;
   payboxPhone?: string;
   uniqueUrl: string;
@@ -63,6 +64,10 @@ export default function SettingsPage() {
 
   const handleSubmit = async (data: any) => {
     try {
+      // Debug: log data being sent
+      console.log('Submitting wedding data:', data);
+      console.log('backgroundPattern:', data.backgroundPattern);
+
       const url = wedding
         ? `/api/weddings/${wedding._id}`
         : '/api/weddings';

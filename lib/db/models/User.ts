@@ -24,6 +24,9 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: [true, 'Name is required'],
       trim: true,
+      // Ensure proper UTF-8 encoding
+      set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+      get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
     },
     googleId: {
       type: String,

@@ -21,6 +21,7 @@ export interface IWedding {
     secondaryColor: string;
     fontFamily: string;
   };
+  backgroundPattern?: string;
   bitPhone?: string;
   payboxPhone?: string;
   uniqueUrl: string;
@@ -40,11 +41,17 @@ const WeddingSchema = new Schema<IWedding>(
       type: String,
       required: [true, 'Groom name is required'],
       trim: true,
+      // Ensure proper UTF-8 encoding
+      set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+      get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
     },
     brideName: {
       type: String,
       required: [true, 'Bride name is required'],
       trim: true,
+      // Ensure proper UTF-8 encoding
+      set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+      get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
     },
     eventDate: {
       type: Date,
@@ -58,6 +65,9 @@ const WeddingSchema = new Schema<IWedding>(
       type: String,
       required: [true, 'Venue is required'],
       trim: true,
+      // Ensure proper UTF-8 encoding
+      set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+      get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
     },
     venueAddress: {
       type: String,
@@ -92,6 +102,10 @@ const WeddingSchema = new Schema<IWedding>(
         type: String,
         default: 'Assistant, sans-serif', // Hebrew-friendly font
       },
+    },
+    backgroundPattern: {
+      type: String,
+      default: '',
     },
     bitPhone: {
       type: String,

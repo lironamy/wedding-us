@@ -54,7 +54,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive(item.href)
                     ? 'bg-primary text-white'
-                    : 'text-gray-600 hover:bg-accent hover:text-primary'
+                    : 'text-gray-600 hover:bg-muted hover:text-primary'
                 }`}
               >
                 <span className="ml-1">{item.icon}</span>
@@ -68,7 +68,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive(item.href)
                     ? 'bg-primary text-white'
-                    : 'text-gray-600 hover:bg-accent hover:text-primary'
+                    : 'text-gray-600 hover:bg-muted hover:text-primary'
                 }`}
               >
                 <span className="ml-1">{item.icon}</span>
@@ -101,7 +101,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 isActive(item.href)
                   ? 'bg-primary text-white'
-                  : 'text-gray-600 hover:bg-accent hover:text-primary'
+                  : 'text-gray-600 hover:bg-muted hover:text-primary'
               }`}
             >
               <span className="ml-1">{item.icon}</span>

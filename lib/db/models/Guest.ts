@@ -43,6 +43,9 @@ const GuestSchema = new Schema<IGuest>(
       type: String,
       required: [true, 'Guest name is required'],
       trim: true,
+      // Ensure proper UTF-8 encoding
+      set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+      get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
     },
     phone: {
       type: String,

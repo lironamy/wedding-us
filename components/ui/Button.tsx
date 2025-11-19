@@ -18,7 +18,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       primary: 'bg-primary text-white hover:bg-primary-dark focus:ring-primary',
       secondary: 'bg-secondary text-white hover:bg-opacity-90 focus:ring-secondary',
       outline: 'border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary',
-      ghost: 'text-primary hover:bg-accent focus:ring-primary',
+      ghost: 'text-primary hover:bg-muted focus:ring-primary',
       danger: 'bg-error text-white hover:bg-red-600 focus:ring-error',
     };
 

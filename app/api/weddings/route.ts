@@ -89,6 +89,7 @@ export async function POST(request: NextRequest) {
         secondaryColor: '#2C3E50',
         fontFamily: 'Assistant'
       },
+      backgroundPattern: body.backgroundPattern || '',
       bitPhone: body.bitPhone || '',
       payboxPhone: body.payboxPhone || '',
       uniqueUrl,

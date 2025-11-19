@@ -27,10 +27,16 @@ export async function sendEmail(params: EmailParams): Promise<{ success: boolean
       throw new Error('EmailJS configuration is missing. Please check your environment variables.');
     }
 
+    // Ensure proper UTF-8 encoding for the message
+    const encodedParams = {
+      ...params,
+      message: Buffer.from(params.message, 'utf8').toString('utf8')
+    };
+
     const response = await emailjs.send(
       EMAILJS_SERVICE_ID,
       EMAILJS_TEMPLATE_ID,
-      params
+      encodedParams
     );
 
     if (response.status === 200) {

@@ -23,7 +23,16 @@ export function formatPhoneForWhatsApp(phone: string): string {
  */
 export function generateWhatsAppUrl(phone: string, message: string): string {
   const formattedPhone = formatPhoneForWhatsApp(phone);
+
+  console.log('🔍 [WHATSAPP] Original message:', message.substring(0, 100));
+  console.log('🔍 [WHATSAPP] Message char codes:', [...message.substring(0, 20)].map(c => c.charCodeAt(0)));
+
+  // Direct URL encoding without Buffer conversion (which can corrupt emojis)
   const encodedMessage = encodeURIComponent(message);
+
+  console.log('🔍 [WHATSAPP] Encoded message:', encodedMessage.substring(0, 150));
+  console.log('🔍 [WHATSAPP] Encoded message bytes for first emoji:', encodedMessage.match(/%[0-9A-F]{2}/g)?.slice(0, 10));
+
   return `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
 }
 

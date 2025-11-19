@@ -47,14 +47,37 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
     fontFamily: 'Assistant'
   };
 
+  const backgroundPattern = wedding.backgroundPattern;
+
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{
-        background: `linear-gradient(135deg, ${theme.primaryColor}15 0%, ${theme.secondaryColor}15 100%)`,
         fontFamily: theme.fontFamily
       }}
     >
+      {/* Background Pattern Layer */}
+      {backgroundPattern ? (
+        <div
+          className="fixed inset-0 z-0"
+          style={{
+            backgroundImage: `url(${backgroundPattern})`,
+            backgroundSize: '300px',
+            backgroundRepeat: 'repeat',
+            opacity: 0.3,
+          }}
+        />
+      ) : (
+        <div
+          className="fixed inset-0 z-0"
+          style={{
+            background: `linear-gradient(135deg, ${theme.primaryColor}15 0%, ${theme.secondaryColor}15 100%)`,
+          }}
+        />
+      )}
+
+      {/* Content Layer */}
+      <div className="relative z-10">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
@@ -114,6 +137,7 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
             נשמח לראותכם בחגיגה שלנו 💍
           </p>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -145,26 +145,31 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
         {/* Gift Links */}
         {(wedding.bitPhone || wedding.payboxPhone) && (
           <div className="bg-white rounded-lg shadow-xl p-6 mt-6">
-            <h3 className="text-xl font-semibold mb-4 text-center">רוצים לשלוח מתנה?</h3>
+            <h3 className="text-xl font-semibold mb-4 text-center">רוצים לשלוח מתנה? 🎁</h3>
+            <p className="text-center text-gray-600 mb-4 text-sm">
+              תודה מראש! אתם יכולים לשלוח דרך אחת מהאפשרויות הבאות
+            </p>
             <div className="flex gap-4 justify-center flex-wrap">
               {wedding.bitPhone && (
                 <a
-                  href={`https://bit.app/${wedding.bitPhone}`}
+                  href={`https://www.bitpay.co.il/app/users/${wedding.bitPhone.replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
                 >
-                  💳 Bit
+                  <span>💳</span>
+                  <span>Bit</span>
                 </a>
               )}
               {wedding.payboxPhone && (
                 <a
-                  href={`https://payboxapp.page.link/?link=https://payboxapp.com/payment?phone=${wedding.payboxPhone}`}
+                  href={`https://payboxapp.page.link/?link=https://payboxapp.com/payment?phone=${wedding.payboxPhone.replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
                 >
-                  💎 Paybox
+                  <span>💎</span>
+                  <span>Paybox</span>
                 </a>
               )}
             </div>

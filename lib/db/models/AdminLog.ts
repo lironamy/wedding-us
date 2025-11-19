@@ -21,6 +21,9 @@ const AdminLogSchema = new Schema<IAdminLog>(
       type: String,
       required: [true, 'Action is required'],
       trim: true,
+      // Ensure proper UTF-8 encoding
+      set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+      get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
     },
     details: {
       type: Schema.Types.Mixed,
