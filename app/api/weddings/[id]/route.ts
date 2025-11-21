@@ -80,8 +80,11 @@ export async function PUT(
 
     const body = await request.json();
 
-    // Debug: log the backgroundPattern being sent
+    // Debug: log the fields being sent
     console.log('Updating wedding with backgroundPattern:', body.backgroundPattern);
+    console.log('Updating wedding with enableBitGifts:', body.enableBitGifts);
+    console.log('Updating wedding with bitQrImage:', body.bitQrImage);
+    console.log('Updating wedding with bitPhone:', body.bitPhone);
 
     // Update fields
     const allowedFields = [
@@ -99,6 +102,8 @@ export async function PUT(
       'backgroundPattern',
       'bitPhone',
       'payboxPhone',
+      'enableBitGifts',
+      'bitQrImage',
       'status'
     ];
 
@@ -118,6 +123,9 @@ export async function PUT(
 
     // Debug: log what was saved
     console.log('Saved wedding backgroundPattern:', wedding.backgroundPattern);
+    console.log('Saved wedding enableBitGifts:', wedding.enableBitGifts);
+    console.log('Saved wedding bitQrImage:', wedding.bitQrImage);
+    console.log('Saved wedding bitPhone:', wedding.bitPhone);
 
     return NextResponse.json(wedding, { status: 200 });
   } catch (error) {

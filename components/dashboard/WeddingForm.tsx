@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import MediaUpload from '@/components/dashboard/MediaUpload';
+import BitQrUpload from '@/components/dashboard/BitQrUpload';
 
 interface WeddingFormProps {
   wedding?: any;
@@ -25,6 +26,9 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
     mediaType: 'image' as 'image' | 'video',
     bitPhone: '',
     payboxPhone: '',
+    enableBitGifts: false,
+    bitQrImage: '',
+    bitPaymentLink: '',
     backgroundPattern: '',
     theme: {
       primaryColor: '#C4A57B',
@@ -90,6 +94,9 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
         mediaType: wedding.mediaType || 'image',
         bitPhone: wedding.bitPhone || '',
         payboxPhone: wedding.payboxPhone || '',
+        enableBitGifts: wedding.enableBitGifts || false,
+        bitQrImage: wedding.bitQrImage || '',
+        bitPaymentLink: wedding.bitPaymentLink || '',
         backgroundPattern: wedding.backgroundPattern || '',
         theme: wedding.theme || {
           primaryColor: '#C4A57B',
@@ -277,32 +284,14 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
         theme={formData.theme}
       />
 
-      {/* Payment Information */}
-      <Card>
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">
-            פרטי תשלום למתנות (אופציונלי)
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="מספר טלפון ל-Bit"
-              name="bitPhone"
-              value={formData.bitPhone}
-              onChange={handleChange}
-              placeholder="05xxxxxxxx"
-            />
-
-            <Input
-              label="מספר טלפון ל-Paybox"
-              name="payboxPhone"
-              value={formData.payboxPhone}
-              onChange={handleChange}
-              placeholder="05xxxxxxxx"
-            />
-          </div>
-        </div>
-      </Card>
+      {/* Bit Gift Payment */}
+      <BitQrUpload
+        enabled={formData.enableBitGifts}
+        qrImage={formData.bitQrImage}
+        bitPhone={formData.bitPhone}
+        onEnabledChange={(enabled) => setFormData((prev) => ({ ...prev, enableBitGifts: enabled }))}
+        onQrScanned={(qrImage, bitPhone) => setFormData((prev) => ({ ...prev, bitQrImage: qrImage, bitPhone: bitPhone }))}
+      />
 
       {/* Theme Customization */}
       <Card>

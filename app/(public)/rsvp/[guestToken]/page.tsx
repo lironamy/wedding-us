@@ -383,7 +383,7 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
           )}
 
           {/* Gift Links */}
-          {(wedding.bitPhone || wedding.payboxPhone) && (
+          {(wedding.enableBitGifts && wedding.bitPhone) && (
             <div className="mb-8">
               <h3 className="text-center text-xl font-medium text-gray-700 mb-2">
                 רוצים לשלוח מתנה?
@@ -392,28 +392,15 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
                 תודה מראש על המחשבה
               </p>
               <div className="flex gap-3 justify-center flex-wrap">
-                {wedding.bitPhone && (
-                  <a
-                    href={`https://www.bitpay.co.il/app/users/${wedding.bitPhone.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition shadow-sm flex items-center gap-2"
-                  >
-                    <span>💳</span>
-                    <span>Bit</span>
-                  </a>
-                )}
-                {wedding.payboxPhone && (
-                  <a
-                    href={`https://payboxapp.page.link/?link=https://payboxapp.com/payment?phone=${wedding.payboxPhone.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition shadow-sm flex items-center gap-2"
-                  >
-                    <span>💎</span>
-                    <span>Paybox</span>
-                  </a>
-                )}
+                <a
+                  href={wedding.bitPhone}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition shadow-sm flex items-center gap-2"
+                >
+                  <span>💳</span>
+                  <span>שליחת מתנה ב-Bit</span>
+                </a>
               </div>
             </div>
           )}

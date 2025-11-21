@@ -49,6 +49,7 @@ export interface MessageVariables {
   rsvpLink: string;
   tableNumber?: number;
   appUrl: string;
+  giftLink?: string;
 }
 
 /**
@@ -69,8 +70,8 @@ export const MESSAGE_TEMPLATES: Record<MessageType, MessageTemplate> = {
 {groomName} ו{brideName}
 
 לח/צי על הקישור לאישור הגעה
-{rsvpLink}`,
-    variables: ['guestName', 'groomName', 'brideName', 'eventDate', 'eventTime', 'venue', 'rsvpLink'],
+{rsvpLink}{giftSection}`,
+    variables: ['guestName', 'groomName', 'brideName', 'eventDate', 'eventTime', 'venue', 'rsvpLink', 'giftLink'],
   },
 
   rsvp_reminder: {
@@ -172,6 +173,17 @@ export function generateMessage(
   message = message.replace(/{rsvpLink}/g, variables.rsvpLink);
   message = message.replace(/{tableNumber}/g, variables.tableNumber?.toString() || 'לא הוקצה');
   message = message.replace(/{appUrl}/g, variables.appUrl);
+
+  // Handle gift section - only add if giftLink is provided
+  if (variables.giftLink) {
+    const giftSection = `
+
+${emoji.heart} רוצים לשלוח מתנה?
+${variables.giftLink}`;
+    message = message.replace(/{giftSection}/g, giftSection);
+  } else {
+    message = message.replace(/{giftSection}/g, '');
+  }
 
   console.log('🔍 [SERVER] Message after replacement:', message.substring(0, 150));
   console.log('🔍 [SERVER] First 50 chars as hex bytes:', Buffer.from(message.substring(0, 50)).toString('hex'));

@@ -98,6 +98,17 @@ export async function POST(request: NextRequest) {
         .replace(/{venue}/g, wedding.venue || '')
         .replace(/{rsvpLink}/g, rsvpLink);
 
+      // Handle gift section - only add if enableBitGifts is true and bitPhone (link) exists
+      if (wedding.enableBitGifts && wedding.bitPhone) {
+        const giftSection = `
+
+❤️ רוצים לשלוח מתנה?
+${wedding.bitPhone}`;
+        messageText = messageText.replace(/{giftSection}/g, giftSection);
+      } else {
+        messageText = messageText.replace(/{giftSection}/g, '');
+      }
+
       return {
         phone: guest.phone,
         message: messageText,

@@ -92,6 +92,8 @@ export async function POST(request: NextRequest) {
       backgroundPattern: body.backgroundPattern || '',
       bitPhone: body.bitPhone || '',
       payboxPhone: body.payboxPhone || '',
+      enableBitGifts: body.enableBitGifts || false,
+      bitQrImage: body.bitQrImage || '',
       uniqueUrl,
       status: 'draft'
     });

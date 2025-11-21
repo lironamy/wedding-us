@@ -28,6 +28,8 @@ interface Wedding {
   backgroundPattern?: string;
   bitPhone?: string;
   payboxPhone?: string;
+  enableBitGifts?: boolean;
+  bitQrImage?: string;
   uniqueUrl: string;
   status: string;
 }
@@ -68,6 +70,9 @@ export default function SettingsPage() {
       // Debug: log data being sent
       console.log('Submitting wedding data:', data);
       console.log('backgroundPattern:', data.backgroundPattern);
+      console.log('enableBitGifts:', data.enableBitGifts);
+      console.log('bitQrImage:', data.bitQrImage);
+      console.log('bitPhone:', data.bitPhone);
 
       const url = wedding
         ? `/api/weddings/${wedding._id}`

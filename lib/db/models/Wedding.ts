@@ -24,6 +24,8 @@ export interface IWedding {
   backgroundPattern?: string;
   bitPhone?: string;
   payboxPhone?: string;
+  bitQrImage?: string;
+  enableBitGifts?: boolean;
   uniqueUrl: string;
   status: 'draft' | 'active' | 'completed' | 'archived';
   createdAt: Date;
@@ -114,6 +116,13 @@ const WeddingSchema = new Schema<IWedding>(
     payboxPhone: {
       type: String,
       trim: true,
+    },
+    bitQrImage: {
+      type: String,
+    },
+    enableBitGifts: {
+      type: Boolean,
+      default: false,
     },
     uniqueUrl: {
       type: String,

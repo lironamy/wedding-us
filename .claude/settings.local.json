@@ -23,7 +23,8 @@
       "Bash(dir nul 2)",
       "Bash(del \"\\?\\C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\nul\" 2)",
       "Bash(del nul 2)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(if exist \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\.next\\dev\\lock\" del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\.next\\dev\\lock\")"
     ],
     "deny": [],
     "ask": []
