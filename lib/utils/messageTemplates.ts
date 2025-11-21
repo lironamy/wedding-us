@@ -74,7 +74,7 @@ export const MESSAGE_TEMPLATES: Record<MessageType, MessageTemplate> = {
 {groomName} ו{brideName}
 
 לחצו על הקישור לאישור הגעה
-{rsvpLink}{giftSection}`,
+{rsvpLink}`,
     variables: ['guestName', 'groomName', 'brideName', 'eventDate', 'eventTime', 'venue', 'rsvpLink', 'giftLink'],
   },
 
