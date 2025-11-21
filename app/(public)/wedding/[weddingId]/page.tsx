@@ -118,10 +118,10 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
         href="https://fonts.googleapis.com/css2?family=Allura&family=Heebo:wght@300;400;500;700&family=Suez+One&display=swap"
         rel="stylesheet"
       />
-      {/* Hero Image - Fixed/Sticky at Top */}
+      {/* Hero Image - Fixed at top, scrolls under content */}
       {wedding.mediaUrl && (
-        <div className="fixed top-0 left-0 right-0 w-full h-[50vh] md:h-[60vh] z-0">
-          <div className="w-full h-full flex justify-center">
+        <div className="fixed top-0 left-0 right-0 w-full z-0 flex justify-center">
+          <div className="w-full md:w-[520px]">
             {wedding.mediaType === 'video' ? (
               <video
                 src={wedding.mediaUrl}
@@ -129,39 +129,54 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
                 muted
                 loop
                 playsInline
-                className="w-full md:w-[520px] h-full object-cover"
+                className="w-full h-auto object-contain block"
               />
             ) : (
               <img
                 src={wedding.mediaUrl}
                 alt={`${wedding.groomName} & ${wedding.brideName}`}
-                className="w-full md:w-[520px] h-full object-cover"
+                className="w-full h-auto object-contain block"
               />
             )}
           </div>
         </div>
       )}
 
-      {/* Spacer to push content below the fixed image (minus torn paper height) */}
+      {/* Spacer - slightly shorter than image so content overlaps a bit */}
       {wedding.mediaUrl && (
-        <div className="h-[calc(50vh-10rem)] md:h-[calc(60vh-10rem)]" />
+        <div className="w-full md:w-[520px] md:mx-auto invisible mb-[-90px] md:mb-[-110px]">
+          {wedding.mediaType === 'video' ? (
+            <video
+              src={wedding.mediaUrl}
+              className="w-full h-auto object-contain block"
+              muted
+            />
+          ) : (
+            <img
+              src={wedding.mediaUrl}
+              alt=""
+              className="w-full h-auto object-contain block"
+            />
+          )}
+        </div>
       )}
 
-      {/* Torn Paper Effect - between image and content */}
-      {wedding.mediaUrl && (
+      {/* Torn Paper Effect - scrolls over image */}
+      {wedding.mediaUrl && wedding.backgroundPattern && (
         <div
-          className="relative h-24 w-full md:w-[520px] md:h-[120px] md:mx-auto pointer-events-none"
+          className="relative z-10 h-24 w-full md:w-[522px] md:h-[120px] md:mx-auto pointer-events-none"
           style={{
-            backgroundImage: `url("${wedding.backgroundPattern || 'https://64.media.tumblr.com/6753066afc5d236efae45d31ebfc7b64/a6d93d5b52cd16a6-1c/s540x810/fc872eb481d64b6e82192a760d700b4ae3845dce.pnj'}")`,
+            backgroundImage: `url("${wedding.backgroundPattern}")`,
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'top center',
             backgroundSize: 'cover',
+            marginTop: '-1px',
           }}
         />
       )}
 
-      {/* Invitation Content */}
-      <div className="relative z-10 bg-[#fffff6]">
+      {/* Invitation Content - scrolls over image */}
+      <div className="relative z-10 bg-[#fffff6]" style={{ marginTop: '-1px' }}>
         {/* Content */}
         <div className="relative px-4 max-w-md mx-auto">
           {/* Names - Large Decorative Font */}

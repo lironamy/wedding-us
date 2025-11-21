@@ -190,6 +190,9 @@ export default function MediaUpload({
               <p className="text-sm text-gray-500 mt-2">
                 תמונה או וידאו עד 10MB
               </p>
+              <p className="text-sm text-blue-600 mt-2 font-medium">
+                💡 מומלץ להעלות תמונה עומדת (Portrait) לתצוגה אופטימלית
+              </p>
             </div>
 
             <Button
