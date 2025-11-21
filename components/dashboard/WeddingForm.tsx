@@ -380,7 +380,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                     style={{ backgroundImage: `url(${effect.url})` }}
                   />
                 ) : (
-                  <div className="h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <div className="h-24 bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                     <span className="text-gray-400 text-sm">ללא אפקט</span>
                   </div>
                 )}
@@ -413,7 +413,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                       />
                     )
                   ) : (
-                    <div className="w-full h-40 bg-gradient-to-b from-gray-300 to-gray-400 flex items-center justify-center">
+                    <div className="w-full h-40 bg-linear-to-b from-gray-300 to-gray-400 flex items-center justify-center">
                       <span className="text-gray-500 text-sm">התמונה שלכם תופיע כאן</span>
                     </div>
                   )}
@@ -479,7 +479,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
 
             {/* Phone Frame */}
             <div className="p-4 bg-gray-100">
-              <div className="mx-auto w-[320px] h-[568px] bg-[#fffff6] rounded-[2rem] shadow-xl border-4 border-gray-800 overflow-hidden relative">
+              <div className="mx-auto w-[320px] h-[568px] bg-[#fffff6] rounded-4xl shadow-xl border-4 border-gray-800 overflow-hidden relative">
                 {/* Phone Notch */}
                 <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-gray-800 rounded-b-xl z-20"></div>
 
