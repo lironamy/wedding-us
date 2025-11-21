@@ -6,6 +6,7 @@ import Guest from '@/lib/db/models/Guest';
 import Wedding from '@/lib/db/models/Wedding';
 import Message from '@/lib/db/models/Message';
 import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
+import { replaceGenderPlaceholders } from '@/lib/utils/genderText';
 import whatsappService from '@/lib/whatsapp/client';
 
 export async function POST(request: NextRequest) {
@@ -74,6 +75,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get partner types for gender-aware text (default to groom/bride for backward compatibility)
+    const partner1Type = wedding.partner1Type || 'groom';
+    const partner2Type = wedding.partner2Type || 'bride';
+
     // Prepare messages
     const messages = guests.map((guest) => {
       // Generate RSVP link
@@ -88,8 +93,11 @@ export async function POST(request: NextRequest) {
         day: 'numeric',
       });
 
-      // Replace placeholders in template
-      let messageText = template.template
+      // Replace gender placeholders first
+      let messageText = replaceGenderPlaceholders(template.template, partner1Type, partner2Type);
+
+      // Replace other placeholders in template
+      messageText = messageText
         .replace(/{guestName}/g, guest.name)
         .replace(/{groomName}/g, wedding.groomName)
         .replace(/{brideName}/g, wedding.brideName)
@@ -97,17 +105,6 @@ export async function POST(request: NextRequest) {
         .replace(/{eventTime}/g, wedding.eventTime || '')
         .replace(/{venue}/g, wedding.venue || '')
         .replace(/{rsvpLink}/g, rsvpLink);
-
-      // Handle gift section - only add if enableBitGifts is true and bitPhone (link) exists
-      if (wedding.enableBitGifts && wedding.bitPhone) {
-        const giftSection = `
-
-❤️ רוצים לשלוח מתנה?
-${wedding.bitPhone}`;
-        messageText = messageText.replace(/{giftSection}/g, giftSection);
-      } else {
-        messageText = messageText.replace(/{giftSection}/g, '');
-      }
 
       return {
         phone: guest.phone,
@@ -117,10 +114,17 @@ ${wedding.bitPhone}`;
       };
     });
 
-    // Send messages using the WhatsApp service
+    // Get image URL if wedding has one (only for image type media)
+    const imageUrl = wedding.mediaType === 'image' && wedding.mediaUrl
+      ? wedding.mediaUrl
+      : undefined;
+
+    // Send messages using the WhatsApp service (with image if available)
     const result = await whatsappService.sendBulkMessages(
       messages,
-      delayBetweenMessages
+      delayBetweenMessages,
+      undefined, // onProgress callback
+      imageUrl
     );
 
     // Save messages to database and update guest records

@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
 import MapLinks from '@/components/invitation/MapLinks';
 import GiftLinks from '@/components/invitation/GiftLinks';
+import { getGenderText, type PartnerType } from '@/lib/utils/genderText';
 
 interface PageProps {
   params: Promise<{
@@ -222,7 +223,7 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
           {/* Invitation Text */}
           <div className="text-center">
             <p className="text-xl text-gray-700">
-              שמחים ונרגשים להזמינכם ליום המאושר בחיינו
+              {getGenderText('happy', (wedding.partner1Type || 'groom') as PartnerType, (wedding.partner2Type || 'bride') as PartnerType)} ו{getGenderText('thrilled', (wedding.partner1Type || 'groom') as PartnerType, (wedding.partner2Type || 'bride') as PartnerType)} להזמינכם ליום המאושר בחיינו
             </p>
           </div>
 

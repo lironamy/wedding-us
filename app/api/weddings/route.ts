@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       groomName,
       brideName,
+      partner1Type: body.partner1Type || 'groom',
+      partner2Type: body.partner2Type || 'bride',
       eventDate: new Date(eventDate),
       eventTime,
       venue,

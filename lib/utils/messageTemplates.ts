@@ -3,6 +3,8 @@
  * All templates are in Hebrew with RTL support
  */
 
+import { replaceGenderPlaceholders, type PartnerType } from './genderText';
+
 /**
  * Emoji generator function - creates emojis at runtime to avoid encoding issues
  */
@@ -50,6 +52,8 @@ export interface MessageVariables {
   tableNumber?: number;
   appUrl: string;
   giftLink?: string;
+  partner1Type?: PartnerType;
+  partner2Type?: PartnerType;
 }
 
 /**
@@ -60,16 +64,16 @@ export const MESSAGE_TEMPLATES: Record<MessageType, MessageTemplate> = {
     type: 'invitation',
     title: 'הזמנה ראשונית',
     description: 'הודעת הזמנה ראשונית לחתונה',
-    template: `היי {guestName}, שמחים ומתרגשים
+    template: `היי {guestName}, {gender:happy} ו{gender:excited}
 להזמינכם לחתונה שלנו ${emoji.ring}
 
 נפגש ביום {eventDate}
 ב"{venue}" בשעה {eventTime}
 
-מתרגשים לחגוג איתכם,
+{gender:excited} לחגוג איתכם,
 {groomName} ו{brideName}
 
-לח/צי על הקישור לאישור הגעה
+לחצו על הקישור לאישור הגעה
 {rsvpLink}{giftSection}`,
     variables: ['guestName', 'groomName', 'brideName', 'eventDate', 'eventTime', 'venue', 'rsvpLink', 'giftLink'],
   },
@@ -85,7 +89,7 @@ export const MESSAGE_TEMPLATES: Record<MessageType, MessageTemplate> = {
 ${emoji.bride}${emoji.groom} {groomName} & {brideName}
 ${emoji.calendar} {eventDate} | ${emoji.clock} {eventTime}
 
-נשמח מאוד אם תוכל/י לאשר הגעה כאן:
+נשמח מאוד אם תוכלו לאשר הגעה כאן:
 {rsvpLink}
 
 תודה רבה! ${emoji.twoHearts}`,
@@ -100,7 +104,7 @@ ${emoji.calendar} {eventDate} | ${emoji.clock} {eventTime}
 
 זו תזכורת אחרונה לאישור הגעה לחתונה שלנו ${emoji.wedding}
 
-החתונה מתקרבת והיינו רוצים לדעת אם תוכל/י להגיע.
+החתונה מתקרבת והיינו {gender:wanting} לדעת אם תוכלו להגיע.
 
 ${emoji.calendar} {eventDate} | ${emoji.clock} {eventTime}
 ${emoji.pin} {venue}
@@ -108,7 +112,7 @@ ${emoji.pin} {venue}
 לאישור הגעה (לוקח רק דקה):
 {rsvpLink}
 
-מחכים לתשובה! ${emoji.pray}`,
+{gender:waiting} לתשובה! ${emoji.pray}`,
     variables: ['guestName', 'eventDate', 'eventTime', 'venue', 'rsvpLink'],
   },
 
@@ -118,8 +122,8 @@ ${emoji.pin} {venue}
     description: 'תזכורת יום לפני האירוע כולל מספר שולחן',
     template: `היי {guestName}! ${emoji.party}
 
-מחר מתחתנים! ${emoji.wedding}
-מחכים לראות אתכם באירוע.
+מחר {gender:gettingMarried}! ${emoji.wedding}
+{gender:waiting} לראות אתכם באירוע.
 
 ${emoji.pin} מיקום: {venue}
 ${emoji.clock} שעה: {eventTime}
@@ -140,9 +144,9 @@ ${emoji.chair} מספר שולחן: {tableNumber}
 
 תודה ענקית שהייתם חלק מהיום המיוחד שלנו! ${emoji.confetti}
 
-הנוכחות שלכם הפכה את החתונה למושלמת ואנחנו אסירי תודה על שחגגתם איתנו.
+הנוכחות שלכם הפכה את החתונה למושלמת ואנחנו {gender:grateful} תודה על שחגגתם איתנו.
 
-מקווים שנהניתם והיה לכם כיף!
+{gender:hoping} שנהניתם והיה לכם כיף!
 
 באהבה,
 {groomName} & {brideName} ${emoji.heart}`,
@@ -163,6 +167,11 @@ export function generateMessage(
   console.log('🔍 [SERVER] Template before replacement:', template.template.substring(0, 100));
   console.log('🔍 [SERVER] Template bytes:', Buffer.from(template.template.substring(0, 50)).toString('hex'));
 
+  // Replace gender placeholders first
+  const partner1Type = variables.partner1Type || 'groom';
+  const partner2Type = variables.partner2Type || 'bride';
+  message = replaceGenderPlaceholders(message, partner1Type, partner2Type);
+
   // Replace all variables in the template
   message = message.replace(/{guestName}/g, variables.guestName);
   message = message.replace(/{groomName}/g, variables.groomName);
@@ -173,21 +182,6 @@ export function generateMessage(
   message = message.replace(/{rsvpLink}/g, variables.rsvpLink);
   message = message.replace(/{tableNumber}/g, variables.tableNumber?.toString() || 'לא הוקצה');
   message = message.replace(/{appUrl}/g, variables.appUrl);
-
-  // Handle gift section - only add if giftLink is provided
-  if (variables.giftLink) {
-    const giftSection = `
-
-${emoji.heart} רוצים לשלוח מתנה?
-${variables.giftLink}`;
-    message = message.replace(/{giftSection}/g, giftSection);
-  } else {
-    message = message.replace(/{giftSection}/g, '');
-  }
-
-  console.log('🔍 [SERVER] Message after replacement:', message.substring(0, 150));
-  console.log('🔍 [SERVER] First 50 chars as hex bytes:', Buffer.from(message.substring(0, 50)).toString('hex'));
-  console.log('🔍 [SERVER] Message char codes:', [...message.substring(0, 30)].map(c => c.charCodeAt(0)));
 
   return message;
 }

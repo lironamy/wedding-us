@@ -81,6 +81,8 @@ export async function PUT(
     const body = await request.json();
 
     // Debug: log the fields being sent
+    console.log('Updating wedding with partner1Type:', body.partner1Type);
+    console.log('Updating wedding with partner2Type:', body.partner2Type);
     console.log('Updating wedding with backgroundPattern:', body.backgroundPattern);
     console.log('Updating wedding with enableBitGifts:', body.enableBitGifts);
     console.log('Updating wedding with bitQrImage:', body.bitQrImage);
@@ -90,6 +92,8 @@ export async function PUT(
     const allowedFields = [
       'groomName',
       'brideName',
+      'partner1Type',
+      'partner2Type',
       'eventDate',
       'eventTime',
       'venue',
@@ -122,6 +126,8 @@ export async function PUT(
     await wedding.save();
 
     // Debug: log what was saved
+    console.log('Saved wedding partner1Type:', wedding.partner1Type);
+    console.log('Saved wedding partner2Type:', wedding.partner2Type);
     console.log('Saved wedding backgroundPattern:', wedding.backgroundPattern);
     console.log('Saved wedding enableBitGifts:', wedding.enableBitGifts);
     console.log('Saved wedding bitQrImage:', wedding.bitQrImage);

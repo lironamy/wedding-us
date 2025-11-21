@@ -12,6 +12,8 @@ interface Wedding {
   _id: string;
   groomName: string;
   brideName: string;
+  partner1Type?: 'groom' | 'bride';
+  partner2Type?: 'groom' | 'bride';
   eventDate: string;
   eventTime: string;
   venue: string;
@@ -69,6 +71,8 @@ export default function SettingsPage() {
     try {
       // Debug: log data being sent
       console.log('Submitting wedding data:', data);
+      console.log('partner1Type:', data.partner1Type);
+      console.log('partner2Type:', data.partner2Type);
       console.log('backgroundPattern:', data.backgroundPattern);
       console.log('enableBitGifts:', data.enableBitGifts);
       console.log('bitQrImage:', data.bitQrImage);

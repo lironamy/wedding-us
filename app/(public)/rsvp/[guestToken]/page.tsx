@@ -5,6 +5,7 @@ import dbConnect from '@/lib/db/mongodb';
 import Guest from '@/lib/db/models/Guest';
 import Wedding from '@/lib/db/models/Wedding';
 import { RSVPForm } from '@/components/invitation/RSVPForm';
+import { getGenderText, type PartnerType } from '@/lib/utils/genderText';
 
 interface RSVPPageProps {
   params: Promise<{
@@ -290,7 +291,7 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
           {/* Invitation Text */}
           <div className="text-center">
             <p className="text-xl text-gray-700">
-              שמחים ונרגשים להזמינכם ליום המאושר בחיינו
+              {getGenderText('happy', (wedding.partner1Type || 'groom') as PartnerType, (wedding.partner2Type || 'bride') as PartnerType)} ו{getGenderText('thrilled', (wedding.partner1Type || 'groom') as PartnerType, (wedding.partner2Type || 'bride') as PartnerType)} להזמינכם ליום המאושר בחיינו
             </p>
           </div>
 

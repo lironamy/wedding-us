@@ -107,7 +107,7 @@ export default function RegisterPage() {
               type="text"
               value={formData.name}
               onChange={handleChange}
-              placeholder="שם החתן והכלה"
+              placeholder="שם מלא"
               required
               disabled={isLoading}
             />

@@ -247,7 +247,8 @@ class WhatsAppService {
 
   async sendMessage(
     phoneNumber: string,
-    message: string
+    message: string,
+    imageUrl?: string
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     if (!this.sock || this.state.status !== 'ready') {
       return {
@@ -270,8 +271,18 @@ class WhatsAppService {
         };
       }
 
-      // Send message
-      const result = await this.sock.sendMessage(jid, { text: message });
+      // Send message - with image if provided
+      let result;
+      if (imageUrl) {
+        // Send image with caption
+        result = await this.sock.sendMessage(jid, {
+          image: { url: imageUrl },
+          caption: message,
+        });
+      } else {
+        // Send text only
+        result = await this.sock.sendMessage(jid, { text: message });
+      }
 
       return {
         success: true,
@@ -289,7 +300,8 @@ class WhatsAppService {
   async sendBulkMessages(
     messages: Array<{ phone: string; message: string; guestId: string; guestName: string }>,
     delayMs: number = 3000,
-    onProgress?: (sent: number, failed: number, total: number, current: string) => void
+    onProgress?: (sent: number, failed: number, total: number, current: string) => void,
+    imageUrl?: string
   ): Promise<{
     results: Array<{
       guestId: string;
@@ -318,7 +330,7 @@ class WhatsAppService {
         onProgress(successful, failed, messages.length, guestName);
       }
 
-      const result = await this.sendMessage(phone, message);
+      const result = await this.sendMessage(phone, message, imageUrl);
 
       if (result.success) {
         successful++;

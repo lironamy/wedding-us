@@ -5,6 +5,8 @@ export interface IWedding {
   userId: Types.ObjectId | string;
   groomName: string;
   brideName: string;
+  partner1Type?: 'groom' | 'bride';
+  partner2Type?: 'groom' | 'bride';
   eventDate: Date;
   eventTime: string;
   venue: string;
@@ -54,6 +56,16 @@ const WeddingSchema = new Schema<IWedding>(
       // Ensure proper UTF-8 encoding
       set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
       get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+    },
+    partner1Type: {
+      type: String,
+      enum: ['groom', 'bride'],
+      default: 'groom',
+    },
+    partner2Type: {
+      type: String,
+      enum: ['groom', 'bride'],
+      default: 'bride',
     },
     eventDate: {
       type: Date,

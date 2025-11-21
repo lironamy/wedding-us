@@ -6,6 +6,7 @@ import Input from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import MediaUpload from '@/components/dashboard/MediaUpload';
 import BitQrUpload from '@/components/dashboard/BitQrUpload';
+import { getGenderText } from '@/lib/utils/genderText';
 
 interface WeddingFormProps {
   wedding?: any;
@@ -17,6 +18,8 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
   const [formData, setFormData] = useState({
     groomName: '',
     brideName: '',
+    partner1Type: 'groom' as 'groom' | 'bride',
+    partner2Type: 'bride' as 'groom' | 'bride',
     eventDate: '',
     eventTime: '',
     venue: '',
@@ -36,6 +39,11 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
       fontFamily: 'Assistant'
     }
   });
+
+  const partnerTypeLabels = {
+    groom: 'חתן',
+    bride: 'כלה'
+  };
 
   // Available torn paper effects for transition between image and content
   const tornPaperEffects = [
@@ -85,6 +93,8 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
       setFormData({
         groomName: wedding.groomName || '',
         brideName: wedding.brideName || '',
+        partner1Type: wedding.partner1Type || 'groom',
+        partner2Type: wedding.partner2Type || 'bride',
         eventDate: wedding.eventDate ? new Date(wedding.eventDate).toISOString().split('T')[0] : '',
         eventTime: wedding.eventTime || '',
         venue: wedding.venue || '',
@@ -138,10 +148,10 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
     const newErrors: Record<string, string> = {};
 
     if (!formData.groomName.trim()) {
-      newErrors.groomName = 'שם החתן חובה';
+      newErrors.groomName = `שם ה${partnerTypeLabels[formData.partner1Type]} חובה`;
     }
     if (!formData.brideName.trim()) {
-      newErrors.brideName = 'שם הכלה חובה';
+      newErrors.brideName = `שם ה${partnerTypeLabels[formData.partner2Type]} חובה`;
     }
     if (!formData.eventDate) {
       newErrors.eventDate = 'תאריך האירוע חובה';
@@ -185,23 +195,55 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
           <h2 className="text-xl font-semibold mb-4 text-gray-900">פרטי החתונה</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="שם החתן"
-              name="groomName"
-              value={formData.groomName}
-              onChange={handleChange}
-              error={errors.groomName}
-              required
-            />
+            {/* Partner 1 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                שם בן/בת הזוג הראשון/ה <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={formData.partner1Type}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, partner1Type: e.target.value as 'groom' | 'bride' }))}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C4A57B] focus:border-transparent bg-white"
+                >
+                  <option value="groom">חתן</option>
+                  <option value="bride">כלה</option>
+                </select>
+                <Input
+                  name="groomName"
+                  value={formData.groomName}
+                  onChange={handleChange}
+                  error={errors.groomName}
+                  placeholder={`שם ה${partnerTypeLabels[formData.partner1Type]}`}
+                  className="flex-1"
+                />
+              </div>
+            </div>
 
-            <Input
-              label="שם הכלה"
-              name="brideName"
-              value={formData.brideName}
-              onChange={handleChange}
-              error={errors.brideName}
-              required
-            />
+            {/* Partner 2 */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                שם בן/בת הזוג השני/ה <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={formData.partner2Type}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, partner2Type: e.target.value as 'groom' | 'bride' }))}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C4A57B] focus:border-transparent bg-white"
+                >
+                  <option value="groom">חתן</option>
+                  <option value="bride">כלה</option>
+                </select>
+                <Input
+                  name="brideName"
+                  value={formData.brideName}
+                  onChange={handleChange}
+                  error={errors.brideName}
+                  placeholder={`שם ה${partnerTypeLabels[formData.partner2Type]}`}
+                  className="flex-1"
+                />
+              </div>
+            </div>
 
             <Input
               label="תאריך האירוע"
@@ -536,7 +578,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                           fontWeight: 600,
                         }}
                       >
-                        {formData.groomName || 'חתן'}
+                        {formData.groomName || partnerTypeLabels[formData.partner1Type]}
                       </h1>
                       <span
                         className="text-2xl pt-1"
@@ -556,7 +598,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                           fontWeight: 600,
                         }}
                       >
-                        {formData.brideName || 'כלה'}
+                        {formData.brideName || partnerTypeLabels[formData.partner2Type]}
                       </h1>
                     </div>
 
@@ -567,7 +609,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
 
                     {/* Invitation Text */}
                     <p className="text-center text-xs text-gray-700 mb-2">
-                      שמחים ונרגשים להזמינכם ליום המאושר בחיינו
+                      {getGenderText('happy', formData.partner1Type, formData.partner2Type)} ו{getGenderText('thrilled', formData.partner1Type, formData.partner2Type)} להזמינכם ליום המאושר בחיינו
                     </p>
 
                     {/* Event Times */}
