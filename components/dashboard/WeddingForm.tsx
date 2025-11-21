@@ -33,27 +33,42 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
     }
   });
 
-  // Available background patterns
-  const backgroundPatterns = [
+  // Available torn paper effects for transition between image and content
+  const tornPaperEffects = [
     {
       id: 'none',
-      name: 'ללא רקע',
+      name: 'ללא אפקט',
       url: '',
     },
     {
-      id: 'floral1',
-      name: 'פרחים זהב',
-      url: 'https://64.media.tumblr.com/8229aaeb4160bfd00ff2d66ce4b83890/79daf7a0c0d98bac-bd/s400x600/7eebe4dbbf5af0510ada7f36af71352255977f49.jpg',
+      id: 'torn1',
+      name: 'נייר קרוע 1',
+      url: 'https://64.media.tumblr.com/52f3f4542616d233b4bdef01fc22fe4b/0e2dd220497b2358-8c/s540x810/352ede408d4a46c68011c4ebe7e639a289ac7ba8.pnj',
     },
     {
-      id: 'floral2',
-      name: 'פרחים ורוד',
-      url: 'https://64.media.tumblr.com/f6f1801f182ca11da93f02200e1c351c/2afe91728e79b83c-ef/s540x810/d89b8e0a31dda2c0e8b6759de16a50644f090be7.webp',
+      id: 'torn2',
+      name: 'נייר קרוע 2',
+      url: 'https://64.media.tumblr.com/79bb9229e726fa069278664509229883/1b93ac2a972d238e-9c/s540x810/524b4e38476153f160125e9882c69595bada675c.pnj',
     },
     {
-      id: 'floral3',
-      name: 'פרחים קלאסי',
-      url: 'https://64.media.tumblr.com/7d75fcb1d4a307ae9055d1a7d0bfa03c/02e627730a0c6bf9-0a/s540x810/2763d30a4035d4fe19cfa31f0710d6f4cb4d1c3d.jpg',
+      id: 'torn3',
+      name: 'נייר קרוע 3',
+      url: 'https://64.media.tumblr.com/7f595934e76b351c3185eee4beb593aa/1435469a36784852-60/s540x810/df411b9d0592a9c5717ec4210cb6a985b921e65d.pnj',
+    },
+    {
+      id: 'torn4',
+      name: 'נייר קרוע 4',
+      url: 'https://64.media.tumblr.com/6c9beb7e457d141f8bd6110c5a01dffb/50c56bfeebf13bad-26/s540x810/1ebd561c7897b6e2e3b024e3ea39a0873e21b700.pnj',
+    },
+    {
+      id: 'torn5',
+      name: 'נייר קרוע 5',
+      url: 'https://64.media.tumblr.com/125197364ac617bea05915e6c6659f0c/a0823e13d8878794-a5/s540x810/68ff766465968407fd81a7892e4111b88daae649.pnj',
+    },
+    {
+      id: 'torn6',
+      name: 'נייר קרוע 6',
+      url: 'https://64.media.tumblr.com/1eab4c696fb31da9237c10073e2c0b85/efb83fbbff20637d-97/s540x810/3759ab1afae361f084473620f11e0bbac746d606.pnj',
     },
   ];
 
@@ -351,55 +366,81 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
         </div>
       </Card>
 
-      {/* Background Pattern Selection */}
+      {/* Torn Paper Effect Selection */}
       <Card>
         <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">רקע להזמנה</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900">אפקט מעבר בין תמונה לתוכן</h2>
           <p className="text-sm text-gray-600 mb-4">
-            בחרי תמונת רקע עם פאטרן חוזר להזמנה שלך
+            בחרו אפקט נייר קרוע שיופיע בין התמונה לתוכן ההזמנה
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {backgroundPatterns.map((pattern) => (
+            {tornPaperEffects.map((effect) => (
               <div
-                key={pattern.id}
-                onClick={() => setFormData((prev) => ({ ...prev, backgroundPattern: pattern.url }))}
+                key={effect.id}
+                onClick={() => setFormData((prev) => ({ ...prev, backgroundPattern: effect.url }))}
                 className={`cursor-pointer rounded-lg border-2 overflow-hidden transition-all ${
-                  formData.backgroundPattern === pattern.url
+                  formData.backgroundPattern === effect.url
                     ? 'border-gold ring-2 ring-gold ring-opacity-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                {pattern.url ? (
+                {effect.url ? (
                   <div
-                    className="h-32 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${pattern.url})` }}
+                    className="h-24 bg-contain bg-no-repeat bg-bottom bg-gray-800"
+                    style={{ backgroundImage: `url(${effect.url})` }}
                   />
                 ) : (
-                  <div className="h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">ללא רקע</span>
+                  <div className="h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">ללא אפקט</span>
                   </div>
                 )}
                 <div className="p-2 text-center">
-                  <span className="text-sm font-medium">{pattern.name}</span>
+                  <span className="text-sm font-medium">{effect.name}</span>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Preview with selected pattern */}
+          {/* Preview with selected effect */}
           {formData.backgroundPattern && (
             <div className="mt-6">
-              <p className="text-sm text-gray-600 mb-3">תצוגה מקדימה של הרקע:</p>
-              <div className="relative h-40 rounded-lg border border-gray-200 overflow-hidden">
-                <div
-                  className="  bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url(${formData.backgroundPattern})`,
-                    backgroundSize: '150px',
-                    backgroundRepeat: 'repeat',
-                  }}
-                />
+              <p className="text-sm text-gray-600 mb-3">תצוגה מקדימה:</p>
+              <div className="relative rounded-lg border border-gray-200 overflow-hidden w-1/2 h-full">
+                {/* User's uploaded image or placeholder */}
+                <div className="relative">
+                  {formData.mediaUrl ? (
+                    formData.mediaType === 'video' ? (
+                      <video
+                        src={formData.mediaUrl}
+                        className="w-full object-cover"
+                        muted
+                      />
+                    ) : (
+                      <img
+                        src={formData.mediaUrl}
+                        alt="תמונת ההזמנה"
+                        className="w-full object-cover"
+                      />
+                    )
+                  ) : (
+                    <div className="w-full h-40 bg-gradient-to-b from-gray-300 to-gray-400 flex items-center justify-center">
+                      <span className="text-gray-500 text-sm">התמונה שלכם תופיע כאן</span>
+                    </div>
+                  )}
+                  {/* Torn paper effect - positioned at bottom of image */}
+                  <div
+                    className="absolute -bottom-1 left-0 right-0 h-16 bg-no-repeat bg-bottom pointer-events-none"
+                    style={{
+                      backgroundImage: `url(${formData.backgroundPattern})`,
+                      backgroundSize: '100% auto',
+                    }}
+                  />
+                </div>
+                {/* Content area preview */}
+                <div className="h-12 bg-[#fffff6] flex items-center justify-center">
+                  <span className="text-gray-400 text-xs">תוכן ההזמנה</span>
+                </div>
               </div>
             </div>
           )}

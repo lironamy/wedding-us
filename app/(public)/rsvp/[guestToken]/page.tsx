@@ -186,54 +186,52 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
         rel="stylesheet"
       />
 
-      {/* Hero Image - Full Width at Top */}
+      {/* Hero Image - Fixed/Sticky at Top */}
       {wedding.mediaUrl && (
-        <div className="relative w-full">
-          {wedding.mediaType === 'video' ? (
-            <video
-              src={wedding.mediaUrl}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full md:w-1/4 md:mx-auto h-[50vh] md:h-[60vh] object-cover"
-            />
-          ) : (
-            <img
-              src={wedding.mediaUrl}
-              alt={`${wedding.groomName} & ${wedding.brideName}`}
-              className="w-full md:w-[520px] md:mx-auto h-[50vh] md:h-[60vh] object-cover"
-            />
-          )}
-
-          {/* Torn Paper Effect */}
-          <div
-            className="absolute h-screen w-screen -bottom-1 left-0 right-0 pointer-events-none"
-            style={{
-              backgroundImage: 'url("https://64.media.tumblr.com/6753066afc5d236efae45d31ebfc7b64/a6d93d5b52cd16a6-1c/s540x810/fc872eb481d64b6e82192a760d700b4ae3845dce.pnj")',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'bottom center',
-            }}
-          />
+        <div className="fixed top-0 left-0 right-0 w-full h-[50vh] md:h-[60vh] z-0">
+          <div className="w-full h-full flex justify-center">
+            {wedding.mediaType === 'video' ? (
+              <video
+                src={wedding.mediaUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full md:w-[520px] h-full object-cover"
+              />
+            ) : (
+              <img
+                src={wedding.mediaUrl}
+                alt={`${wedding.groomName} & ${wedding.brideName}`}
+                className="w-full md:w-[520px] h-full object-cover"
+              />
+            )}
+          </div>
         </div>
       )}
 
-      {/* Invitation Content with Background Pattern */}
-      <div className="relative">
-        {/* Background Pattern */}
-        {backgroundPattern ? (
-          <div className="  bg-[#FFFFF6]" />
-        ) : (
-          <div
-            className=" "
-            style={{
-              background: `linear-gradient(180deg, ${theme.primaryColor}08 0%, ${theme.secondaryColor}08 100%)`,
-            }}
-          />
-        )}
+      {/* Spacer to push content below the fixed image (minus torn paper height) */}
+      {wedding.mediaUrl && (
+        <div className="h-[calc(50vh-10rem)] md:h-[calc(60vh-10rem)]" />
+      )}
 
+      {/* Torn Paper Effect - between image and content */}
+      {wedding.mediaUrl && (
+        <div
+          className="relative h-24 w-full md:w-[522px] md:h-[120px] md:mx-auto pointer-events-none"
+          style={{
+            backgroundImage: `url("${wedding.backgroundPattern || 'https://64.media.tumblr.com/6753066afc5d236efae45d31ebfc7b64/a6d93d5b52cd16a6-1c/s540x810/fc872eb481d64b6e82192a760d700b4ae3845dce.pnj'}")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'top center',
+            backgroundSize: 'cover',
+          }}
+        />
+      )}
+
+      {/* Invitation Content */}
+      <div className="relative z-10 bg-[#fffff6]">
         {/* Content */}
-        <div className="relative z-10 px-4 max-w-md mx-auto">
+        <div className="relative px-4 max-w-md mx-auto">
           {/* Names - Large Decorative Font */}
           <div className="mb-4 flex flex-wrap items-center justify-center gap-3 text-center">
             <h1

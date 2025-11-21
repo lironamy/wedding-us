@@ -7,6 +7,21 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
 
+// Helper components - defined outside to prevent re-creation on each render
+const DecorativeCard: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="space-y-10">
+    {children}
+  </div>
+);
+
+const SectionHeading = ({ title, subtitle }: { title: string; subtitle?: string }) => (
+  <div className="text-center space-y-2">
+    <p className="text-xs tracking-[0.55em] text-gray-400 uppercase">{subtitle}</p>
+    <h2 className="text-2xl font-[Suez_One] text-[#4d4a48]">{title}</h2>
+    <div className="mx-auto h-px w-16 bg-gray-200" />
+  </div>
+);
+
 // Celebration function with confetti and balloons
 const fireCelebration = () => {
   // Gentle confetti burst - wide spread
@@ -199,20 +214,6 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
     </div>
   );
 
-  const DecorativeCard: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="space-y-10">
-      {children}
-    </div>
-  );
-
-  const SectionHeading = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-    <div className="text-center space-y-2">
-      <p className="text-xs tracking-[0.55em] text-gray-400 uppercase">{subtitle}</p>
-      <h2 className="text-2xl font-[Suez_One] text-[#4d4a48]">{title}</h2>
-      <div className="mx-auto h-px w-16 bg-gray-200" />
-    </div>
-  );
-
   if (success) {
     return (
       <DecorativeCard>
@@ -339,8 +340,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
                 בקשות מיוחדות לארוחה (אופציונלי)
               </label>
               <textarea
-                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-transparent focus:outline-none focus:ring-2"
-                style={{ '--tw-ring-color': themeColor } as any}
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30"
                 rows={3}
                 value={specialMealRequests}
                 onChange={(e) => setSpecialMealRequests(e.target.value)}
@@ -353,8 +353,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
                 הערות נוספות (אופציונלי)
               </label>
               <textarea
-                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-transparent focus:outline-none focus:ring-2"
-                style={{ '--tw-ring-color': themeColor } as any}
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30"
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -371,8 +370,8 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
             type="submit"
             disabled={loading}
             className="w-full rounded-full py-5 text-base font-medium tracking-wide shadow-sm transition hover:shadow"
-            style={{ backgroundColor: themeColor, borderColor: themeColor }}
-          >
+            variant="outline"
+            >
             {loading ? 'שולח...' : 'שלח אישור הגעה'}
           </Button>
           <p className="mt-3 text-center text-xs text-gray-400">
