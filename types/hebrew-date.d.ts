@@ -9,3 +9,4 @@ declare module 'hebrew-date' {
   export default function hebrewDate(date?: Date): HebrewDateResult;
 }
 
+

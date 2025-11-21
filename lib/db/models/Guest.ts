@@ -132,10 +132,8 @@ const GuestSchema = new Schema<IGuest>(
   }
 );
 
-// Create indexes
+// Create indexes (uniqueToken and guestId already indexed via unique: true)
 GuestSchema.index({ weddingId: 1 });
-GuestSchema.index({ uniqueToken: 1 });
-GuestSchema.index({ guestId: 1 });
 GuestSchema.index({ rsvpStatus: 1 });
 GuestSchema.index({ familyGroup: 1 });
 GuestSchema.index({ phone: 1 });

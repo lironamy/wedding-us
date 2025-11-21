@@ -11,7 +11,19 @@
       "Bash(nul)",
       "Bash(if exist .next rmdir /s /q .next)",
       "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\dashboard\\MessageDashboard.tsx\")",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx next build:*)",
+      "Bash(timeout /t 10)",
+      "Bash(if exist \"components\\dashboard\\WarmupPing.tsx\" del \"components\\dashboard\\WarmupPing.tsx\")",
+      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\dashboard\\WarmupPing.tsx\")",
+      "Bash(node scripts/fix-whatsapp-index.js:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(dir nul 2)",
+      "Bash(del \"\\?\\C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\nul\" 2)",
+      "Bash(del nul 2)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []

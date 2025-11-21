@@ -91,7 +91,7 @@ MessageSchema.index({ guestId: 1 });
 MessageSchema.index({ messageType: 1 });
 MessageSchema.index({ status: 1 });
 MessageSchema.index({ sentAt: 1 });
-MessageSchema.index({ batchId: 1 });
+// batchId index is already defined in schema with `index: true`
 MessageSchema.index({ deliveryStatus: 1 });
 MessageSchema.index({ scheduledFor: 1 });
 

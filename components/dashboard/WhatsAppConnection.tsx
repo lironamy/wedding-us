@@ -27,6 +27,7 @@ interface WhatsAppState {
 export function WhatsAppConnection() {
   const [state, setState] = useState<WhatsAppState>({ status: 'disconnected' });
   const [loading, setLoading] = useState(false);
+  const [serverWaking, setServerWaking] = useState(false);
   const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Poll for status updates

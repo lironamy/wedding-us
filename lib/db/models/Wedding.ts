@@ -131,9 +131,8 @@ const WeddingSchema = new Schema<IWedding>(
   }
 );
 
-// Create indexes
+// Create indexes (uniqueUrl already indexed via unique: true)
 WeddingSchema.index({ userId: 1 });
-WeddingSchema.index({ uniqueUrl: 1 });
 WeddingSchema.index({ eventDate: 1 });
 WeddingSchema.index({ status: 1 });
 

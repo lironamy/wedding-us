@@ -1,5 +1,15 @@
-import { Client } from 'whatsapp-web.js';
-import qrcode from 'qrcode';
+import makeWASocket, {
+  DisconnectReason,
+  fetchLatestBaileysVersion,
+  makeCacheableSignalKeyStore,
+  useMultiFileAuthState,
+  WASocket,
+  AuthenticationCreds,
+  SignalDataTypeMap,
+  proto,
+} from '@whiskeysockets/baileys';
+import { Boom } from '@hapi/boom';
+import QRCode from 'qrcode';
 import { MongoAuth } from './MongoAuth';
 
 type ClientStatus =
@@ -21,13 +31,51 @@ interface WhatsAppState {
 }
 
 class WhatsAppService {
-  private client: Client | null = null;
+  private sock: WASocket | null = null;
   private state: WhatsAppState = { status: 'disconnected' };
   private qrCodeData: string | null = null;
   private mongoAuth: MongoAuth;
+  private shouldReconnect: boolean = true;
+  private autoReconnectAttempted: boolean = false;
+  private initializationPromise: Promise<void> | null = null;
+  private isConnecting: boolean = false;
 
   constructor() {
     this.mongoAuth = new MongoAuth('wedding-platform');
+    // Don't auto-reconnect during Next.js build phase
+    // NEXT_PHASE is set during build/export phases
+    const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build' ||
+                         process.env.NEXT_PHASE === 'phase-export';
+    if (!isBuildPhase) {
+      // Auto-reconnect if session exists (only during runtime)
+      this.initializationPromise = this.attemptAutoReconnect();
+    }
+  }
+
+  private async attemptAutoReconnect() {
+    // Don't attempt if already connected, connecting, or already attempted
+    if (this.autoReconnectAttempted || this.isConnecting || this.state.status === 'ready') {
+      return;
+    }
+    this.autoReconnectAttempted = true;
+
+    try {
+      const hasSession = await this.mongoAuth.sessionExists();
+      if (hasSession && !this.isReady() && !this.isConnecting) {
+        console.log('Found existing WhatsApp session, attempting to reconnect...');
+        await this.initialize();
+      }
+    } catch (error) {
+      console.error('Error checking for existing session:', error);
+    } finally {
+      this.initializationPromise = null;
+    }
+  }
+
+  async waitForInitialization(): Promise<void> {
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+    }
   }
 
   getState(): WhatsAppState {
@@ -35,103 +83,37 @@ class WhatsAppService {
   }
 
   async initialize(): Promise<WhatsAppState> {
-    if (this.client && this.state.status === 'ready') {
+    // Already connected - return current state
+    if (this.sock && this.state.status === 'ready') {
       return this.state;
     }
 
-    // Destroy existing client if any
-    if (this.client) {
+    // Already connecting - wait and return state
+    if (this.isConnecting) {
+      console.log('Already connecting, waiting...');
+      // Wait a bit for the existing connection attempt
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return this.state;
+    }
+
+    this.isConnecting = true;
+
+    // Close existing connection if any
+    if (this.sock) {
       try {
-        await this.client.destroy();
+        this.sock.end(undefined);
       } catch (e) {
-        // Ignore destroy errors
+        // Ignore
       }
+      this.sock = null;
     }
 
     this.state = { status: 'connecting' };
     this.qrCodeData = null;
+    this.shouldReconnect = true;
 
     try {
-      // Load existing session from MongoDB
-      const existingSession = await this.mongoAuth.getSession();
-
-      this.client = new Client({
-        session: existingSession as any,
-        puppeteer: {
-          headless: true,
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--disable-gpu',
-          ],
-        },
-      });
-
-      // QR Code event
-      this.client.on('qr', async (qr) => {
-        console.log('QR Code received');
-        try {
-          this.qrCodeData = await qrcode.toDataURL(qr);
-          this.state = {
-            status: 'qr_ready',
-            qrCode: this.qrCodeData,
-          };
-        } catch (err) {
-          console.error('Error generating QR code:', err);
-        }
-      });
-
-      // Authenticated event - save session to MongoDB
-      this.client.on('authenticated', async (session) => {
-        console.log('WhatsApp authenticated');
-        this.state = { status: 'authenticated' };
-
-        // Save session to MongoDB
-        if (session) {
-          try {
-            await this.mongoAuth.saveSession(session);
-          } catch (err) {
-            console.error('Error saving session to MongoDB:', err);
-          }
-        }
-      });
-
-      // Ready event
-      this.client.on('ready', async () => {
-        console.log('WhatsApp client is ready');
-        const info = this.client?.info;
-        this.state = {
-          status: 'ready',
-          sessionInfo: {
-            pushname: info?.pushname,
-            wid: info?.wid?.user,
-          },
-        };
-      });
-
-      // Auth failure event
-      this.client.on('auth_failure', (msg) => {
-        console.error('WhatsApp auth failure:', msg);
-        this.state = {
-          status: 'error',
-          error: 'Authentication failed: ' + msg,
-        };
-      });
-
-      // Disconnected event
-      this.client.on('disconnected', (reason) => {
-        console.log('WhatsApp disconnected:', reason);
-        this.state = { status: 'disconnected' };
-        this.client = null;
-      });
-
-      // Initialize client
-      await this.client.initialize();
-
+      await this.connectToWhatsApp();
       return this.state;
     } catch (error: any) {
       console.error('Error initializing WhatsApp:', error);
@@ -140,18 +122,116 @@ class WhatsAppService {
         error: error.message || 'Failed to initialize WhatsApp',
       };
       return this.state;
+    } finally {
+      this.isConnecting = false;
+    }
+  }
+
+  private async connectToWhatsApp() {
+    try {
+      // Load auth state from MongoDB
+      const { state: authState, saveCreds } = await this.mongoAuth.useMongoAuthState();
+
+      // Fetch latest Baileys version
+      const { version } = await fetchLatestBaileysVersion();
+
+      // Create socket connection
+      this.sock = makeWASocket({
+        version,
+        printQRInTerminal: false,
+        auth: {
+          creds: authState.creds,
+          keys: makeCacheableSignalKeyStore(authState.keys, undefined as any),
+        },
+        browser: ['Wedding Platform', 'Chrome', '120.0.0'],
+        markOnlineOnConnect: true,
+      });
+
+      // Connection update handler
+      this.sock.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect, qr } = update;
+
+        // Handle QR code
+        if (qr) {
+          try {
+            this.qrCodeData = await QRCode.toDataURL(qr);
+            this.state = {
+              status: 'qr_ready',
+              qrCode: this.qrCodeData,
+            };
+            console.log('QR Code generated');
+          } catch (err) {
+            console.error('Error generating QR code:', err);
+          }
+        }
+
+        // Handle connection status
+        if (connection === 'close') {
+          const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
+          const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+          // Don't reconnect on conflict errors (multiple connections)
+          const isConflict = statusCode === 409 ||
+            (lastDisconnect?.error as any)?.message?.includes('conflict');
+
+          console.log(
+            'Connection closed due to',
+            lastDisconnect?.error,
+            ', reconnecting:',
+            shouldReconnect && !isConflict
+          );
+
+          if (shouldReconnect && this.shouldReconnect && !isConflict && !this.isConnecting) {
+            // Auto-reconnect with longer delay
+            setTimeout(() => {
+              if (!this.isConnecting && !this.isReady()) {
+                this.connectToWhatsApp();
+              }
+            }, 5000);
+          } else {
+            this.state = { status: 'disconnected' };
+            this.sock = null;
+          }
+        } else if (connection === 'open') {
+          console.log('WhatsApp connection opened');
+          this.state = {
+            status: 'ready',
+            sessionInfo: {
+              pushname: this.sock?.user?.name,
+              wid: this.sock?.user?.id?.split(':')[0],
+            },
+          };
+        } else if (connection === 'connecting') {
+          this.state = { status: 'connecting' };
+        }
+      });
+
+      // Credentials update handler - save to MongoDB
+      this.sock.ev.on('creds.update', saveCreds);
+
+      // Messages upsert handler (optional - for receiving messages)
+      this.sock.ev.on('messages.upsert', async (m) => {
+        // You can handle incoming messages here if needed
+        // console.log('Received messages:', JSON.stringify(m, undefined, 2));
+      });
+
+    } catch (error) {
+      console.error('Error in connectToWhatsApp:', error);
+      throw error;
     }
   }
 
   async disconnect(): Promise<void> {
-    if (this.client) {
+    this.shouldReconnect = false;
+
+    if (this.sock) {
       try {
-        await this.client.logout();
-        await this.client.destroy();
+        await this.sock.logout();
+        this.sock.end(undefined);
       } catch (e) {
-        // Ignore errors
+        console.error('Error during disconnect:', e);
       }
-      this.client = null;
+      this.sock = null;
     }
 
     // Delete session from MongoDB
@@ -165,8 +245,11 @@ class WhatsAppService {
     this.qrCodeData = null;
   }
 
-  async sendMessage(phoneNumber: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    if (!this.client || this.state.status !== 'ready') {
+  async sendMessage(
+    phoneNumber: string,
+    message: string
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    if (!this.sock || this.state.status !== 'ready') {
       return {
         success: false,
         error: 'WhatsApp is not connected',
@@ -176,11 +259,11 @@ class WhatsAppService {
     try {
       // Format phone number for WhatsApp
       const formattedNumber = this.formatPhoneNumber(phoneNumber);
-      const chatId = `${formattedNumber}@c.us`;
+      const jid = `${formattedNumber}@s.whatsapp.net`;
 
-      // Check if number is registered on WhatsApp
-      const isRegistered = await this.client.isRegisteredUser(chatId);
-      if (!isRegistered) {
+      // Check if number exists on WhatsApp
+      const checkResult = await this.sock.onWhatsApp(jid);
+      if (!checkResult || checkResult.length === 0 || !checkResult[0]?.exists) {
         return {
           success: false,
           error: `Number ${phoneNumber} is not registered on WhatsApp`,
@@ -188,11 +271,11 @@ class WhatsAppService {
       }
 
       // Send message
-      const result = await this.client.sendMessage(chatId, message);
+      const result = await this.sock.sendMessage(jid, { text: message });
 
       return {
         success: true,
-        messageId: result.id.id,
+        messageId: result?.key?.id || undefined,
       };
     } catch (error: any) {
       console.error('Error sending WhatsApp message:', error);
@@ -208,10 +291,22 @@ class WhatsAppService {
     delayMs: number = 3000,
     onProgress?: (sent: number, failed: number, total: number, current: string) => void
   ): Promise<{
-    results: Array<{ guestId: string; guestName: string; success: boolean; error?: string; messageId?: string }>;
+    results: Array<{
+      guestId: string;
+      guestName: string;
+      success: boolean;
+      error?: string;
+      messageId?: string;
+    }>;
     summary: { total: number; successful: number; failed: number };
   }> {
-    const results: Array<{ guestId: string; guestName: string; success: boolean; error?: string; messageId?: string }> = [];
+    const results: Array<{
+      guestId: string;
+      guestName: string;
+      success: boolean;
+      error?: string;
+      messageId?: string;
+    }> = [];
     let successful = 0;
     let failed = 0;
 
@@ -274,7 +369,7 @@ class WhatsAppService {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   isReady(): boolean {
@@ -282,8 +377,19 @@ class WhatsAppService {
   }
 }
 
-// Singleton instance
-const whatsappService = new WhatsAppService();
+// Global singleton instance - persists across module reloads in Next.js
+declare global {
+  // eslint-disable-next-line no-var
+  var whatsappServiceInstance: WhatsAppService | undefined;
+}
+
+// Use globalThis to maintain singleton across HMR and multiple API calls
+const whatsappService = globalThis.whatsappServiceInstance ?? new WhatsAppService();
+
+// In development, store in globalThis to prevent multiple instances
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.whatsappServiceInstance = whatsappService;
+}
 
 export default whatsappService;
 export { WhatsAppService, type WhatsAppState, type ClientStatus };

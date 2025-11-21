@@ -1,28 +1,26 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
-
-const WHATSAPP_SERVER_URL = process.env.WHATSAPP_SERVER_URL || 'http://localhost:3001';
+import whatsappService from '@/lib/whatsapp/client';
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const response = await fetch(`${WHATSAPP_SERVER_URL}/status`);
-    const data = await response.json();
+    // Wait for initialization to complete (in case auto-reconnect is in progress)
+    await whatsappService.waitForInitialization();
 
-    return NextResponse.json(data);
+    const state = whatsappService.getState();
+
+    return NextResponse.json(state);
   } catch (error: any) {
     console.error('Error getting WhatsApp status:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to get WhatsApp status' },
+      { error: error.message || 'Failed to get status' },
       { status: 500 }
     );
   }

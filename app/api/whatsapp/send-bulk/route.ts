@@ -4,26 +4,23 @@ import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Guest from '@/lib/db/models/Guest';
 import Wedding from '@/lib/db/models/Wedding';
+import Message from '@/lib/db/models/Message';
 import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
-
-const WHATSAPP_SERVER_URL = process.env.WHATSAPP_SERVER_URL || 'http://localhost:3001';
+import whatsappService from '@/lib/whatsapp/client';
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if WhatsApp is connected
-    const statusResponse = await fetch(`${WHATSAPP_SERVER_URL}/status`);
-    const statusData = await statusResponse.json();
+    // Wait for initialization to complete (in case auto-reconnect is in progress)
+    await whatsappService.waitForInitialization();
 
-    if (statusData.status !== 'ready') {
+    // Check if WhatsApp is connected
+    if (!whatsappService.isReady()) {
       return NextResponse.json(
         { error: 'WhatsApp is not connected. Please connect first.' },
         { status: 400 }
@@ -109,22 +106,55 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    // Send messages to external WhatsApp server
-    const sendResponse = await fetch(`${WHATSAPP_SERVER_URL}/send-bulk`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages,
-        delayMs: delayBetweenMessages,
-      }),
+    // Send messages using the WhatsApp service
+    const result = await whatsappService.sendBulkMessages(
+      messages,
+      delayBetweenMessages
+    );
+
+    // Save messages to database and update guest records
+    const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const now = new Date();
+
+    // Create message records and update guests
+    const savePromises = result.results.map(async (msgResult) => {
+      // Find the original message content
+      const originalMessage = messages.find(m => m.guestId === msgResult.guestId);
+
+      // Save to Message collection
+      await Message.create({
+        weddingId,
+        guestId: msgResult.guestId,
+        messageType: messageType as 'invitation' | 'rsvp_reminder' | 'rsvp_reminder_2' | 'day_before' | 'thank_you',
+        messageContent: originalMessage?.message || '',
+        sentAt: now,
+        status: msgResult.success ? 'sent' : 'failed',
+        sentBy: session.user.id,
+        batchId,
+        deliveryStatus: msgResult.success ? 'delivered' : 'failed',
+        whatsappMessageId: msgResult.messageId,
+        errorMessage: msgResult.error,
+      });
+
+      // Update guest's messageSent array
+      if (msgResult.success) {
+        await Guest.findByIdAndUpdate(msgResult.guestId, {
+          $push: {
+            messageSent: {
+              type: messageType,
+              sentAt: now,
+            },
+          },
+        });
+      }
     });
 
-    const result = await sendResponse.json();
+    await Promise.all(savePromises);
 
-    // Update guests with message sent status (optional)
-    // You can add a field to track when messages were sent
-
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      batchId,
+    });
   } catch (error: any) {
     console.error('Error sending bulk WhatsApp messages:', error);
     return NextResponse.json(
