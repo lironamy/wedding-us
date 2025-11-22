@@ -87,3 +87,8 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-dark);
 }
+
+/* Button cursor */
+button {
+  cursor: pointer;
+}

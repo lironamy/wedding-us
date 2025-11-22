@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "res.cloudinary.com",
       },
+      {
+        protocol: "https",
+        hostname: "64.media.tumblr.com",
+      },
     ],
   },
   webpack: (config, { isServer }) => {

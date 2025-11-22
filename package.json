@@ -17,6 +17,7 @@
     "bcryptjs": "^3.0.3",
     "bufferutil": "^4.0.9",
     "canvas-confetti": "^1.9.4",
+    "gsap": "^3.13.0",
     "hebrew-date": "^1.0.7",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
