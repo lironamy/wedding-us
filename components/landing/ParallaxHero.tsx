@@ -21,24 +21,16 @@ export default function ParallaxHero() {
   const titleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log("🎬 useEffect started - timestamp:", performance.now());
-
     // Reset scroll position on load
     window.scrollTo(0, 0);
-    console.log("📍 Scroll reset to 0");
 
     let ctx: gsap.Context | null = null;
 
     const initAnimation = () => {
-      console.log("🚀 initAnimation called - timestamp:", performance.now());
-
       // Clear any existing ScrollTriggers
       ScrollTrigger.getAll().forEach(st => st.kill());
-      console.log("🧹 Cleared existing ScrollTriggers");
 
       ctx = gsap.context(() => {
-        console.log("📦 gsap.context started");
-
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
@@ -48,27 +40,16 @@ export default function ParallaxHero() {
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
-            onUpdate: (self) => {
-              console.log("🔄 ScrollTrigger progress:", self.progress.toFixed(2));
-            }
           },
         });
-        console.log("⏱️ Timeline created");
 
         // Initial states - layers start from different positions
-        console.log("🎨 Setting initial states...");
-        console.log("  - distantMountains ref:", distantMountainsRef.current);
-        console.log("  - mountains ref:", mountainsRef.current);
-        console.log("  - wall ref:", wallRef.current);
-        console.log("  - grass ref:", grassRef.current);
-
         gsap.set(distantMountainsRef.current, { y: "20%", opacity: 0 });
         gsap.set(mountainsRef.current, { y: "30%", opacity: 0 });
         gsap.set(wallRef.current, { x: "50%", opacity: 0 });
         gsap.set(grassRef.current, { y: "40%", opacity: 0 });
         gsap.set(contentRef.current, { opacity: 1, y: 0 });
         gsap.set(titleRef.current, { opacity: 0, y: -30 });
-        console.log("✅ Initial states set");
 
         // Phase 1: Fade out the initial content and bring in distant mountains
         tl.to(contentRef.current, {
@@ -149,16 +130,12 @@ export default function ParallaxHero() {
 
         // Refresh ScrollTrigger after setup
         ScrollTrigger.refresh();
-        console.log("🔃 ScrollTrigger refreshed");
 
       }, containerRef);
-      console.log("✅ gsap.context completed");
     };
 
-    console.log("⏳ Setting timeout (100ms) for initAnimation...");
     // Initialize after a short delay to ensure DOM is ready
     const timer = setTimeout(() => {
-      console.log("⏰ Timeout fired - calling initAnimation");
       initAnimation();
     }, 100);
 
