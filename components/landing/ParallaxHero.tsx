@@ -18,20 +18,27 @@ export default function ParallaxHero() {
   const wallRef = useRef<HTMLDivElement>(null);
   const grassRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("🎬 useEffect started - timestamp:", performance.now());
+
     // Reset scroll position on load
     window.scrollTo(0, 0);
+    console.log("📍 Scroll reset to 0");
 
     let ctx: gsap.Context | null = null;
 
     const initAnimation = () => {
+      console.log("🚀 initAnimation called - timestamp:", performance.now());
+
       // Clear any existing ScrollTriggers
       ScrollTrigger.getAll().forEach(st => st.kill());
+      console.log("🧹 Cleared existing ScrollTriggers");
 
       ctx = gsap.context(() => {
+        console.log("📦 gsap.context started");
+
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
@@ -41,17 +48,27 @@ export default function ParallaxHero() {
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              console.log("🔄 ScrollTrigger progress:", self.progress.toFixed(2));
+            }
           },
         });
+        console.log("⏱️ Timeline created");
 
         // Initial states - layers start from different positions
+        console.log("🎨 Setting initial states...");
+        console.log("  - distantMountains ref:", distantMountainsRef.current);
+        console.log("  - mountains ref:", mountainsRef.current);
+        console.log("  - wall ref:", wallRef.current);
+        console.log("  - grass ref:", grassRef.current);
+
         gsap.set(distantMountainsRef.current, { y: "20%", opacity: 0 });
         gsap.set(mountainsRef.current, { y: "30%", opacity: 0 });
         gsap.set(wallRef.current, { x: "50%", opacity: 0 });
         gsap.set(grassRef.current, { y: "40%", opacity: 0 });
-          gsap.set(contentRef.current, { opacity: 1, y: 0 });
-        gsap.set(ctaRef.current, { opacity: 0, y: 50 });
+        gsap.set(contentRef.current, { opacity: 1, y: 0 });
         gsap.set(titleRef.current, { opacity: 0, y: -30 });
+        console.log("✅ Initial states set");
 
         // Phase 1: Fade out the initial content and bring in distant mountains
         tl.to(contentRef.current, {
@@ -107,19 +124,7 @@ export default function ParallaxHero() {
             "-=0.5"
           )
 
-          // Phase 5: Show CTA buttons
-          .to(
-            ctaRef.current,
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              ease: "power2.out",
-            },
-            "-=0.5"
-          )
-
-          // Phase 7: Fade in title at the top
+          // Phase 5: Fade in title at the top
           .to(
             titleRef.current,
             {
@@ -144,12 +149,16 @@ export default function ParallaxHero() {
 
         // Refresh ScrollTrigger after setup
         ScrollTrigger.refresh();
+        console.log("🔃 ScrollTrigger refreshed");
 
       }, containerRef);
+      console.log("✅ gsap.context completed");
     };
 
+    console.log("⏳ Setting timeout (100ms) for initAnimation...");
     // Initialize after a short delay to ensure DOM is ready
     const timer = setTimeout(() => {
+      console.log("⏰ Timeout fired - calling initAnimation");
       initAnimation();
     }, 100);
 
@@ -185,7 +194,7 @@ export default function ParallaxHero() {
         {/* Distant Mountains Layer - behind the main mountains */}
         <div
           ref={distantMountainsRef}
-          className="absolute bottom-0 left-0 w-full h-full"
+          className="absolute bottom-0 left-0 w-full h-full opacity-0"
           style={{ zIndex: 2 }}
         >
           <Image
@@ -201,7 +210,7 @@ export default function ParallaxHero() {
         {/* Mountains Layer - positioned at bottom, aligned to reference */}
         <div
           ref={mountainsRef}
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 w-full h-full opacity-0"
           style={{ zIndex: 4 }}
           >
           <Image
@@ -217,8 +226,8 @@ export default function ParallaxHero() {
         {/* Stone Wall Layer - right side, bottom aligned */}
         <div
           ref={wallRef}
-          className="absolute bottom-0 right-0 w-full"
-          style={{ transform: "translateY(0%) scale(1)", transformOrigin: "right bottom", zIndex: 4, height: "100%", width: "100%" }}
+          className="absolute bottom-0 right-0 w-full opacity-0"
+          style={{ transform: "translateX(50%)", transformOrigin: "right bottom", zIndex: 4, height: "100%", width: "100%" }}
         >
           <Image
             src="https://64.media.tumblr.com/98ca1d1ec80ca595d894b7afa3e2ca32/bae8db4a111313c4-91/s2048x3072/1b7e861a3163a16ed5868158627d9aedd755dff6.pnj"
@@ -233,8 +242,8 @@ export default function ParallaxHero() {
         {/* Grass/Foreground with Couple  Layer - bottom of screen */}
         <div
           ref={grassRef}
-          className="absolute bottom-0 left-0 w-full"
-          style={{ transformOrigin: "bottom", zIndex: 5, height: "100%", width: "100%" }}
+          className="absolute bottom-0 left-0 w-full opacity-0"
+          style={{ transform: "translateY(40%)", transformOrigin: "bottom", zIndex: 5, height: "100%", width: "100%" }}
         >
           <Image
             src="https://64.media.tumblr.com/fdac826a79363abb3be090ce78ded30b/b04d6acd6ad176b0-9d/s2048x3072/207f47e23d68f79d57d53094bb83c820be9f280d.pnj"
@@ -280,7 +289,7 @@ export default function ParallaxHero() {
       {/* Title - Appears at the end at the top */}
       <div
         ref={titleRef}
-        className="absolute top-56 left-1/2 -translate-x-1/2 text-center"
+        className="absolute top-56 left-1/2 -translate-x-1/2 text-center opacity-0"
         style={{ zIndex: 15 }}
       >
         <h2 className="text-4xl md:text-6xl mb-5 font-bold text-zinc-400 drop-shadow-2xl">
