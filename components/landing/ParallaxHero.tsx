@@ -17,7 +17,6 @@ export default function ParallaxHero() {
   const mountainsRef = useRef<HTMLDivElement>(null);
   const wallRef = useRef<HTMLDivElement>(null);
   const grassRef = useRef<HTMLDivElement>(null);
-  const coupleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -50,8 +49,7 @@ export default function ParallaxHero() {
         gsap.set(mountainsRef.current, { y: "30%", opacity: 0 });
         gsap.set(wallRef.current, { x: "50%", opacity: 0 });
         gsap.set(grassRef.current, { y: "40%", opacity: 0 });
-        gsap.set(coupleRef.current, { y: "20%", opacity: 0, scale: 0.9 });
-        gsap.set(contentRef.current, { opacity: 1, y: 0 });
+          gsap.set(contentRef.current, { opacity: 1, y: 0 });
         gsap.set(ctaRef.current, { opacity: 0, y: 50 });
         gsap.set(titleRef.current, { opacity: 0, y: -30 });
 
@@ -77,7 +75,7 @@ export default function ParallaxHero() {
           .to(
             mountainsRef.current,
             {
-              y: "-7%",
+              y: "0%",
               opacity: 1,
               duration: 1,
               ease: "power2.out",
@@ -109,20 +107,7 @@ export default function ParallaxHero() {
             "-=0.5"
           )
 
-          // Phase 5: Couple appears with a gentle entrance
-          .to(
-            coupleRef.current,
-            {
-              y: "0%",
-              opacity: 1,
-              scale: 1,
-              duration: 1.2,
-              ease: "back.out(1.2)",
-            },
-            "-=0.3"
-          )
-
-          // Phase 6: Show CTA buttons
+          // Phase 5: Show CTA buttons
           .to(
             ctaRef.current,
             {
@@ -201,13 +186,13 @@ export default function ParallaxHero() {
         <div
           ref={distantMountainsRef}
           className="absolute bottom-0 left-0 w-full h-full"
-          style={{ transform: "translateY(0%) scale(.74)", transformOrigin: "right bottom", zIndex: 2, height: "100%", width: "100%" }}
+          style={{ zIndex: 2 }}
         >
           <Image
-            src="https://64.media.tumblr.com/7802cce924a4d5087a255960e74af4ae/593ef8231c3e26da-ba/s2048x3072/60a74dc66612c1ee67f3fb42b56fe6ee9b23640a.pnj"
+            src="https://64.media.tumblr.com/37bc173fffcb0a40e9faf78fdfaeee24/bae8db4a111313c4-83/s2048x3072/b8a01598b678aae29a7608b753eae14d10c61a59.pnj"
             alt="Distant mountains"
             fill
-            className="object-contain"
+            className="object-cover"
             style={{ objectPosition: "center bottom" }}
             priority
           />
@@ -216,14 +201,14 @@ export default function ParallaxHero() {
         {/* Mountains Layer - positioned at bottom, aligned to reference */}
         <div
           ref={mountainsRef}
-          className="absolute bottom-0 left-0 w-full"
-          style={{ transform: "translateY(-5%) scale(1.15)", zIndex: 3, height: "100%", width: "100%" }}
+          className="absolute inset-0 w-full h-full"
+          style={{ zIndex: 4 }}
           >
           <Image
-            src="https://64.media.tumblr.com/66964aa4bffe7f06c83c22ce3def6619/8b9c4c2b95d9bd79-25/s2048x3072/de5453ab92b0fa4c160f9a3fd567d973b88ed4de.pnj"
+            src="https://64.media.tumblr.com/ab03c44c855f537dff84f34dba79ebc2/bae8db4a111313c4-1b/s2048x3072/70602e7a2f75388f56e126ee5b4859af99f9dc66.pnj"
             alt="Distant mountains"
             fill
-            className="object-contain"
+            className="object-cover"
             style={{ objectPosition: "center bottom" }}
             priority
           />
@@ -233,10 +218,10 @@ export default function ParallaxHero() {
         <div
           ref={wallRef}
           className="absolute bottom-0 right-0 w-full"
-          style={{ transform: "translateY(-2%) scale(.95)", transformOrigin: "right bottom", zIndex: 4, height: "100%", width: "100%" }}
+          style={{ transform: "translateY(0%) scale(1)", transformOrigin: "right bottom", zIndex: 4, height: "100%", width: "100%" }}
         >
           <Image
-            src="https://64.media.tumblr.com/d14b90ab45c4e3511f1586dc638871a7/8b9c4c2b95d9bd79-43/s2048x3072/f4f216bca3d62e92e6657115f50cd099a12b816f.pnj"
+            src="https://64.media.tumblr.com/98ca1d1ec80ca595d894b7afa3e2ca32/bae8db4a111313c4-91/s2048x3072/1b7e861a3163a16ed5868158627d9aedd755dff6.pnj"
             alt="Stone wall"
             fill
             className="object-contain object-bottom"
@@ -245,33 +230,18 @@ export default function ParallaxHero() {
           />
         </div>
 
-        {/* Grass/Foreground Layer - bottom of screen */}
+        {/* Grass/Foreground with Couple  Layer - bottom of screen */}
         <div
           ref={grassRef}
           className="absolute bottom-0 left-0 w-full"
-          style={{ transform: "translateY(2%) scale(1.2)", transformOrigin: "bottom", zIndex: 5, height: "100%", width: "100%" }}
+          style={{ transformOrigin: "bottom", zIndex: 5, height: "100%", width: "100%" }}
         >
           <Image
-            src="https://64.media.tumblr.com/071bc2a1122d7e1bd0475dd00afa917b/8b9c4c2b95d9bd79-3f/s2048x3072/2986ce81a90d4f0c2648b2d989494fe1b7b02b10.pnj"
+            src="https://64.media.tumblr.com/fdac826a79363abb3be090ce78ded30b/b04d6acd6ad176b0-9d/s2048x3072/207f47e23d68f79d57d53094bb83c820be9f280d.pnj"
             alt="Foreground grass"
             fill
-            className="object-contain object-bottom"
+            className="object-cover object-bottom"
             style={{ objectPosition: "center bottom" }}
-            priority
-          />
-        </div>
-
-        {/* Couple Layer - center bottom */}
-        <div
-          ref={coupleRef}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2"
-          style={{ zIndex: 6, height: "2330px", width: "2330px" }}
-        >
-          <Image
-            src="https://64.media.tumblr.com/78dd63b7d065945bef351bd8a67bdadf/8b9c4c2b95d9bd79-fd/s2048x3072/00adeb71a60bd2f0ca6a347ce0dd661e7671740f.pnj"
-            alt="Bride and Groom"
-            fill
-            className="object-contain object-bottom"
             priority
           />
         </div>
