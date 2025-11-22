@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
+import { Rubik } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/auth/SessionProvider";
 import { getSession } from "@/lib/auth/get-session";
 import { Toaster } from "react-hot-toast";
+
+const rubik = Rubik({
+  subsets: ["hebrew", "latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "פלטפורמת הזמנות לחתונה | Wedding Platform",
@@ -23,7 +30,7 @@ export default async function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="antialiased">
+      <body className={`${rubik.className} antialiased`}>
         <SessionProvider session={session}>
           {children}
           <Toaster

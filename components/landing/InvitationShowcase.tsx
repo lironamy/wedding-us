@@ -8,7 +8,7 @@ export default function InvitationShowcase() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-32 overflow-hidden bg-[#f8f5f2]">
+    <section ref={ref} className="py-32 overflow-hidden bg-[#F8F8F8]">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           {/* Text Content */}
@@ -52,15 +52,15 @@ export default function InvitationShowcase() {
           >
             <div className="relative">
               {/* Video Container */}
-              <div className="relative w-[280px] md:w-[320px] h-[580px] md:h-[660px] rounded-[2rem] overflow-hidden">
+              <div className="relative w-[280px] md:w-[300px] h-[500px] md:h-[660px] overflow-hidden">
                 <video
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 >
-                  <source src="https://va.media.tumblr.com/tumblr_t64v9lhV5P1zsx3om_720.mp4" type="video/mp4" />
+                  <source src="https://va.media.tumblr.com/tumblr_t64zyh6W3H1zsx3om.mp4" type="video/mp4" />
                 </video>
               </div>
 
