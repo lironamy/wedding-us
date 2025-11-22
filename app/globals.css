@@ -55,7 +55,7 @@ html {
 }
 
 body {
-  background: var(--background);
+  background: var(--foreground);
   font-family: 'Assistant', 'Heebo', system-ui, -apple-system, sans-serif;
   direction: rtl;
   text-align: right;
