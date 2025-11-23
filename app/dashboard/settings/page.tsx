@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import WeddingForm from '@/components/dashboard/WeddingForm';
+import WeddingFormStepper from '@/components/dashboard/WeddingFormStepper';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -132,17 +132,18 @@ export default function SettingsPage() {
           {error}
         </div>
       )}
-
+{/* 
       {wedding && (
         <Card className="mb-6">
           <div className="p-4 bg-blue-50 border-b border-blue-100">
             <h3 className="font-semibold text-blue-900">קישור להזמנה שלך</h3>
-            <div className="mt-2 flex items-center gap-2">
-              <code className="flex-1 p-2 bg-white rounded border border-blue-200 text-sm">
+            <div className="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <code className="flex-1 p-2 bg-white rounded border border-blue-200 text-sm overflow-hidden text-ellipsis whitespace-nowrap block min-w-0" dir="ltr">
                 {`${process.env.NEXT_PUBLIC_APP_URL}/wedding/${wedding.uniqueUrl}`}
               </code>
               <Button
                 size="sm"
+                className="shrink-0 w-full sm:w-auto"
                 onClick={() => {
                   navigator.clipboard.writeText(
                     `${process.env.NEXT_PUBLIC_APP_URL}/wedding/${wedding.uniqueUrl}`
@@ -155,9 +156,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </Card>
-      )}
+      )} */}
 
-      <WeddingForm
+      <WeddingFormStepper
         wedding={wedding}
         onSubmit={handleSubmit}
         onCancel={() => router.push('/dashboard')}

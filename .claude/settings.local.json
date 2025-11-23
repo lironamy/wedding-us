@@ -25,7 +25,12 @@
       "Bash(del nul 2)",
       "Bash(git rm:*)",
       "Bash(if exist \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\.next\\dev\\lock\" del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\.next\\dev\\lock\")",
-      "Bash(dir \"C:\\Users\\liron\\Downloads\\re\" /b)"
+      "Bash(dir \"C:\\Users\\liron\\Downloads\\re\" /b)",
+      "WebSearch",
+      "WebFetch(domain:www.reactbits.dev)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:21st.dev)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []

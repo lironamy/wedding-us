@@ -13,3 +13,9 @@ export type { LoadingProps } from './Loading';
 
 export { default as Alert } from './Alert';
 export type { AlertProps } from './Alert';
+
+export { Aurora } from './Aurora';
+export { GradientText } from './GradientText';
+export { SplitText } from './SplitText';
+export { Stepper, Step } from './Stepper';
+export { default as CountUp } from './CountUp';
