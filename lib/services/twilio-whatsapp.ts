@@ -1,6 +1,6 @@
 /**
  * Twilio WhatsApp Service
- * Handles WhatsApp message sending via Twilio Business API
+ * Handles WhatsApp message sending via Twilio Business API with Content Templates
  */
 
 import twilio from 'twilio';
@@ -27,6 +27,10 @@ export interface BulkSendResult {
     messageId?: string;
     error?: string;
   }>;
+}
+
+export interface TemplateVariables {
+  [key: string]: string;
 }
 
 /**
@@ -63,7 +67,46 @@ export class TwilioWhatsAppService {
   }
 
   /**
-   * Send a single WhatsApp message
+   * Send a single WhatsApp message using Content Template
+   * Templates must be pre-approved by WhatsApp via Twilio Console
+   */
+  async sendMessageWithTemplate(
+    to: string,
+    contentSid: string,
+    variables: TemplateVariables
+  ): Promise<SendMessageResult> {
+    try {
+      const formattedTo = this.formatPhoneNumber(to);
+
+      console.log('📱 [Twilio] Sending WhatsApp template message to:', formattedTo);
+      console.log('📝 [Twilio] Content SID:', contentSid);
+
+      const result = await this.client.messages.create({
+        from: this.fromNumber,
+        to: formattedTo,
+        contentSid: contentSid,
+        contentVariables: JSON.stringify(variables),
+      });
+
+      console.log('✅ [Twilio] Template message sent successfully:', result.sid);
+
+      return {
+        success: true,
+        messageId: result.sid,
+        status: result.status,
+      };
+    } catch (error: any) {
+      console.error('❌ [Twilio] Error sending template message:', error);
+
+      return {
+        success: false,
+        error: error.message || 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Send a single WhatsApp freeform message (only works within 24-hour window)
    */
   async sendMessage(
     to: string,
@@ -98,7 +141,86 @@ export class TwilioWhatsAppService {
   }
 
   /**
-   * Send messages in bulk with delays between each message
+   * Send messages in bulk using Content Templates
+   */
+  async sendBulkMessagesWithTemplate(
+    messages: Array<{ phone: string; variables: TemplateVariables; guestId: string }>,
+    contentSid: string,
+    options: {
+      delayBetweenMessages?: number;
+      onProgress?: (sent: number, total: number, guestId: string) => void;
+      onError?: (error: string, guestId: string) => void;
+    } = {}
+  ): Promise<BulkSendResult> {
+    const {
+      delayBetweenMessages = 1000,
+      onProgress,
+      onError,
+    } = options;
+
+    const results: Array<{
+      guestId: string;
+      success: boolean;
+      messageId?: string;
+      error?: string;
+    }> = [];
+    let successful = 0;
+    let failed = 0;
+
+    console.log(`📱 [Twilio] Starting bulk template send: ${messages.length} messages`);
+    console.log(`📝 [Twilio] Using Content SID: ${contentSid}`);
+
+    for (let i = 0; i < messages.length; i++) {
+      const { phone, variables, guestId } = messages[i];
+
+      try {
+        const result = await this.sendMessageWithTemplate(phone, contentSid, variables);
+
+        results.push({
+          guestId,
+          ...result,
+        });
+
+        if (result.success) {
+          successful++;
+        } else {
+          failed++;
+          if (onError) {
+            onError(result.error || 'Unknown error', guestId);
+          }
+        }
+
+        if (onProgress) {
+          onProgress(i + 1, messages.length, guestId);
+        }
+
+        if (i < messages.length - 1) {
+          await this.delay(delayBetweenMessages);
+        }
+      } catch (error: any) {
+        console.error('❌ [Twilio] Error sending to', phone, ':', error);
+        failed++;
+        results.push({
+          guestId,
+          success: false,
+          error: error.message || 'Unknown error',
+        });
+
+        if (onError) {
+          onError(error.message || 'Unknown error', guestId);
+        }
+      }
+    }
+
+    console.log(
+      `📱 [Twilio] Bulk template send complete: ${successful} successful, ${failed} failed`
+    );
+
+    return { successful, failed, results };
+  }
+
+  /**
+   * Send freeform messages in bulk (only works within 24-hour window)
    */
   async sendBulkMessages(
     messages: Array<{ phone: string; message: string; guestId: string }>,

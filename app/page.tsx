@@ -68,7 +68,7 @@ function HowItWorks() {
               icon="✨"
             />
             <div className="hidden md:flex items-center">
-              <div className="w-20 h-1 bg-gradient-to-r from-primary to-accent rounded-full" />
+              <div className="w-20 h-1 bg-linear-to-r from-primary to-accent rounded-full" />
             </div>
             <StepCard
               number={2}
@@ -77,7 +77,7 @@ function HowItWorks() {
               icon="🎨"
             />
             <div className="hidden md:flex items-center">
-              <div className="w-20 h-1 bg-gradient-to-r from-accent to-primary rounded-full" />
+              <div className="w-20 h-1 bg-linear-to-r from-accent to-primary rounded-full" />
             </div>
             <StepCard
               number={3}

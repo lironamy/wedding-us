@@ -11,6 +11,14 @@ export async function POST(request: NextRequest) {
       rsvpStatus,
       adultsAttending,
       childrenAttending,
+      // Meal counts
+      regularMeals,
+      vegetarianMeals,
+      veganMeals,
+      otherMeals,
+      otherMealDescription,
+      // Legacy fields
+      mealType,
       specialMealRequests,
       notes,
     } = body;
@@ -39,11 +47,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid RSVP link' }, { status: 404 });
     }
 
-    // Update guest RSVP
-    guest.rsvpStatus = rsvpStatus;
-
+    // Validate and prepare update data
     if (rsvpStatus === 'confirmed') {
-      // Validate total attendees
       const totalAttending = (adultsAttending || 0) + (childrenAttending || 0);
 
       if (totalAttending > guest.invitedCount) {
@@ -52,18 +57,45 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      guest.adultsAttending = adultsAttending || 0;
-      guest.childrenAttending = childrenAttending || 0;
-      guest.specialMealRequests = specialMealRequests || '';
-      guest.notes = notes || '';
-    } else {
-      // If declined, clear attendance numbers
-      guest.adultsAttending = 0;
-      guest.childrenAttending = 0;
     }
 
-    await guest.save();
+    // Build update object - use $set to ensure all fields are saved
+    const updateData: Record<string, any> = {
+      rsvpStatus,
+    };
+
+    if (rsvpStatus === 'confirmed') {
+      updateData.adultsAttending = adultsAttending || 0;
+      updateData.childrenAttending = childrenAttending || 0;
+      // Meal counts
+      updateData.regularMeals = regularMeals ?? 0;
+      updateData.vegetarianMeals = vegetarianMeals ?? 0;
+      updateData.veganMeals = veganMeals ?? 0;
+      updateData.otherMeals = otherMeals ?? 0;
+      updateData.otherMealDescription = otherMealDescription ?? '';
+      // Legacy fields
+      updateData.mealType = mealType || 'regular';
+      updateData.specialMealRequests = specialMealRequests || '';
+      updateData.notes = notes || '';
+
+      console.log('Saving meal counts:', {
+        regularMeals: updateData.regularMeals,
+        vegetarianMeals: updateData.vegetarianMeals,
+        veganMeals: updateData.veganMeals,
+        otherMeals: updateData.otherMeals,
+        otherMealDescription: updateData.otherMealDescription,
+      });
+    } else {
+      // If declined, clear attendance numbers
+      updateData.adultsAttending = 0;
+      updateData.childrenAttending = 0;
+    }
+
+    // Use updateOne with $set to bypass Mongoose model caching
+    await Guest.updateOne(
+      { uniqueToken },
+      { $set: updateData }
+    );
 
     return NextResponse.json(
       {

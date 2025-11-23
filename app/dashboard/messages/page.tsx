@@ -3,12 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
-import { WhatsAppConnection } from '@/components/dashboard/WhatsAppConnection';
 import { AutomatedMessageSender } from '@/components/dashboard/AutomatedMessageSender';
+import { ScheduledMessages } from '@/components/dashboard/ScheduledMessages';
+import { TwilioSetup } from '@/components/dashboard/TwilioSetup';
 
 export const metadata = {
-  title: 'שליחת הודעות WhatsApp | Wedding Platform',
-  description: 'שלח הודעות WhatsApp אוטומטיות לאורחים',
+  title: 'שליחת הודעות | Wedding Platform',
+  description: 'שלח הודעות אוטומטיות לאורחים',
 };
 
 export default async function MessagesPage() {
@@ -55,42 +56,52 @@ export default async function MessagesPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            שליחת הודעות WhatsApp
+            שליחת הודעות
           </h1>
-         
+          <p className="text-gray-600">
+            שלח הודעות אוטומטיות לאורחים דרך WhatsApp
+          </p>
         </div>
 
         <div className="space-y-8">
-          {/* WhatsApp Connection */}
-          <div>
-            <WhatsAppConnection />
-          </div>
+          {/* Scheduled Messages - Auto Send */}
+          <section>
+            <h2 className="text-2xl font-bold mb-4">תזמון אוטומטי</h2>
+            <ScheduledMessages weddingId={weddingId} />
+          </section>
 
-          {/* Automated Message Sender */}
-          <div>
+          {/* Manual Message Sender */}
+          <section>
+            <h2 className="text-2xl font-bold mb-4">שליחה ידנית</h2>
             <AutomatedMessageSender weddingId={weddingId} />
-          </div>
+          </section>
+
+          {/* Twilio Setup */}
+          <section>
+            <h2 className="text-2xl font-bold mb-4">הגדרות Twilio</h2>
+            <TwilioSetup />
+          </section>
         </div>
 
         {/* Help Section */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-blue-900 mb-3">טיפים חשובים</h3>
+          <h3 className="text-lg font-bold text-blue-900 mb-3">איך זה עובד?</h3>
           <ul className="space-y-2 text-sm text-blue-800">
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
-              <span>התחבר ל-WhatsApp על ידי סריקת QR Code עם הטלפון שלך</span>
+              <span><strong>תזמון אוטומטי:</strong> ההודעות נשלחות אוטומטית בתאריכים שנקבעו לפי תאריך האירוע</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
-              <span>מומלץ להשתמש במספר ייעודי (לא האישי) לשליחת הזמנות</span>
+              <span><strong>שליחה ידנית:</strong> שלח הודעות באופן ידני לאורחים שבחרת</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
-              <span>השאר 5-10 שניות בין הודעות למניעת חסימה</span>
+              <span><strong>התראות:</strong> תקבלו הודעה ב-WhatsApp כשההודעות נשלחות עם לינק לצפייה בתגובות</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
-              <span>אל תסגור את הדפדפן במהלך שליחת הודעות</span>
+              <span><strong>Twilio:</strong> השירות דורש הגדרת חשבון Twilio ויצירת Templates מאושרים</span>
             </li>
           </ul>
         </div>

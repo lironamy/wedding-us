@@ -3,6 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
+import ScheduledMessage, {
+  calculateScheduledDates,
+  MESSAGE_SCHEDULE_CONFIG,
+  type ScheduledMessageType,
+} from '@/lib/db/models/ScheduledMessage';
 import { generateUUID } from '@/lib/utils/uuid';
 
 // GET /api/weddings - Get user's weddings
@@ -99,6 +104,39 @@ export async function POST(request: NextRequest) {
       uniqueUrl,
       status: 'draft'
     });
+
+    // Auto-schedule messages based on event date
+    try {
+      const scheduledDates = calculateScheduledDates(new Date(eventDate));
+      const now = new Date();
+      const schedulesToCreate: any[] = [];
+
+      for (const [messageType, scheduledFor] of Object.entries(scheduledDates)) {
+        // Only schedule if the date is in the future
+        if (scheduledFor > now) {
+          const config = MESSAGE_SCHEDULE_CONFIG[messageType as ScheduledMessageType];
+          schedulesToCreate.push({
+            weddingId: wedding._id,
+            messageType,
+            scheduledFor,
+            status: 'pending',
+            totalGuests: 0,
+            sentCount: 0,
+            failedCount: 0,
+            targetFilter: config.targetFilter,
+            coupleNotified: false,
+          });
+        }
+      }
+
+      if (schedulesToCreate.length > 0) {
+        await ScheduledMessage.insertMany(schedulesToCreate);
+        console.log(`📅 [Wedding] Auto-scheduled ${schedulesToCreate.length} messages for wedding ${wedding._id}`);
+      }
+    } catch (scheduleError) {
+      console.error('Error auto-scheduling messages:', scheduleError);
+      // Don't fail wedding creation if scheduling fails
+    }
 
     return NextResponse.json(wedding, { status: 201 });
   } catch (error) {

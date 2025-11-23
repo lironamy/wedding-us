@@ -272,16 +272,6 @@ export default function ParallaxHero() {
         <h2 className="text-4xl md:text-6xl mb-5 font-bold text-zinc-400 drop-shadow-2xl">
           התחילו את המסע שלכם
         </h2>
-
-        <Link href="/register">
-          <Button
-            size="lg"
-            variant="outline" 
-            className="text-lg px-8 py-6 bg-transparent border-zinc-400 hover:border-accent/20 cursor- text-zinc-400 hover:bg-accent/20 shadow-2xl backdrop-blur-sm"
-          >
-            התחברו לחשבון
-          </Button>
-        </Link>
       </div>
 
      

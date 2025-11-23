@@ -13,6 +13,14 @@ export interface IGuest {
   rsvpStatus: 'pending' | 'confirmed' | 'declined';
   adultsAttending?: number;
   childrenAttending?: number;
+  // Meal counts
+  regularMeals?: number;
+  vegetarianMeals?: number;
+  veganMeals?: number;
+  otherMeals?: number;
+  otherMealDescription?: string;
+  // Legacy field - kept for backwards compatibility
+  mealType?: 'regular' | 'vegetarian' | 'vegan' | 'other';
   specialMealRequests?: string;
   notes?: string;
   tableAssignment?: string;
@@ -87,6 +95,37 @@ const GuestSchema = new Schema<IGuest>(
       min: 0,
       default: 0,
     },
+    // Meal counts
+    regularMeals: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    vegetarianMeals: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    veganMeals: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    otherMeals: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    otherMealDescription: {
+      type: String,
+      trim: true,
+    },
+    // Legacy field
+    mealType: {
+      type: String,
+      enum: ['regular', 'vegetarian', 'vegan', 'other'],
+      default: 'regular',
+    },
     specialMealRequests: {
       type: String,
       trim: true,
@@ -137,6 +176,11 @@ GuestSchema.index({ weddingId: 1 });
 GuestSchema.index({ rsvpStatus: 1 });
 GuestSchema.index({ familyGroup: 1 });
 GuestSchema.index({ phone: 1 });
+
+// Delete cached model in development to pick up schema changes
+if (process.env.NODE_ENV !== 'production' && models.Guest) {
+  delete models.Guest;
+}
 
 const Guest = models.Guest || mongoose.model<IGuest>('Guest', GuestSchema);
 

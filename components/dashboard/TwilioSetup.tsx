@@ -154,11 +154,51 @@ export function TwilioSetup() {
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">שלב 4: הגדרת משתני סביבה</h4>
-                <div className="bg-white border border-gray-300 rounded p-3 text-xs font-mono">
+                <h4 className="font-semibold mb-2">שלב 4: יצירת Content Templates (עם תמונה)</h4>
+                <ol className="list-decimal list-inside space-y-1 text-sm">
+                  <li>
+                    בקונסול Twilio, עבור ל-<strong>Messaging → Content Template Builder</strong>
+                  </li>
+                  <li>לחץ <strong>"Create new template"</strong></li>
+                  <li>בחר <strong>"WhatsApp"</strong> כערוץ</li>
+                  <li>בחר שפה: <strong>Hebrew (he)</strong></li>
+                  <li><strong>Header</strong>: בחר "Media" → "Image" → סמן "Variable" (לתמונה דינאמית)</li>
+                  <li><strong>Body</strong>: העתק את הטקסט למטה</li>
+                </ol>
+                <div className="bg-white border border-gray-300 rounded p-3 text-xs mt-2 font-sans" dir="rtl">
+                  <div className="font-semibold mb-1">Template להזמנה - Body (העתק):</div>
+                  <div className="whitespace-pre-wrap text-right">היי {'{{2}}'}, {'{{3}}'}
+להזמינכם לחתונה שלנו 💍
+
+נפגש ביום {'{{4}}'}
+ב&quot;{'{{5}}'}&quot; בשעה {'{{6}}'}
+
+{'{{7}}'} לחגוג איתכם,
+{'{{8}}'}
+
+לחצו על הקישור לאישור הגעה
+{'{{9}}'}</div>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  <strong>משתנים:</strong> 1=תמונה (Header), 2=שם אורח, 3=שמחים/שמחות, 4=תאריך, 5=מקום, 6=שעה, 7=מתרגשים/מתרגשות, 8=שמות הזוג, 9=לינק RSVP
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  💡 התמונה (משתנה 1) נלקחת אוטומטית מהגדרות החתונה
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">שלב 5: הגדרת משתני סביבה</h4>
+                <div className="bg-white border border-gray-300 rounded p-3 text-xs font-mono space-y-1">
+                  <div># פרטי חשבון</div>
                   <div>TWILIO_ACCOUNT_SID=AC********************************</div>
                   <div>TWILIO_AUTH_TOKEN=********************************</div>
                   <div>TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886</div>
+                  <div className="mt-2"># Content SIDs (מהקונסול אחרי אישור)</div>
+                  <div>TWILIO_CONTENT_SID_INVITATION=HX********************************</div>
+                  <div>TWILIO_CONTENT_SID_REMINDER=HX********************************</div>
+                  <div>TWILIO_CONTENT_SID_DAY_BEFORE=HX********************************</div>
+                  <div>TWILIO_CONTENT_SID_THANK_YOU=HX********************************</div>
                 </div>
                 <p className="text-xs text-gray-600 mt-2">
                   הוסף את השורות האלו לקובץ <code>.env.local</code> בשורש הפרויקט
@@ -166,14 +206,12 @@ export function TwilioSetup() {
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">שלב 5: אישור WhatsApp Template</h4>
+                <h4 className="font-semibold mb-2">שלב 6: אישור Templates</h4>
                 <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Twilio דורש אישור ל-template messages לשליחה המונית</li>
-                  <li>
-                    צור template בקונסול תחת <strong>Messaging → Content Templates</strong>
-                  </li>
-                  <li>אשר את ה-template ע"י WhatsApp (לוקח 24-48 שעות)</li>
-                  <li>השתמש ב-template המאושר לשליחה המונית</li>
+                  <li>אחרי יצירת ה-template, הוא יישלח לאישור WhatsApp</li>
+                  <li>זמן אישור: 24-48 שעות (בדרך כלל פחות)</li>
+                  <li>תקבל התראה במייל כשיאושר</li>
+                  <li>העתק את ה-Content SID (מתחיל ב-HX) להגדרות</li>
                 </ol>
               </div>
 
@@ -181,10 +219,11 @@ export function TwilioSetup() {
                 <div className="text-sm space-y-1">
                   <div className="font-semibold">חשוב לדעת:</div>
                   <ul className="list-disc list-inside space-y-1">
-                    <li>אישור WhatsApp Business API לוקח 1-2 שבועות</li>
-                    <li>Template messages דורשים אישור של 24-48 שעות</li>
-                    <li>עלות: ~$0.005-0.01 למסר (400 הודעות = $2-4)</li>
-                    <li>תקציב ניסיון: $15 (מספיק ל-1500+ הודעות)</li>
+                    <li>Templates חייבים לקבל אישור מ-WhatsApp לפני שליחה</li>
+                    <li>זמן אישור template: בדרך כלל כמה שעות עד יום</li>
+                    <li>עלות: ~$0.005-0.01 למסר לישראל</li>
+                    <li>תקציב ניסיון: $15.50 (מספיק ל-1500+ הודעות)</li>
+                    <li>צריך template נפרד לכל סוג הודעה (הזמנה, תזכורת, וכו')</li>
                   </ul>
                 </div>
               </Alert>

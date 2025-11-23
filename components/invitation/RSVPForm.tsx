@@ -91,8 +91,36 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
     guest.adultsAttending && guest.adultsAttending > 0 ? guest.adultsAttending : 1
   );
   const [childrenAttending, setChildrenAttending] = useState(guest.childrenAttending || 0);
-  const [specialMealRequests, setSpecialMealRequests] = useState(guest.specialMealRequests || '');
+
+  // Meal counts - default all to regular (same as initial attendees count)
+  const initialAdults = guest.adultsAttending && guest.adultsAttending > 0 ? guest.adultsAttending : 1;
+  const initialChildren = guest.childrenAttending || 0;
+  const initialTotal = initialAdults + initialChildren;
+
+  const [regularMeals, setRegularMeals] = useState(() => {
+    // If guest already has meal data, use it; otherwise default to total attendees
+    const existingRegular = (guest as any).regularMeals;
+    if (existingRegular !== undefined && existingRegular !== null) {
+      return existingRegular;
+    }
+    return initialTotal;
+  });
+  const [vegetarianMeals, setVegetarianMeals] = useState((guest as any).vegetarianMeals || 0);
+  const [veganMeals, setVeganMeals] = useState((guest as any).veganMeals || 0);
+  const [otherMeals, setOtherMeals] = useState((guest as any).otherMeals || 0);
+  const [otherMealDescription, setOtherMealDescription] = useState((guest as any).otherMealDescription || '');
   const [notes, setNotes] = useState(guest.notes || '');
+
+  // Calculate total meals
+  const totalMeals = regularMeals + vegetarianMeals + veganMeals + otherMeals;
+  const totalAttendees = adultsAttending + childrenAttending;
+
+  // Auto-adjust regular meals when attendees change
+  const adjustMealsForAttendees = (newTotal: number) => {
+    const specialMeals = vegetarianMeals + veganMeals + otherMeals;
+    const newRegular = Math.max(0, newTotal - specialMeals);
+    setRegularMeals(newRegular);
+  };
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -132,7 +160,11 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
           rsvpStatus,
           adultsAttending: rsvpStatus === 'confirmed' ? adultsAttending : 0,
           childrenAttending: rsvpStatus === 'confirmed' ? childrenAttending : 0,
-          specialMealRequests: rsvpStatus === 'confirmed' ? specialMealRequests : '',
+          regularMeals: rsvpStatus === 'confirmed' ? regularMeals : 0,
+          vegetarianMeals: rsvpStatus === 'confirmed' ? vegetarianMeals : 0,
+          veganMeals: rsvpStatus === 'confirmed' ? veganMeals : 0,
+          otherMeals: rsvpStatus === 'confirmed' ? otherMeals : 0,
+          otherMealDescription: rsvpStatus === 'confirmed' ? otherMealDescription : '',
           notes: rsvpStatus === 'confirmed' ? notes : '',
         }),
       });
@@ -156,8 +188,6 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
     }
   };
 
-  const totalAttending = adultsAttending + childrenAttending;
-
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
   const handleAdultsUpdate = (nextValue: number) => {
@@ -166,6 +196,9 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
     const remainingForChildren = Math.max(0, guest.invitedCount - sanitized);
     if (childrenAttending > remainingForChildren) {
       setChildrenAttending(remainingForChildren);
+      adjustMealsForAttendees(sanitized + remainingForChildren);
+    } else {
+      adjustMealsForAttendees(sanitized + childrenAttending);
     }
   };
 
@@ -173,6 +206,40 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
     const maxChildren = Math.max(0, guest.invitedCount - adultsAttending);
     const sanitized = clamp(nextValue, 0, maxChildren);
     setChildrenAttending(sanitized);
+    adjustMealsForAttendees(adultsAttending + sanitized);
+  };
+
+  // Handle meal count updates
+  const handleMealUpdate = (
+    type: 'regular' | 'vegetarian' | 'vegan' | 'other',
+    delta: number
+  ) => {
+    const setters = {
+      regular: setRegularMeals,
+      vegetarian: setVegetarianMeals,
+      vegan: setVeganMeals,
+      other: setOtherMeals,
+    };
+    const values = {
+      regular: regularMeals,
+      vegetarian: vegetarianMeals,
+      vegan: veganMeals,
+      other: otherMeals,
+    };
+
+    const currentValue = values[type];
+    const newValue = Math.max(0, currentValue + delta);
+    const otherMealsTotal = totalMeals - currentValue;
+    const maxAllowed = totalAttendees - otherMealsTotal;
+
+    if (newValue <= maxAllowed) {
+      setters[type](newValue);
+      // Auto-adjust regular meals to make up the difference
+      if (type !== 'regular') {
+        const newTotal = otherMealsTotal + newValue;
+        setRegularMeals(Math.max(0, totalAttendees - (vegetarianMeals + veganMeals + otherMeals + (type === 'vegetarian' ? delta : 0) + (type === 'vegan' ? delta : 0) + (type === 'other' ? delta : 0) - values[type])));
+      }
+    }
   };
 
   const renderNumberField = ({
@@ -297,7 +364,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
             <SectionHeading title="פרטי ההגעה" subtitle="תכנון מקומות" />
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-200 px-5 py-4 text-sm text-gray-600">
               <span>סה״כ מוזמנים: <strong className="text-gray-900">{guest.invitedCount}</strong></span>
-              <span>נותרו {Math.max(0, guest.invitedCount - totalAttending)} מקומות פנויים</span>
+              <span>נותרו {Math.max(0, guest.invitedCount - totalAttendees)} מקומות פנויים</span>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -332,20 +399,87 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
             </div>
 
             <div className="text-center text-sm text-gray-600">
-              סה"כ מגיעים: <span className="font-semibold text-gray-900">{totalAttending}</span> מתוך {guest.invitedCount}
+              סה"כ מגיעים: <span className="font-semibold text-gray-900">{totalAttendees}</span> מתוך {guest.invitedCount}
             </div>
 
-            <div>
+            <div className="space-y-4">
               <label className="mb-2 block text-sm font-medium text-gray-700">
-                בקשות מיוחדות לארוחה (אופציונלי)
+                בחירת סוג מנות ({totalAttendees} מנות סה״כ)
               </label>
-              <textarea
-                className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30"
-                rows={3}
-                value={specialMealRequests}
-                onChange={(e) => setSpecialMealRequests(e.target.value)}
-                placeholder="טבעוני, צמחוני, אלרגיות..."
-              />
+              <div className="space-y-3">
+                {[
+                  { key: 'regular', label: 'רגיל', icon: '🍽️', value: regularMeals, setter: setRegularMeals },
+                  { key: 'vegetarian', label: 'צמחוני', icon: '🥗', value: vegetarianMeals, setter: setVegetarianMeals },
+                  { key: 'vegan', label: 'טבעוני', icon: '🌱', value: veganMeals, setter: setVeganMeals },
+                  { key: 'other', label: 'אחר', icon: '✏️', value: otherMeals, setter: setOtherMeals },
+                ].map((meal) => (
+                  <div key={meal.key} className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{meal.icon}</span>
+                      <span className="font-medium text-gray-700">{meal.label}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (meal.value > 0) {
+                            meal.setter(meal.value - 1);
+                            if (meal.key !== 'regular') {
+                              setRegularMeals((prev: number) => Math.min(prev + 1, totalAttendees));
+                            }
+                          }
+                        }}
+                        disabled={meal.value <= 0}
+                        className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        −
+                      </button>
+                      <span className="w-8 text-center font-semibold text-lg">{meal.value}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (totalMeals < totalAttendees || meal.key === 'regular') {
+                            if (meal.key === 'regular') {
+                              // For regular, can only add if there's room
+                              if (totalMeals < totalAttendees) {
+                                meal.setter(meal.value + 1);
+                              }
+                            } else {
+                              // For special meals, take from regular
+                              if (regularMeals > 0) {
+                                meal.setter(meal.value + 1);
+                                setRegularMeals((prev: number) => prev - 1);
+                              } else if (totalMeals < totalAttendees) {
+                                meal.setter(meal.value + 1);
+                              }
+                            }
+                          }
+                        }}
+                        disabled={totalMeals >= totalAttendees && (meal.key === 'regular' || regularMeals <= 0)}
+                        className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {totalMeals !== totalAttendees && (
+                <p className="text-sm text-red-500 text-center">
+                  סה״כ מנות ({totalMeals}) חייב להיות שווה למספר המגיעים ({totalAttendees})
+                </p>
+              )}
+              {otherMeals > 0 && (
+                <div className="animate-in slide-in-from-top-2 duration-200">
+                  <Input
+                    type="text"
+                    value={otherMealDescription}
+                    onChange={(e) => setOtherMealDescription(e.target.value)}
+                    placeholder="פרט את הבקשה (למשל: ללא גלוטן, אלרגיה לבוטנים...)"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30"
+                  />
+                </div>
+              )}
             </div>
 
             <div>

@@ -462,7 +462,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               }}
             >
               {/* Decorative top bar */}
-              <div className="h-1 bg-gradient-to-r from-primary via-pink-400 to-purple-500" />
+              <div className="h-1 bg-linear-to-r from-primary via-pink-400 to-purple-500" />
 
               <div className="container mx-auto px-5 py-6">
                 {/* Header with close button */}
@@ -472,7 +472,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   transition={{ delay: 0.1 }}
                   className="flex items-center justify-between mb-6"
                 >
-                  <span className="text-xl font-bold bg-gradient-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                  <span className="text-xl font-bold bg-linear-to-r from-primary to-pink-500 bg-clip-text text-transparent">
                     תפריט
                   </span>
                   <motion.button
@@ -574,7 +574,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                         initial={{ opacity: 0, scaleX: 0 }}
                         animate={{ opacity: 1, scaleX: 1 }}
                         transition={{ delay: 0.5 }}
-                        className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-4"
+                        className="h-px bg-linear-to-r from-transparent via-gray-300 to-transparent my-4"
                       />
                       {adminNavItems.map((item, index) => {
                         const active = isActive(item.href);

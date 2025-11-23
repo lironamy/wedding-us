@@ -297,14 +297,14 @@ function DaysCounter({ days, isPast }: { days: number; isPast: boolean }) {
   if (isPast) return null;
 
   let label = '';
-  let bgColor = 'bg-gradient-to-r from-primary to-pink-500';
+  let bgColor = 'bg-linear-to-r from-primary to-pink-500';
 
   if (days === 0) {
     label = 'היום היום הגדול!';
-    bgColor = 'bg-gradient-to-r from-yellow-400 to-orange-500';
+    bgColor = 'bg-linear-to-r from-yellow-400 to-orange-500';
   } else if (days === 1) {
     label = 'מחר!';
-    bgColor = 'bg-gradient-to-r from-green-400 to-emerald-500';
+    bgColor = 'bg-linear-to-r from-green-400 to-emerald-500';
   } else {
     label = `עוד ${days} ימים`;
   }

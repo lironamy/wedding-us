@@ -498,7 +498,7 @@ export default function AnimatedFeatures() {
                 </div>
 
                 {/* Hover Effect Line */}
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-right" />
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-linear-to-r from-primary to-accent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-right" />
               </motion.div>
             );
           })}

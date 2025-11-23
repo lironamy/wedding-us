@@ -102,7 +102,7 @@ export default function LoginPage() {
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <motion.div
-                    className="w-24 h-24 rounded-full bg-gradient-to-r from-pink-400 to-purple-500"
+                    className="w-24 h-24 rounded-full bg-linear-to-r from-pink-400 to-purple-500"
                     animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />

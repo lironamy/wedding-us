@@ -28,7 +28,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState<SendingProgress | null>(null);
   const [results, setResults] = useState<any>(null);
-  const [delayBetweenMessages, setDelayBetweenMessages] = useState(5); // seconds between messages
+  const [delayBetweenMessages, setDelayBetweenMessages] = useState(1); // seconds between messages (Twilio can handle faster)
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Load guests
@@ -108,7 +108,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
       setProgress({ total: selectedGuests.length, sent: 0, failed: 0 });
       setResults(null);
 
-      const response = await fetch('/api/whatsapp/send-bulk', {
+      const response = await fetch('/api/twilio/send-bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -280,7 +280,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
             </label>
             <input
               type="number"
-              min="5"
+              min="1"
               max="60"
               value={delayBetweenMessages}
               onChange={(e) => setDelayBetweenMessages(Number(e.target.value))}
@@ -288,7 +288,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
               disabled={sending}
             />
             <p className="text-xs text-gray-600 mt-1">
-              מומלץ: 5-10 שניות למניעת חסימה
+              מומלץ: 1-3 שניות (Twilio יכול לשלוח מהר יותר)
             </p>
           </div>
 
@@ -396,7 +396,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
           >
             {sending
               ? 'שולח הודעות...'
-              : `שלח הודעות WhatsApp (${selectedGuests.length} אורחים)`}
+              : `שלח הודעות (${selectedGuests.length} אורחים)`}
           </Button>
         </div>
       </Card>

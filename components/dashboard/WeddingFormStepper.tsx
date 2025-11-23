@@ -213,7 +213,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               {/* Partner 2 */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
-                  {`שם ה${partnerTypeLabels[formData.partner1Type]}`}
+                  {`שם ה${partnerTypeLabels[formData.partner2Type]}`}
                  <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">

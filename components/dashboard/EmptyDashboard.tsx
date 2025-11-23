@@ -23,7 +23,7 @@ export default function EmptyDashboard() {
         className="relative overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100"
       >
         {/* Decorative gradient */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary via-pink-500 to-purple-600" />
+        <div className="absolute top-0 left-0 right-0 h-2 bg-linear-to-r from-primary via-pink-500 to-purple-600" />
 
         <div className="p-12 text-center">
           {/* Animated rings illustration */}
@@ -33,7 +33,7 @@ export default function EmptyDashboard() {
             transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
             className="mb-8 relative inline-block"
           >
-            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" className="mx-auto">
+            <svg width="120" height="150" viewBox="0 0 120 120" fill="none" className="mx-auto">
               {/* Left ring */}
               <motion.ellipse
                 cx="45" cy="60" rx="25" ry="30"
@@ -131,7 +131,7 @@ export default function EmptyDashboard() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-pink-500 text-white font-bold rounded-2xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-shadow"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-primary to-pink-500 text-white font-bold rounded-2xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-shadow"
               >
                 <motion.span
                   animate={{ rotate: [0, 10, -10, 0] }}
@@ -141,7 +141,7 @@ export default function EmptyDashboard() {
                 </motion.span>
                 צור חתונה חדשה
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 7l-5 5m0 0l5 5m-5-5h12" />
                 </svg>
               </motion.button>
             </Link>

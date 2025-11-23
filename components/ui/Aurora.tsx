@@ -31,7 +31,7 @@ export function Aurora({ children, className = '' }: AuroraProps) {
 
         {/* Floating Orbs */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-pink-300/30 to-purple-300/30 blur-3xl"
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-linear-to-r from-pink-300/30 to-purple-300/30 blur-3xl"
           animate={{
             x: [0, 100, 0],
             y: [0, -50, 0],
@@ -44,7 +44,7 @@ export function Aurora({ children, className = '' }: AuroraProps) {
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-blue-300/30 to-cyan-300/30 blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-linear-to-r from-blue-300/30 to-cyan-300/30 blur-3xl"
           animate={{
             x: [0, -100, 0],
             y: [0, 50, 0],
@@ -57,7 +57,7 @@ export function Aurora({ children, className = '' }: AuroraProps) {
           }}
         />
         <motion.div
-          className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full bg-gradient-to-r from-rose-300/20 to-orange-300/20 blur-3xl"
+          className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full bg-linear-to-r from-rose-300/20 to-orange-300/20 blur-3xl"
           animate={{
             x: [0, 50, -50, 0],
             y: [0, -30, 30, 0],
