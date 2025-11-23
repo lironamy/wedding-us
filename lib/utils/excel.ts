@@ -14,7 +14,7 @@ export interface ParsedGuest {
   phone: string;
   email?: string;
   familyGroup?: string;
-  invitedCount: number;
+  invitedCount?: number;
   guestId: string;
   uniqueToken: string;
 }
@@ -78,11 +78,11 @@ export function parseGuestExcel(buffer: Buffer): {
         '';
 
       const invitedCount =
-        row['מספר מוזמנים'] ||
-        row['Invited Count'] ||
-        row['invitedCount'] ||
-        row['Count'] ||
-        1;
+        row['מספר מוזמנים'] ??
+        row['Invited Count'] ??
+        row['invitedCount'] ??
+        row['Count'] ??
+        '';
 
       // Validation
       if (!name || name.toString().trim() === '') {
@@ -106,11 +106,14 @@ export function parseGuestExcel(buffer: Buffer): {
         return;
       }
 
-      // Validate invited count
-      const count = parseInt(invitedCount.toString(), 10);
-      if (isNaN(count) || count < 1) {
-        errors.push(`שורה ${rowNumber}: מספר מוזמנים חייב להיות לפחות 1`);
-        return;
+      // Parse invited count (optional - if not set, no limit)
+      const rawCount = invitedCount.toString().trim();
+      let finalCount: number | undefined = undefined;
+      if (rawCount !== '') {
+        const parsed = parseInt(rawCount, 10);
+        if (!isNaN(parsed) && parsed >= 1) {
+          finalCount = parsed;
+        }
       }
 
       // Add guest
@@ -119,7 +122,7 @@ export function parseGuestExcel(buffer: Buffer): {
         phone: normalizedPhone,
         email: email ? email.toString().trim() : undefined,
         familyGroup: familyGroup ? familyGroup.toString().trim() : undefined,
-        invitedCount: count,
+        invitedCount: finalCount,
         guestId: uuidv4(),
         uniqueToken: uuidv4(),
       });

@@ -17,7 +17,7 @@ interface Guest {
   phone: string;
   email?: string;
   familyGroup?: string;
-  invitedCount: number;
+  invitedCount?: number;
   uniqueToken: string;
   rsvpStatus: 'pending' | 'confirmed' | 'declined';
   adultsAttending?: number;
@@ -47,17 +47,81 @@ interface GuestManagementProps {
   weddingId: string;
 }
 
-// Stat card component with gradient backgrounds
+// Animated SVG icons for stats
+const StatIcons: Record<string, React.ReactNode> = {
+  guests: (
+    <svg className="w-12 h-12 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+    </svg>
+  ),
+  confirmed: (
+    <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <motion.path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+      />
+    </svg>
+  ),
+  declined: (
+    <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <motion.path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        initial={{ scale: 0.8, opacity: 0.5 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+      />
+    </svg>
+  ),
+  pending: (
+    <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <motion.path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        style={{ transformOrigin: "center" }}
+      />
+    </svg>
+  ),
+  adults: (
+    <svg className="w-12 h-12 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  ),
+  children: (
+    <motion.svg
+      className="w-12 h-12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      animate={{ y: [0, -3, 0] }}
+      transition={{ duration: 1, repeat: Infinity }}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25a3 3 0 100-6 3 3 0 000 6zM12 14.25a6 6 0 016 6H6a6 6 0 016-6z" />
+      <circle cx="12" cy="5.25" r="1.5" fill="currentColor" opacity="0.3" />
+    </motion.svg>
+  ),
+};
+
+// Stat card component with gradient backgrounds and animated icons
 function StatCard({
   title,
   value,
-  icon,
+  iconType,
   gradient,
   delay,
 }: {
   title: string;
   value: number;
-  icon: string;
+  iconType: keyof typeof StatIcons;
   gradient: string;
   delay: number;
 }) {
@@ -71,7 +135,9 @@ function StatCard({
               <CountUp to={value} duration={1.5} />
             </div>
           </div>
-          <div className="text-4xl opacity-80">{icon}</div>
+          <div className="text-white/90">
+            {StatIcons[iconType]}
+          </div>
         </div>
       </div>
       <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
@@ -399,7 +465,7 @@ function GuestRow({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20, height: 0 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
-      className="group hover:bg-linear-to-r hover:from-gold/5 hover:to-transparent transition-all duration-300"
+      className="group hover:bg-amber-50 transition-all duration-300"
     >
       <td className="px-4 py-4">
         <div className="flex items-center gap-3">
@@ -424,7 +490,7 @@ function GuestRow({
       </td>
       <td className="px-4 py-4 text-center">
         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
-          {guest.invitedCount}
+          {guest.invitedCount || '∞'}
         </span>
       </td>
       <td className="px-4 py-4 text-center">
@@ -617,7 +683,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
           comparison = statusOrder[a.rsvpStatus] - statusOrder[b.rsvpStatus];
           break;
         case 'invitedCount':
-          comparison = a.invitedCount - b.invitedCount;
+          comparison = (a.invitedCount || 0) - (b.invitedCount || 0);
           break;
         case 'attending':
           const aTotal = (a.adultsAttending || 0) + (a.childrenAttending || 0);
@@ -768,68 +834,49 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
         )}
       </AnimatePresence>
 
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        <BlurText
-          text="ניהול אורחים"
-          className="text-4xl font-bold bg-linear-to-r from-gold via-gold-dark to-gold bg-clip-text text-transparent"
-          delay={50}
-        />
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-gray-500 mt-2"
-        >
-          נהל את רשימת האורחים שלך בקלות
-        </motion.p>
-      </motion.div>
+   
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard
           title="סה״כ אורחים"
           value={stats.total}
-          icon="👥"
-          gradient="bg-gradient-to-br from-slate-600 to-slate-800"
+          iconType="guests"
+          gradient="bg-gradient-to-br from-yellow-300 to-yellow-500"
           delay={0}
         />
         <StatCard
           title="אישרו הגעה"
           value={stats.confirmed}
-          icon="✅"
+          iconType="confirmed"
           gradient="bg-gradient-to-br from-emerald-500 to-green-600"
           delay={0.1}
         />
         <StatCard
           title="סירבו"
           value={stats.declined}
-          icon="❌"
+          iconType="declined"
           gradient="bg-gradient-to-br from-rose-500 to-red-600"
           delay={0.2}
         />
         <StatCard
           title="ממתינים"
           value={stats.pending}
-          icon="⏳"
+          iconType="pending"
           gradient="bg-gradient-to-br from-amber-400 to-orange-500"
           delay={0.3}
         />
         <StatCard
           title="מבוגרים"
           value={stats.totalAdults}
-          icon="🧑"
+          iconType="adults"
           gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
           delay={0.4}
         />
         <StatCard
           title="ילדים"
           value={stats.totalChildren}
-          icon="👶"
+          iconType="children"
           gradient="bg-gradient-to-br from-pink-400 to-purple-500"
           delay={0.5}
         />
@@ -938,32 +985,23 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
       </motion.div>
 
       {/* Add/Edit Form Modal */}
-      <AnimatePresence>
-        {(showAddForm || editingGuest) && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-          >
-            <AnimatedCard className="p-6 border-2 border-gold/20">
-              <GuestForm
-                weddingId={weddingId}
-                guest={editingGuest}
-                onSuccess={() => {
-                  setShowAddForm(false);
-                  setEditingGuest(null);
-                  loadGuests();
-                }}
-                onCancel={() => {
-                  setShowAddForm(false);
-                  setEditingGuest(null);
-                }}
-              />
-            </AnimatedCard>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {(showAddForm || editingGuest) && (
+        <AnimatedCard hover={false} className="p-6 border-2 border-gold/20">
+          <GuestForm
+            weddingId={weddingId}
+            guest={editingGuest}
+            onSuccess={() => {
+              setShowAddForm(false);
+              setEditingGuest(null);
+              loadGuests();
+            }}
+            onCancel={() => {
+              setShowAddForm(false);
+              setEditingGuest(null);
+            }}
+          />
+        </AnimatedCard>
+      )}
 
       {/* Filters */}
       <motion.div

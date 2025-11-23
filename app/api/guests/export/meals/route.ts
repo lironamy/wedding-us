@@ -57,18 +57,32 @@ export async function GET() {
     if (!workbook.Workbook.Views) workbook.Workbook.Views = [];
     workbook.Workbook.Views.push({ RTL: true });
 
+    // Get all other meal descriptions
+    const otherMealDescriptions = guests
+      .filter(g => (g.otherMeals || 0) > 0 && g.otherMealDescription)
+      .map(g => `${g.name}: ${g.otherMealDescription} (${g.otherMeals})`);
+
     // Sheet 1: Meal Summary
-    const summaryData = [
-      { 'סוג מנה': 'רגיל', 'כמות': mealTotals.regular },
-      { 'סוג מנה': 'צמחוני', 'כמות': mealTotals.vegetarian },
-      { 'סוג מנה': 'טבעוני', 'כמות': mealTotals.vegan },
-      { 'סוג מנה': 'אחר', 'כמות': mealTotals.other },
-      { 'סוג מנה': '', 'כמות': '' },
-      { 'סוג מנה': 'סה"כ מנות', 'כמות': totalMeals },
+    const summaryData: any[] = [
+      { 'סוג מנה': 'רגיל', 'כמות': mealTotals.regular, 'פירוט': '' },
+      { 'סוג מנה': 'צמחוני', 'כמות': mealTotals.vegetarian, 'פירוט': '' },
+      { 'סוג מנה': 'טבעוני', 'כמות': mealTotals.vegan, 'פירוט': '' },
+      { 'סוג מנה': 'אחר', 'כמות': mealTotals.other, 'פירוט': '' },
+      { 'סוג מנה': '', 'כמות': '', 'פירוט': '' },
+      { 'סוג מנה': 'סה"כ מנות', 'כמות': totalMeals, 'פירוט': '' },
     ];
 
+    // Add other meal descriptions section
+    if (otherMealDescriptions.length > 0) {
+      summaryData.push({ 'סוג מנה': '', 'כמות': '', 'פירוט': '' });
+      summaryData.push({ 'סוג מנה': '--- פירוט מנות "אחר" ---', 'כמות': '', 'פירוט': '' });
+      otherMealDescriptions.forEach(desc => {
+        summaryData.push({ 'סוג מנה': desc, 'כמות': '', 'פירוט': '' });
+      });
+    }
+
     const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
-    summaryWorksheet['!cols'] = [{ wch: 20 }, { wch: 10 }];
+    summaryWorksheet['!cols'] = [{ wch: 50 }, { wch: 10 }, { wch: 40 }];
     setWorksheetRTL(summaryWorksheet);
     XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'סיכום מנות');
 

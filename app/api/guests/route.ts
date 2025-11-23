@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       phone,
       email,
       familyGroup,
-      invitedCount = 1,
+      invitedCount,
     } = body;
 
     // Validation

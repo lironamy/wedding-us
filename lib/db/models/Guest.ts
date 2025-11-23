@@ -8,7 +8,7 @@ export interface IGuest {
   phone: string;
   email?: string;
   familyGroup?: string;
-  invitedCount: number;
+  invitedCount?: number;
   uniqueToken: string; // UUID for RSVP link
   rsvpStatus: 'pending' | 'confirmed' | 'declined';
   adultsAttending?: number;
@@ -71,9 +71,7 @@ const GuestSchema = new Schema<IGuest>(
     },
     invitedCount: {
       type: Number,
-      required: [true, 'Invited count is required'],
       min: 1,
-      default: 1,
     },
     uniqueToken: {
       type: String,

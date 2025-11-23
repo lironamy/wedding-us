@@ -73,10 +73,15 @@ interface RSVPFormProps {
     _id: string;
     name: string;
     uniqueToken: string;
-    invitedCount: number;
+    invitedCount?: number;
     rsvpStatus: 'pending' | 'confirmed' | 'declined';
     adultsAttending: number;
     childrenAttending: number;
+    regularMeals?: number;
+    vegetarianMeals?: number;
+    veganMeals?: number;
+    otherMeals?: number;
+    otherMealDescription?: string;
     specialMealRequests?: string;
     notes?: string;
   };
@@ -84,6 +89,10 @@ interface RSVPFormProps {
 }
 
 export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
+  // If invitedCount is not set or is 0, there's no limit
+  const hasLimit = guest.invitedCount && guest.invitedCount > 0;
+  const maxGuests = hasLimit ? guest.invitedCount : 99;
+
   const [rsvpStatus, setRsvpStatus] = useState<'confirmed' | 'declined'>(
     guest.rsvpStatus === 'pending' ? 'confirmed' : (guest.rsvpStatus as 'confirmed' | 'declined')
   );
@@ -99,16 +108,15 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
 
   const [regularMeals, setRegularMeals] = useState(() => {
     // If guest already has meal data, use it; otherwise default to total attendees
-    const existingRegular = (guest as any).regularMeals;
-    if (existingRegular !== undefined && existingRegular !== null) {
-      return existingRegular;
+    if (guest.regularMeals !== undefined && guest.regularMeals !== null) {
+      return guest.regularMeals;
     }
     return initialTotal;
   });
-  const [vegetarianMeals, setVegetarianMeals] = useState((guest as any).vegetarianMeals || 0);
-  const [veganMeals, setVeganMeals] = useState((guest as any).veganMeals || 0);
-  const [otherMeals, setOtherMeals] = useState((guest as any).otherMeals || 0);
-  const [otherMealDescription, setOtherMealDescription] = useState((guest as any).otherMealDescription || '');
+  const [vegetarianMeals, setVegetarianMeals] = useState(guest.vegetarianMeals || 0);
+  const [veganMeals, setVeganMeals] = useState(guest.veganMeals || 0);
+  const [otherMeals, setOtherMeals] = useState(guest.otherMeals || 0);
+  const [otherMealDescription, setOtherMealDescription] = useState(guest.otherMealDescription || '');
   const [notes, setNotes] = useState(guest.notes || '');
 
   // Calculate total meals
@@ -145,7 +153,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
           setLoading(false);
           return;
         }
-        if (total > guest.invitedCount) {
+        if (hasLimit && total > guest.invitedCount) {
           setError(`מספר האורחים לא יכול לעלות על ${guest.invitedCount}`);
           setLoading(false);
           return;
@@ -191,9 +199,9 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
   const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
   const handleAdultsUpdate = (nextValue: number) => {
-    const sanitized = clamp(nextValue, 1, guest.invitedCount);
+    const sanitized = clamp(nextValue, 1, maxGuests);
     setAdultsAttending(sanitized);
-    const remainingForChildren = Math.max(0, guest.invitedCount - sanitized);
+    const remainingForChildren = Math.max(0, maxGuests - sanitized);
     if (childrenAttending > remainingForChildren) {
       setChildrenAttending(remainingForChildren);
       adjustMealsForAttendees(sanitized + remainingForChildren);
@@ -203,7 +211,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
   };
 
   const handleChildrenUpdate = (nextValue: number) => {
-    const maxChildren = Math.max(0, guest.invitedCount - adultsAttending);
+    const maxChildren = Math.max(0, maxGuests - adultsAttending);
     const sanitized = clamp(nextValue, 0, maxChildren);
     setChildrenAttending(sanitized);
     adjustMealsForAttendees(adultsAttending + sanitized);
@@ -362,10 +370,12 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
         {rsvpStatus === 'confirmed' && (
           <div className="space-y-8">
             <SectionHeading title="פרטי ההגעה" subtitle="תכנון מקומות" />
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-200 px-5 py-4 text-sm text-gray-600">
-              <span>סה״כ מוזמנים: <strong className="text-gray-900">{guest.invitedCount}</strong></span>
-              <span>נותרו {Math.max(0, guest.invitedCount - totalAttendees)} מקומות פנויים</span>
-            </div>
+            {hasLimit && (
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-200 px-5 py-4 text-sm text-gray-600">
+                <span>סה״כ מוזמנים: <strong className="text-gray-900">{guest.invitedCount}</strong></span>
+                <span>נותרו {Math.max(0, guest.invitedCount - totalAttendees)} מקומות פנויים</span>
+              </div>
+            )}
 
             <div className="grid gap-6 md:grid-cols-2">
               <div>
@@ -376,10 +386,12 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
                   {renderNumberField({
                     value: adultsAttending,
                     onChange: handleAdultsUpdate,
-                    max: guest.invitedCount,
+                    max: maxGuests,
                     min: 1,
                   })}
-                  <p className="mt-2 text-xs text-gray-500">מקסימום {guest.invitedCount} אורחים בסך הכל</p>
+                  {hasLimit && (
+                    <p className="mt-2 text-xs text-gray-500">מקסימום {guest.invitedCount} אורחים בסך הכל</p>
+                  )}
                 </div>
               </div>
 
@@ -391,15 +403,18 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
                   {renderNumberField({
                     value: childrenAttending,
                     onChange: handleChildrenUpdate,
-                    max: Math.max(0, guest.invitedCount - adultsAttending),
+                    max: Math.max(0, maxGuests - adultsAttending),
                   })}
-                  <p className="mt-2 text-xs text-gray-500">עוד {Math.max(0, guest.invitedCount - adultsAttending)} מקומות לאחר המבוגרים</p>
+                  {hasLimit && (
+                    <p className="mt-2 text-xs text-gray-500">עוד {Math.max(0, guest.invitedCount - adultsAttending)} מקומות לאחר המבוגרים</p>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="text-center text-sm text-gray-600">
-              סה"כ מגיעים: <span className="font-semibold text-gray-900">{totalAttendees}</span> מתוך {guest.invitedCount}
+              סה"כ מגיעים: <span className="font-semibold text-gray-900">{totalAttendees}</span>
+              {hasLimit && <span> מתוך {guest.invitedCount}</span>}
             </div>
 
             <div className="space-y-4">

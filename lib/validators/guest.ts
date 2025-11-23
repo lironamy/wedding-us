@@ -21,7 +21,7 @@ export const guestSchema = z.object({
     .number()
     .min(1, 'מספר המוזמנים חייב להיות לפחות 1')
     .max(50, 'מספר המוזמנים גבוה מדי')
-    .default(1),
+    .optional(),
   notes: z.string().max(500, 'ההערות ארוכות מדי').optional(),
 });
 

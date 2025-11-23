@@ -355,6 +355,11 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
                   rsvpStatus: guest.rsvpStatus,
                   adultsAttending: guest.adultsAttending || 0,
                   childrenAttending: guest.childrenAttending || 0,
+                  regularMeals: guest.regularMeals,
+                  vegetarianMeals: guest.vegetarianMeals || 0,
+                  veganMeals: guest.veganMeals || 0,
+                  otherMeals: guest.otherMeals || 0,
+                  otherMealDescription: guest.otherMealDescription || '',
                   specialMealRequests: guest.specialMealRequests || '',
                   notes: guest.notes || '',
                 }}
@@ -386,7 +391,7 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
                   <span>Google Maps</span>
                 </a>
                 <a
-                  href={`https://waze.com/ul?q=${encodeURIComponent(wedding.venueAddress)}`}
+                  href={`https://waze.com/ul?q=${encodeURIComponent(wedding.venueAddress)}&navigate=yes`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition shadow-sm flex items-center gap-2"
