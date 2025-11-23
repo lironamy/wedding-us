@@ -90,8 +90,8 @@ interface RSVPFormProps {
 
 export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
   // If invitedCount is not set or is 0, there's no limit
-  const hasLimit = guest.invitedCount && guest.invitedCount > 0;
-  const maxGuests = hasLimit ? guest.invitedCount : 99;
+  const hasLimit = !!(guest.invitedCount && guest.invitedCount > 0);
+  const maxGuests: number = hasLimit ? guest.invitedCount! : 99;
 
   const [rsvpStatus, setRsvpStatus] = useState<'confirmed' | 'declined'>(
     guest.rsvpStatus === 'pending' ? 'confirmed' : (guest.rsvpStatus as 'confirmed' | 'declined')
@@ -153,7 +153,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
           setLoading(false);
           return;
         }
-        if (hasLimit && total > guest.invitedCount) {
+        if (hasLimit && total > guest.invitedCount!) {
           setError(`מספר האורחים לא יכול לעלות על ${guest.invitedCount}`);
           setLoading(false);
           return;
@@ -373,7 +373,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
             {hasLimit && (
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-200 px-5 py-4 text-sm text-gray-600">
                 <span>סה״כ מוזמנים: <strong className="text-gray-900">{guest.invitedCount}</strong></span>
-                <span>נותרו {Math.max(0, guest.invitedCount - totalAttendees)} מקומות פנויים</span>
+                <span>נותרו {Math.max(0, guest.invitedCount! - totalAttendees)} מקומות פנויים</span>
               </div>
             )}
 
@@ -406,7 +406,7 @@ export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
                     max: Math.max(0, maxGuests - adultsAttending),
                   })}
                   {hasLimit && (
-                    <p className="mt-2 text-xs text-gray-500">עוד {Math.max(0, guest.invitedCount - adultsAttending)} מקומות לאחר המבוגרים</p>
+                    <p className="mt-2 text-xs text-gray-500">עוד {Math.max(0, guest.invitedCount! - adultsAttending)} מקומות לאחר המבוגרים</p>
                   )}
                 </div>
               </div>

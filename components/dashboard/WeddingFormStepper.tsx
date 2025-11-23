@@ -280,7 +280,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
             />
 
             <Input
-              label="כתובת מלאה"
+              label="כתובת מלאה- רחוב מספר עיר"
               name="venueAddress"
               value={formData.venueAddress}
               onChange={handleChange}
