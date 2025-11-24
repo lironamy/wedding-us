@@ -48,14 +48,14 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   // Package options (TEST PRICES - change back to real prices before production!)
   const packageOptions = [
     { guests: 200, price: 0, label: 'חינם' },
-    { guests: 300, price: 300, label: '₪300' },
-    { guests: 400, price: 400, label: '₪400' },
-    { guests: 500, price: 500, label: '₪500' },
-    { guests: 600, price: 600, label: '₪600' },
-    { guests: 700, price: 700, label: '₪700' },
-    { guests: 800, price: 800, label: '₪800' },
-    { guests: 900, price: 900, label: '₪900' },
-    { guests: 1000, price: 1000, label: '₪1000' },
+    { guests: 300, price: 1, label: '₪1' },
+    { guests: 400, price: 2, label: '₪2' },
+    { guests: 500, price: 3, label: '₪3' },
+    { guests: 600, price: 4, label: '₪4' },
+    { guests: 700, price: 5, label: '₪5' },
+    { guests: 800, price: 1, label: '₪1' },
+    { guests: 900, price: 2, label: '₪2' },
+    { guests: 1000, price: 3, label: '₪3' },
   ];
 
   const [loading, setLoading] = useState(false);
