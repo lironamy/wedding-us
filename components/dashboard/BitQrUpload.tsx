@@ -127,7 +127,7 @@ export default function BitQrUpload({
 
           // Check if it's a valid Bit payment link
           if (!qrData.includes('bit') && !qrData.includes('paybox')) {
-            setError('הקוד שנסרק לא נראה כמו לינק תשלום של Bit. אנא וודא שהעלית את הקוד הנכון.');
+            setError('הקוד שנסרק לא נראה כמו לינק תשלום של ביט. אנא וודא שהעלית את הקוד הנכון.');
             return;
           }
 
@@ -152,7 +152,7 @@ export default function BitQrUpload({
     <Card>
       <div className="p-6">
         <h2 className="text-xl font-semibold mb-4 text-gray-900">
-          קבלת מתנות דרך Bit
+          קבלת מתנות דרך ביט
         </h2>
 
         {/* Enable Checkbox */}
@@ -163,7 +163,7 @@ export default function BitQrUpload({
             onChange={(e) => onEnabledChange(e.target.checked)}
             className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <span className="text-gray-700">אני רוצה לאפשר לאורחים לשלוח מתנות דרך Bit</span>
+          <span className="text-gray-700">אני רוצה לאפשר לאורחים לשלוח מתנות דרך ביט</span>
         </label>
 
         {/* Instructions and Upload - only show when enabled */}
@@ -181,7 +181,7 @@ export default function BitQrUpload({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <span className="text-sm font-medium">איך להוציא את קוד ה-QR מ-Bit?</span>
+                <span className="text-sm font-medium">איך להוציא את קוד ה-QR מביט?</span>
               </button>
             </div>
 
@@ -258,9 +258,29 @@ export default function BitQrUpload({
                 {error}
               </div>
             )}
+
+            
           </div>
         )}
       </div>
+
+      {/* Important Notice */}
+      <div className="mt-4 p-4 bg-amber-50 border-r-4 border-amber-400 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-5 h-5 mt-0.5">
+                  <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-amber-800 mb-1">מידע חשוב</h4>
+                  <p className="text-sm text-amber-700">
+                    קבלת מתנות דרך ביט כפופה להגבלות ולתנאי השימוש של אפליקציית ביט.
+                    יש לוודא שחשבון ה-ביט שלכם פעיל ומאושר לקבלת תשלומים לפני השימוש בשירות.
+                  </p>
+                </div>
+              </div>
+            </div>
 
       {/* Info Modal */}
       <AnimatePresence>
@@ -283,7 +303,7 @@ export default function BitQrUpload({
               {/* Header */}
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-5 text-white">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold">איך להוציא את קוד ה-QR מ-Bit?</h3>
+                  <h3 className="text-lg font-bold">איך להוציא את קוד ה-QR מביט?</h3>
                   <button
                     onClick={() => setShowInfoModal(false)}
                     className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
@@ -300,7 +320,7 @@ export default function BitQrUpload({
                 <ol className="space-y-4">
                   <li className="flex items-start gap-3">
                     <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">1</span>
-                    <span className="text-gray-700 pt-0.5">פתחו את אפליקציית <strong className="text-blue-600">Bit</strong> בטלפון</span>
+                    <span className="text-gray-700 pt-0.5">פתחו את אפליקציית <strong className="text-blue-600">ביט</strong> בטלפון</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">2</span>
