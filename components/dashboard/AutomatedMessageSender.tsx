@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Alert } from '@/components/ui/Alert';
 import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { LottieAnimation } from '@/components/ui/animated';
 
 interface AutomatedMessageSenderProps {
   weddingId: string;
@@ -16,8 +16,40 @@ interface SendingProgress {
   total: number;
   sent: number;
   failed: number;
-  current?: string; // Current guest name
+  current?: string;
 }
+
+const MESSAGE_TYPE_STYLES: Record<string, {
+  gradient: string;
+  iconBg: string;
+  icon: string;
+}> = {
+  invitation: {
+    gradient: 'from-pink-500 to-rose-600',
+    iconBg: 'bg-pink-100',
+    icon: '💌',
+  },
+  rsvp_reminder: {
+    gradient: 'from-blue-500 to-indigo-600',
+    iconBg: 'bg-blue-100',
+    icon: '📬',
+  },
+  rsvp_reminder_2: {
+    gradient: 'from-purple-500 to-violet-600',
+    iconBg: 'bg-purple-100',
+    icon: '📨',
+  },
+  day_before: {
+    gradient: 'from-amber-500 to-orange-600',
+    iconBg: 'bg-amber-100',
+    icon: '📅',
+  },
+  thank_you: {
+    gradient: 'from-green-500 to-emerald-600',
+    iconBg: 'bg-green-100',
+    icon: '🙏',
+  },
+};
 
 export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProps) {
   const [selectedType, setSelectedType] = useState<MessageType>('invitation');
@@ -28,7 +60,9 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState<SendingProgress | null>(null);
   const [results, setResults] = useState<any>(null);
-  const [delayBetweenMessages, setDelayBetweenMessages] = useState(1); // seconds between messages (Twilio can handle faster)
+  const [delayBetweenMessages, setDelayBetweenMessages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const GUESTS_PER_PAGE = 25;
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Load guests
@@ -71,6 +105,17 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   };
 
   const filteredGuests = getFilteredGuests();
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredGuests.length / GUESTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * GUESTS_PER_PAGE;
+  const endIndex = startIndex + GUESTS_PER_PAGE;
+  const paginatedGuests = filteredGuests.slice(startIndex, endIndex);
+
+  // Reset page when filter or message type changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, selectedType]);
 
   const handleSelectAll = () => {
     if (selectedGuests.length === filteredGuests.length) {
@@ -115,7 +160,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
           weddingId,
           guestIds: selectedGuests,
           messageType: selectedType,
-          delayBetweenMessages: delayBetweenMessages * 1000, // Convert to milliseconds
+          delayBetweenMessages: delayBetweenMessages * 1000,
         }),
       });
 
@@ -128,12 +173,10 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
       setResults(data);
       setProgress(null);
 
-      // Show summary
       toast.success(
         `השליחה הושלמה! הצלחה: ${data.summary.successful}, כשלון: ${data.summary.failed}, סה"כ: ${data.summary.total}`
       );
 
-      // Clear selection
       setSelectedGuests([]);
       loadGuests();
     } catch (error: any) {
@@ -147,7 +190,16 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   const template = MESSAGE_TEMPLATES[selectedType];
 
   if (loading) {
-    return <div className="text-center py-8">טוען...</div>;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-white rounded-2xl shadow-lg p-12 flex flex-col items-center justify-center"
+      >
+        <LottieAnimation animation="loading" size={80} />
+        <p className="text-gray-500 mt-4">טוען אורחים...</p>
+      </motion.div>
+    );
   }
 
   return (
@@ -155,251 +207,515 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
       {ConfirmDialogComponent}
 
       {/* Sending Progress */}
-      {sending && progress && (
-        <Card className="p-6 border-2 border-gold">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="text-xl font-bold">שולח הודעות...</div>
-              <div className="text-lg font-semibold text-gold">
-                {progress.sent + progress.failed} / {progress.total}
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-200 rounded-full h-4">
-              <div
-                className="bg-gold h-4 rounded-full transition-all duration-300"
-                style={{
-                  width: `${((progress.sent + progress.failed) / progress.total) * 100}%`
-                }}
-              ></div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-sm text-gray-600">נשלח</div>
-                <div className="text-2xl font-bold text-green-600">{progress.sent}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">נכשל</div>
-                <div className="text-2xl font-bold text-red-600">{progress.failed}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">נותרו</div>
-                <div className="text-2xl font-bold text-gray-600">
-                  {progress.total - progress.sent - progress.failed}
+      <AnimatePresence>
+        {sending && progress && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-2xl shadow-lg overflow-hidden"
+          >
+            <div className="h-1 bg-gradient-to-r from-green-500 to-emerald-600" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                    className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2">
+                      <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" />
+                    </svg>
+                  </motion.div>
+                  <span className="text-xl font-bold text-gray-900">שולח הודעות...</span>
                 </div>
+                <span className="text-2xl font-bold text-green-600">
+                  {progress.sent + progress.failed} / {progress.total}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="relative w-full h-4 bg-gray-100 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${((progress.sent + progress.failed) / progress.total) * 100}%`
+                  }}
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
+                  transition={{ duration: 0.3 }}
+                />
+                <motion.div
+                  className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+                />
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center p-4 bg-green-50 rounded-xl"
+                >
+                  <div className="text-sm text-gray-600 mb-1">נשלח</div>
+                  <div className="text-3xl font-bold text-green-600">{progress.sent}</div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-center p-4 bg-red-50 rounded-xl"
+                >
+                  <div className="text-sm text-gray-600 mb-1">נכשל</div>
+                  <div className="text-3xl font-bold text-red-600">{progress.failed}</div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-center p-4 bg-gray-50 rounded-xl"
+                >
+                  <div className="text-sm text-gray-600 mb-1">נותרו</div>
+                  <div className="text-3xl font-bold text-gray-600">
+                    {progress.total - progress.sent - progress.failed}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Warning */}
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </motion.div>
+                <p className="text-sm text-amber-800">
+                  אל תסגור את החלון! השליחה תימשך כ-{Math.ceil((progress.total * delayBetweenMessages) / 60)} דקות
+                </p>
               </div>
             </div>
-
-            <Alert variant="info">
-              <div className="text-sm">
-                אל תסגור את החלון! השליחה תימשך כ-{Math.ceil((progress.total * delayBetweenMessages) / 60)} דקות
-              </div>
-            </Alert>
-          </div>
-        </Card>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Results Summary */}
-      {results && !sending && (
-        <Card className="p-6 border-2 border-green-600">
-          <div className="space-y-4">
-            <div className="text-xl font-bold text-green-600">השליחה הושלמה!</div>
+      <AnimatePresence>
+        {results && !sending && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-2xl shadow-lg overflow-hidden"
+          >
+            <div className="h-1 bg-gradient-to-r from-green-500 to-emerald-600" />
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200 }}
+                  className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                </motion.div>
+                <span className="text-xl font-bold text-green-600">השליחה הושלמה!</span>
+              </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-sm text-gray-600">הצלחה</div>
-                <div className="text-3xl font-bold text-green-600">
-                  {results.summary.successful}
-                </div>
+              <div className="grid grid-cols-3 gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center p-4 bg-green-50 rounded-xl"
+                >
+                  <div className="text-sm text-gray-600 mb-1">הצלחה</div>
+                  <div className="text-3xl font-bold text-green-600">
+                    {results.summary.successful}
+                  </div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-center p-4 bg-red-50 rounded-xl"
+                >
+                  <div className="text-sm text-gray-600 mb-1">כשלון</div>
+                  <div className="text-3xl font-bold text-red-600">
+                    {results.summary.failed}
+                  </div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-center p-4 bg-gray-50 rounded-xl"
+                >
+                  <div className="text-sm text-gray-600 mb-1">סה״כ</div>
+                  <div className="text-3xl font-bold text-gray-600">
+                    {results.summary.total}
+                  </div>
+                </motion.div>
               </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg">
-                <div className="text-sm text-gray-600">כשלון</div>
-                <div className="text-3xl font-bold text-red-600">
-                  {results.summary.failed}
-                </div>
-              </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-sm text-gray-600">סה"כ</div>
-                <div className="text-3xl font-bold text-gray-600">
-                  {results.summary.total}
-                </div>
-              </div>
+
+              <Button
+                onClick={() => setResults(null)}
+                variant="outline"
+                className="w-full"
+              >
+                סגור
+              </Button>
             </div>
-
-            <Button
-              onClick={() => setResults(null)}
-              variant="outline"
-              className="w-full"
-            >
-              סגור
-            </Button>
-          </div>
-        </Card>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Message Type Selection */}
-      <Card className="p-6">
-        <h2 className="text-xl font-bold mb-4">בחר סוג הודעה</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {Object.values(MESSAGE_TEMPLATES).map((template) => (
-            <button
-              key={template.type}
-              onClick={() => {
-                setSelectedType(template.type);
-                setSelectedGuests([]);
-              }}
-              className={`p-4 rounded-lg border-2 transition text-right ${
-                selectedType === template.type
-                  ? 'border-gold bg-gold-light'
-                  : 'border-gray-300 hover:border-gold'
-              }`}
-            >
-              <div className="font-semibold mb-1">{template.title}</div>
-              <div className="text-sm text-gray-600">{template.description}</div>
-            </button>
-          ))}
-        </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl shadow-lg overflow-hidden"
+      >
+        <div className="p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            בחר סוג הודעה
+          </h3>
 
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-          <div className="font-semibold mb-2">תצוגה מקדימה:</div>
-          <pre className="text-sm whitespace-pre-wrap text-gray-700 font-sans">
-            {template.template}
-          </pre>
-        </div>
-      </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {Object.values(MESSAGE_TEMPLATES).map((tpl, index) => {
+              const style = MESSAGE_TYPE_STYLES[tpl.type] || MESSAGE_TYPE_STYLES.invitation;
+              const isSelected = selectedType === tpl.type;
 
-      {/* Sending Settings */}
-      <Card className="p-6">
-        <h2 className="text-xl font-bold mb-4">הגדרות שליחה</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              השהיה בין הודעות (שניות)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="60"
-              value={delayBetweenMessages}
-              onChange={(e) => setDelayBetweenMessages(Number(e.target.value))}
-              className="w-full px-3 py-2 border rounded-lg"
-              disabled={sending}
-            />
-            <p className="text-xs text-gray-600 mt-1">
-              מומלץ: 1-3 שניות (Twilio יכול לשלוח מהר יותר)
-            </p>
+              return (
+                <motion.button
+                  key={tpl.type}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setSelectedType(tpl.type);
+                    setSelectedGuests([]);
+                  }}
+                  className={`relative p-4 rounded-xl border-2 transition-all text-right overflow-hidden ${
+                    isSelected
+                      ? 'border-gold bg-gold/5 shadow-md'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  {/* Selected indicator */}
+                  {isSelected && (
+                    <motion.div
+                      layoutId="selectedType"
+                      className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${style.gradient}`}
+                    />
+                  )}
+
+                  <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center text-xl`}>
+                      {style.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 mb-1">{tpl.title}</div>
+                      <div className="text-sm text-gray-500 line-clamp-2">{tpl.description}</div>
+                    </div>
+                  </div>
+
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-3 left-3 w-5 h-5 rounded-full bg-gold flex items-center justify-center"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    </motion.div>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
 
-          {selectedGuests.length > 0 && (
-            <Alert variant="info">
-              <div className="text-sm">
-                זמן משוער לשליחה: <strong>{Math.ceil((selectedGuests.length * delayBetweenMessages) / 60)} דקות</strong>
-              </div>
-            </Alert>
-          )}
+          {/* Preview */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-4 p-4 bg-gray-50 rounded-xl"
+          >
+            <div className="flex items-center gap-2 mb-2 text-gray-700">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span className="font-semibold text-sm">תצוגה מקדימה:</span>
+            </div>
+            <pre className="text-sm whitespace-pre-wrap text-gray-600 font-sans leading-relaxed">
+              {template.template}
+            </pre>
+          </motion.div>
         </div>
-      </Card>
+      </motion.div>
 
       {/* Guest Selection */}
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">בחר אורחים</h2>
-          <select
-            className="px-3 py-2 border rounded-lg"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as any)}
-            disabled={sending}
-          >
-            <option value="all">הכל</option>
-            <option value="pending">ממתינים</option>
-            <option value="confirmed">אישרו</option>
-            <option value="declined">סירבו</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={selectedGuests.length === filteredGuests.length && filteredGuests.length > 0}
-              onChange={handleSelectAll}
-              className="rounded"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-2xl shadow-lg overflow-hidden"
+      >
+        <div className="p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              בחר אורחים
+            </h3>
+            <select
+              className="px-4 py-2 border border-gray-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gold"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as any)}
               disabled={sending}
-            />
-            <span className="font-medium">
-              בחר הכל ({filteredGuests.length} אורחים)
-            </span>
-          </label>
-        </div>
+            >
+              <option value="all">כל האורחים</option>
+              <option value="pending">ממתינים לאישור</option>
+              <option value="confirmed">אישרו הגעה</option>
+              <option value="declined">סירבו</option>
+            </select>
+          </div>
 
-        {filteredGuests.length === 0 ? (
-          <Alert variant="info">
-            אין אורחים מתאימים לסוג הודעה זה
-          </Alert>
-        ) : (
-          <div className="max-h-96 overflow-y-auto border rounded-lg">
-            <table className="w-full">
-              <thead className="bg-gray-50 sticky top-0">
-                <tr>
-                  <th className="px-4 py-2 text-right w-12"></th>
-                  <th className="px-4 py-2 text-right">שם</th>
-                  <th className="px-4 py-2 text-right">טלפון</th>
-                  <th className="px-4 py-2 text-center">סטטוס</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredGuests.map((guest) => (
-                  <tr key={guest._id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedGuests.includes(guest._id)}
-                        onChange={() => handleToggleGuest(guest._id)}
-                        className="rounded"
-                        disabled={sending}
-                      />
-                    </td>
-                    <td className="px-4 py-2">{guest.name}</td>
-                    <td className="px-4 py-2 dir-ltr text-right">{guest.phone}</td>
-                    <td className="px-4 py-2 text-center">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          guest.rsvpStatus === 'confirmed'
-                            ? 'bg-green-100 text-green-800'
-                            : guest.rsvpStatus === 'declined'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-yellow-100 text-yellow-800'
+          {/* Select All */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-xl">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedGuests.length === filteredGuests.length && filteredGuests.length > 0}
+                onChange={handleSelectAll}
+                className="w-5 h-5 rounded border-gray-300 text-gold focus:ring-gold"
+                disabled={sending}
+              />
+              <span className="font-medium text-gray-900">
+                בחר הכל ({filteredGuests.length} אורחים)
+              </span>
+              {selectedGuests.length > 0 && (
+                <span className="px-2 py-1 bg-gold/10 text-gold text-sm rounded-full font-medium">
+                  {selectedGuests.length} נבחרו
+                </span>
+              )}
+            </label>
+          </div>
+
+          {/* Guest List */}
+          {filteredGuests.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-8"
+            >
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <span className="text-3xl">🔍</span>
+              </div>
+              <p className="text-gray-500">אין אורחים מתאימים לסוג הודעה זה</p>
+            </motion.div>
+          ) : (
+            <>
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-right w-12"></th>
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">שם</th>
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">סטטוס</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedGuests.map((guest, index) => (
+                      <motion.tr
+                        key={guest._id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.015 }}
+                        className={`border-t hover:bg-gray-50 transition ${
+                          selectedGuests.includes(guest._id) ? 'bg-gold/5' : ''
                         }`}
                       >
-                        {guest.rsvpStatus === 'confirmed'
-                          ? 'אישר'
-                          : guest.rsvpStatus === 'declined'
-                          ? 'סירב'
-                          : 'ממתין'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedGuests.includes(guest._id)}
+                            onChange={() => handleToggleGuest(guest._id)}
+                            className="w-5 h-5 rounded border-gray-300 text-gold focus:ring-gold"
+                            disabled={sending}
+                          />
+                        </td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{guest.name}</td>
+                        <td className="px-4 py-3 text-gray-600 dir-ltr text-right font-mono text-sm">
+                          {guest.phone}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                              guest.rsvpStatus === 'confirmed'
+                                ? 'bg-green-50 text-green-700'
+                                : guest.rsvpStatus === 'declined'
+                                ? 'bg-red-50 text-red-700'
+                                : 'bg-amber-50 text-amber-700'
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                guest.rsvpStatus === 'confirmed'
+                                  ? 'bg-green-500'
+                                  : guest.rsvpStatus === 'declined'
+                                  ? 'bg-red-500'
+                                  : 'bg-amber-500'
+                              }`}
+                            />
+                            {guest.rsvpStatus === 'confirmed'
+                              ? 'אישר'
+                              : guest.rsvpStatus === 'declined'
+                              ? 'סירב'
+                              : 'ממתין'}
+                          </span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-        <div className="mt-4">
-          <Button
-            onClick={handleSendBulk}
-            disabled={selectedGuests.length === 0 || sending}
-            size="lg"
-            className="w-full"
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    מציג {startIndex + 1}-{Math.min(endIndex, filteredGuests.length)} מתוך {filteredGuests.length} אורחים
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                    >
+                      
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="13 17 18 12 13 7" />
+                        <polyline points="6 17 11 12 6 7" />
+                      </svg>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </motion.button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <motion.button
+                            key={pageNum}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                              currentPage === pageNum
+                                ? 'bg-gold text-zinc-800 shadow-md'
+                                : 'hover:bg-gray-100 text-zinc-500'
+                            }`}
+                          >
+                            {pageNum}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="11 17 6 12 11 7" />
+                        <polyline points="18 17 13 12 18 7" />
+                      </svg>
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Send Button */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-4"
           >
-            {sending
-              ? 'שולח הודעות...'
-              : `שלח הודעות (${selectedGuests.length} אורחים)`}
-          </Button>
+            <Button
+              onClick={handleSendBulk}
+              disabled={selectedGuests.length === 0 || sending}
+              size="lg"
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" />
+              </svg>
+              {sending
+                ? 'שולח הודעות...'
+                : `שלח הודעות (${selectedGuests.length} אורחים)`}
+            </Button>
+          </motion.div>
         </div>
-      </Card>
+      </motion.div>
     </div>
   );
 }

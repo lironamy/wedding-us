@@ -121,7 +121,7 @@ export const MESSAGE_SCHEDULE_CONFIG: Record<ScheduledMessageType, {
   description: string;
 }> = {
   invitation: {
-    daysBeforeEvent: 56, // 8 weeks
+    daysBeforeEvent: 28, // 4 weeks
     targetFilter: { rsvpStatus: 'all' },
     description: 'הזמנה ראשונית',
   },

@@ -108,6 +108,7 @@ export async function PUT(
       'payboxPhone',
       'enableBitGifts',
       'bitQrImage',
+      'maxGuests',
       'status'
     ];
 

@@ -92,3 +92,34 @@ body {
 button {
   cursor: pointer;
 }
+
+body .mobile-visible {
+  display: contents !important;
+}
+.header-image {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  body .mobile-visible {
+    display: contents !important;
+  }
+}
+
+@media (min-width: 480px) {
+  body .mobile-visible {
+    display: contents !important;
+  }
+}
+
+@media (min-width: 768px) {
+  body .desktop-visible {
+    display: contents !important;
+  }
+}
+
+@media (min-width: 480px) {
+  body .desktop-visible {
+    display: contents !important;
+  }
+}

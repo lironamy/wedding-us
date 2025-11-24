@@ -9,7 +9,7 @@ import Lottie from 'lottie-react';
 import { Button, Input, Alert, Aurora, GradientText, SplitText } from '@/components/ui';
 
 // Wedding/Love Lottie animation URL
-const WEDDING_ANIMATION = 'https://lottie.host/e1c94d85-84e5-4a08-b572-77e795d47d08/5jKxfKhWJv.json';
+const WEDDING_ANIMATION = 'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json';
 
 export default function LoginPage() {
   const router = useRouter();

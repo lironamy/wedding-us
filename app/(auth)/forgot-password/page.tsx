@@ -33,16 +33,21 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      // Send email using EmailJS
-      const resetLink = `${window.location.origin}/reset-password?token=${data.resetToken || 'token'}`;
-      const emailResult = await sendPasswordResetEmail(email, email.split('@')[0], resetLink);
+      // Only send email if we got a reset token (user exists)
+      if (data.resetToken) {
+        const resetLink = `${window.location.origin}/reset-password?token=${data.resetToken}`;
+        const emailResult = await sendPasswordResetEmail(email, email.split('@')[0], resetLink);
 
-      if (emailResult.success) {
-        setSuccess(true);
-        setEmail('');
-      } else {
-        setError(emailResult.message || 'אירעה שגיאה בשליחת האימייל');
+        if (!emailResult.success) {
+          setError(emailResult.message || 'אירעה שגיאה בשליחת האימייל');
+          setIsLoading(false);
+          return;
+        }
       }
+
+      // Always show success for security (don't reveal if email exists)
+      setSuccess(true);
+      setEmail('');
     } catch (err) {
       setError('אירעה שגיאה. אנא נסה שוב.');
     } finally {
@@ -77,7 +82,6 @@ export default function ForgotPasswordPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
               required
               disabled={isLoading || success}
             />

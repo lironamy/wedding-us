@@ -19,6 +19,8 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   nextButtonText?: string;
   completeButtonText?: string;
   disableStepIndicators?: boolean;
+  hideStepIndicators?: boolean;
+  fullWidthContent?: boolean;
   renderStepIndicator?: (props: {
     step: number;
     currentStep: number;
@@ -44,6 +46,8 @@ export function Stepper({
   nextButtonText = 'המשך',
   completeButtonText = 'סיום',
   disableStepIndicators = false,
+  hideStepIndicators = false,
+  fullWidthContent = false,
   renderStepIndicator,
   stepsLabels = [],
   isLoading = false,
@@ -106,43 +110,45 @@ export function Stepper({
   return (
     <div className="flex flex-col w-full" {...rest}>
       {/* Step Indicators */}
-      <div className={`${stepCircleContainerClassName} bg-white rounded-2xl shadow-sm border border-gray-100 mb-6`}>
-        <div className={`${stepContainerClassName} flex w-full items-center justify-between p-4 sm:p-6`}>
-          {stepsArray.map((_, index) => {
-            const stepNumber = index + 1;
-            const isNotLastStep = index < totalSteps - 1;
-            return (
-              <React.Fragment key={stepNumber}>
-                {renderStepIndicator ? (
-                  renderStepIndicator({
-                    step: stepNumber,
-                    currentStep,
-                    onStepClick: clicked => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    }
-                  })
-                ) : (
-                  <StepIndicator
-                    step={stepNumber}
-                    label={stepsLabels[index]}
-                    disableStepIndicators={disableStepIndicators}
-                    currentStep={currentStep}
-                    onClickStep={clicked => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    }}
-                  />
-                )}
-                {isNotLastStep && <StepConnector isComplete={currentStep > stepNumber} />}
-              </React.Fragment>
-            );
-          })}
+      {!hideStepIndicators && (
+        <div className={`${stepCircleContainerClassName} bg-white rounded-2xl shadow-sm border border-gray-100 mb-6`}>
+          <div className={`${stepContainerClassName} flex w-full items-center justify-between p-4 sm:p-6`}>
+            {stepsArray.map((_, index) => {
+              const stepNumber = index + 1;
+              const isNotLastStep = index < totalSteps - 1;
+              return (
+                <React.Fragment key={stepNumber}>
+                  {renderStepIndicator ? (
+                    renderStepIndicator({
+                      step: stepNumber,
+                      currentStep,
+                      onStepClick: clicked => {
+                        setDirection(clicked > currentStep ? 1 : -1);
+                        updateStep(clicked);
+                      }
+                    })
+                  ) : (
+                    <StepIndicator
+                      step={stepNumber}
+                      label={stepsLabels[index]}
+                      disableStepIndicators={disableStepIndicators}
+                      currentStep={currentStep}
+                      onClickStep={clicked => {
+                        setDirection(clicked > currentStep ? 1 : -1);
+                        updateStep(clicked);
+                      }}
+                    />
+                  )}
+                  {isNotLastStep && <StepConnector isComplete={currentStep > stepNumber} />}
+                </React.Fragment>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Step Content */}
-      <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${stepCircleContainerClassName}`}>
+      <div className={`${fullWidthContent ? '' : 'bg-white rounded-2xl shadow-sm border border-gray-100'} ${stepCircleContainerClassName}`}>
         <StepContentWrapper
           isCompleted={isCompleted}
           currentStep={currentStep}

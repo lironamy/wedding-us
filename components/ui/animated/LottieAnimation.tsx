@@ -3,24 +3,101 @@
 import Lottie from 'lottie-react';
 import { CSSProperties, useEffect, useState } from 'react';
 
-// Lottie animation URLs from LottieFiles
+// Lottie animation URLs from LottieFiles CDN (backup - inline LOTTIE_DATA is preferred)
 export const LOTTIE_URLS = {
-  loading: 'https://lottie.host/c8bd4d68-2e82-43a3-8c6e-3b17e03ad6e4/cJCPqXE00V.json',
-  success: 'https://lottie.host/5e0d1a8c-9c8a-4e0f-8a5f-6b3d9e8b7c0d/success.json',
-  empty: 'https://lottie.host/e1f5c8a7-9d4e-4f3a-8b2c-1a0d9e8f7c6b/empty.json',
-  celebration: 'https://lottie.host/f2e6d9c8-7a5b-4e3f-9c1d-2b0a8f7e6d5c/celebration.json',
-  confetti: 'https://lottie.host/3c8b5f91-9b3a-4d1e-8c5f-7a2b0e9d4f6c/confetti.json',
-  // Stats icons
-  guests: 'https://lottie.host/0fbd9a87-2d1b-45ad-a7c9-dfe60ffaa21a/people.json',
-  confirmed: 'https://lottie.host/c3a0c1f3-54bf-4e39-9b3c-5b2f6d7e8f9a/confirmed.json',
-  declined: 'https://lottie.host/d4b1d2f4-65cg-5f4a-ac4d-6c3g7e8f0b1b/declined.json',
-  pending: 'https://lottie.host/e5c2e3f5-76dh-6g5b-bd5e-7d4h8f9g1c2c/pending.json',
-  adults: 'https://lottie.host/f6d3f4g6-87ei-7h6c-ce6f-8e5i9g0h2d3d/adults.json',
-  children: 'https://lottie.host/g7e4g5h7-98fj-8i7d-df7g-9f6j0h1i3e4e/children.json',
+  loading: 'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
+  success: 'https://assets2.lottiefiles.com/packages/lf20_jbrw3hcz.json',
+  empty: 'https://assets2.lottiefiles.com/packages/lf20_wnqlfojb.json',
+  celebration: 'https://assets2.lottiefiles.com/packages/lf20_lg6lh7fp.json',
+  confetti: 'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json',
+  // Stats icons - using inline LOTTIE_DATA instead
+  guests: 'https://assets2.lottiefiles.com/packages/lf20_vnikrcia.json',
+  confirmed: 'https://assets2.lottiefiles.com/packages/lf20_jbrw3hcz.json',
+  declined: 'https://assets2.lottiefiles.com/packages/lf20_tl52xzvn.json',
+  pending: 'https://assets2.lottiefiles.com/packages/lf20_usmfx6bp.json',
+  adults: 'https://assets2.lottiefiles.com/packages/lf20_vnikrcia.json',
+  children: 'https://assets2.lottiefiles.com/packages/lf20_vnikrcia.json',
 };
 
 // Inline Lottie data for common animations
 export const LOTTIE_DATA: Record<string, any> = {
+  // Message/Email icon - animated envelope
+  message: {
+    v: '5.7.4', fr: 30, ip: 0, op: 60, w: 100, h: 100, nm: 'Message',
+    layers: [{
+      ddd: 0, ind: 1, ty: 4, nm: 'Envelope', sr: 1,
+      ks: {
+        o: { a: 0, k: 100 },
+        p: { a: 0, k: [50, 50] },
+        s: { a: 1, k: [{ t: 0, s: [95, 95] }, { t: 30, s: [100, 100] }, { t: 60, s: [95, 95] }] }
+      },
+      shapes: [
+        { ty: 'rc', s: { a: 0, k: [60, 40] }, p: { a: 0, k: [0, 5] }, r: { a: 0, k: 4 } },
+        { ty: 'gr', it: [
+          { ty: 'sh', ks: { a: 0, k: { c: false, v: [[-30, -15], [0, 10], [30, -15]], i: [[0, 0], [0, 0], [0, 0]], o: [[0, 0], [0, 0], [0, 0]] } } },
+          { ty: 'st', c: { a: 0, k: [1, 1, 1, 1] }, w: { a: 0, k: 3 }, lc: 2, lj: 2 }
+        ]},
+        { ty: 'fl', c: { a: 0, k: [1, 1, 1, 1] }, o: { a: 0, k: 100 } }
+      ]
+    }]
+  },
+  // Send/Paper plane icon
+  send: {
+    v: '5.7.4', fr: 30, ip: 0, op: 60, w: 100, h: 100, nm: 'Send',
+    layers: [{
+      ddd: 0, ind: 1, ty: 4, nm: 'Plane', sr: 1,
+      ks: {
+        o: { a: 0, k: 100 },
+        p: { a: 1, k: [{ t: 0, s: [40, 60] }, { t: 30, s: [60, 40] }, { t: 60, s: [40, 60] }] },
+        r: { a: 0, k: -45 },
+        s: { a: 1, k: [{ t: 0, s: [90, 90] }, { t: 30, s: [100, 100] }, { t: 60, s: [90, 90] }] }
+      },
+      shapes: [
+        { ty: 'gr', it: [
+          { ty: 'sh', ks: { a: 0, k: { c: true, v: [[0, -20], [25, 0], [0, 8], [-5, 0]], i: [[0, 0], [0, 0], [0, 0], [0, 0]], o: [[0, 0], [0, 0], [0, 0], [0, 0]] } } },
+          { ty: 'fl', c: { a: 0, k: [1, 1, 1, 1] }, o: { a: 0, k: 100 } }
+        ]}
+      ]
+    }]
+  },
+  // Schedule/Clock icon
+  schedule: {
+    v: '5.7.4', fr: 30, ip: 0, op: 120, w: 100, h: 100, nm: 'Schedule',
+    layers: [{
+      ddd: 0, ind: 1, ty: 4, nm: 'Clock', sr: 1,
+      ks: { o: { a: 0, k: 100 }, p: { a: 0, k: [50, 50] }, s: { a: 0, k: [100, 100] } },
+      shapes: [
+        { ty: 'el', s: { a: 0, k: [50, 50] }, p: { a: 0, k: [0, 0] } },
+        { ty: 'st', c: { a: 0, k: [1, 1, 1, 1] }, w: { a: 0, k: 4 }, o: { a: 0, k: 100 } },
+        { ty: 'gr', it: [
+          { ty: 'sh', ks: { a: 0, k: { c: false, v: [[0, 0], [0, -15]], i: [[0, 0], [0, 0]], o: [[0, 0], [0, 0]] } } },
+          { ty: 'st', c: { a: 0, k: [1, 1, 1, 1] }, w: { a: 0, k: 4 }, lc: 2 },
+          { ty: 'tm', s: { a: 0, k: 0 }, e: { a: 0, k: 100 } }
+        ]},
+        { ty: 'gr', it: [
+          { ty: 'sh', ks: { a: 0, k: { c: false, v: [[0, 0], [10, 5]], i: [[0, 0], [0, 0]], o: [[0, 0], [0, 0]] } } },
+          { ty: 'st', c: { a: 0, k: [1, 1, 1, 1] }, w: { a: 0, k: 3 }, lc: 2 },
+          { ty: 'tm', s: { a: 0, k: 0 }, e: { a: 1, k: [{ t: 0, s: [0] }, { t: 60, s: [100] }] } }
+        ]}
+      ]
+    }]
+  },
+  // WhatsApp icon
+  whatsapp: {
+    v: '5.7.4', fr: 30, ip: 0, op: 60, w: 100, h: 100, nm: 'WhatsApp',
+    layers: [{
+      ddd: 0, ind: 1, ty: 4, nm: 'WA', sr: 1,
+      ks: {
+        o: { a: 0, k: 100 },
+        p: { a: 0, k: [50, 50] },
+        s: { a: 1, k: [{ t: 0, s: [95, 95] }, { t: 30, s: [105, 105] }, { t: 60, s: [95, 95] }] }
+      },
+      shapes: [
+        { ty: 'el', s: { a: 0, k: [45, 45] }, p: { a: 0, k: [0, 0] } },
+        { ty: 'fl', c: { a: 0, k: [1, 1, 1, 1] }, o: { a: 0, k: 100 } }
+      ]
+    }]
+  },
   // People/Guests icon - animated circles
   guests: {
     v: '5.7.4', fr: 30, ip: 0, op: 60, w: 100, h: 100, nm: 'Guests',

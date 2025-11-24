@@ -5,13 +5,14 @@ import InvitationShowcase from "@/components/landing/InvitationShowcase";
 import WhatsAppShowcase from "@/components/landing/WhatsAppShowcase";
 import AnimatedFeatures from "@/components/landing/AnimatedFeatures";
 
+
 export default function Home() {
   return (
     <div className="min-h-screen overflow-x-hidden">
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">פלטפורמת חתונות</h1>
+          <h1 className="text-2xl font-bold text-primary">LunSoul</h1>
           <div className="flex gap-4">
             <Link href="/login">
               <Button variant="ghost">התחבר</Button>

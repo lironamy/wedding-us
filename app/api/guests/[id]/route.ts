@@ -75,6 +75,22 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    // If phone is being updated, check for duplicates
+    if (body.phone && body.phone.trim() !== guest.phone) {
+      const existingGuest = await Guest.findOne({
+        weddingId: guest.weddingId,
+        phone: body.phone.trim(),
+        _id: { $ne: id }, // Exclude current guest
+      });
+
+      if (existingGuest) {
+        return NextResponse.json(
+          { error: `אורח עם מספר הטלפון ${body.phone} כבר קיים (${existingGuest.name})` },
+          { status: 400 }
+        );
+      }
+    }
+
     // Update allowed fields
     const allowedFields = [
       'name',

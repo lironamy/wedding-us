@@ -116,17 +116,6 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          {wedding ? 'עריכת פרטי החתונה' : 'יצירת חתונה חדשה'}
-        </h1>
-        <p className="text-gray-600 mt-2">
-          {wedding
-            ? 'עדכני את פרטי החתונה שלך'
-            : 'מלאי את הפרטים ליצירת הזמנה דיגיטלית מושלמת'}
-        </p>
-      </div>
-
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
           {error}

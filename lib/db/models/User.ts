@@ -7,6 +7,8 @@ export interface IUser {
   googleId?: string;
   password?: string;
   role: 'couple' | 'admin';
+  resetToken?: string;
+  resetTokenExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +44,12 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ['couple', 'admin'],
       default: 'couple',
+    },
+    resetToken: {
+      type: String,
+    },
+    resetTokenExpiry: {
+      type: Date,
     },
   },
   {

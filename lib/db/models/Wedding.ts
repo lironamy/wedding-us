@@ -28,8 +28,23 @@ export interface IWedding {
   payboxPhone?: string;
   bitQrImage?: string;
   enableBitGifts?: boolean;
+  maxGuests: number;
   uniqueUrl: string;
   status: 'draft' | 'active' | 'completed' | 'archived';
+  // Payment fields
+  paymentStatus?: 'free' | 'pending' | 'paid' | 'failed';
+  paymentDetails?: {
+    transactionId: string;
+    amount: number;
+    paidAt: Date;
+    packageGuests: number;
+  };
+  pendingPayment?: {
+    transactionId: string;
+    amount: number;
+    packageGuests: number;
+    createdAt: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -136,6 +151,12 @@ const WeddingSchema = new Schema<IWedding>(
       type: Boolean,
       default: false,
     },
+    maxGuests: {
+      type: Number,
+      default: 200,
+      min: 200,
+      max: 1000,
+    },
     uniqueUrl: {
       type: String,
       required: true,
@@ -145,6 +166,23 @@ const WeddingSchema = new Schema<IWedding>(
       type: String,
       enum: ['draft', 'active', 'completed', 'archived'],
       default: 'draft',
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['free', 'pending', 'paid', 'failed'],
+      default: 'free',
+    },
+    paymentDetails: {
+      transactionId: String,
+      amount: Number,
+      paidAt: Date,
+      packageGuests: Number,
+    },
+    pendingPayment: {
+      transactionId: String,
+      amount: Number,
+      packageGuests: Number,
+      createdAt: Date,
     },
   },
   {

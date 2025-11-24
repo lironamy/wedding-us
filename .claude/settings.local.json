@@ -33,7 +33,12 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(curl:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx shadcn@latest add \"https://reactbits.dev/r/blur-text\" --yes)"
+      "Bash(npx shadcn@latest add \"https://reactbits.dev/r/blur-text\" --yes)",
+      "Bash(dir \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\public\\images\" /b)",
+      "WebFetch(domain:invoice4uclearingapis.docs.apiary.io)",
+      "WebFetch(domain:verifone.cloud)",
+      "WebFetch(domain:invoice4uapi.docs.apiary.io)",
+      "WebFetch(domain:www.invoice4u.co.il)"
     ],
     "deny": [],
     "ask": []

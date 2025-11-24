@@ -418,7 +418,7 @@ function NotesPopup({
   );
 }
 
-// Guest row component with animations
+// Guest row component with animations - matching AutomatedMessageSender style
 function GuestRow({
   guest,
   index,
@@ -438,22 +438,22 @@ function GuestRow({
 }) {
   const statusConfig = {
     confirmed: {
-      bg: 'bg-linear-to-r from-emerald-500 to-green-500',
-      text: 'text-white',
+      bg: 'bg-green-50',
+      text: 'text-green-700',
+      dot: 'bg-green-500',
       label: 'אישר',
-      icon: '✓',
     },
     declined: {
-      bg: 'bg-linear-to-r from-rose-500 to-red-500',
-      text: 'text-white',
+      bg: 'bg-red-50',
+      text: 'text-red-700',
+      dot: 'bg-red-500',
       label: 'סירב',
-      icon: '✕',
     },
     pending: {
-      bg: 'bg-linear-to-r from-amber-400 to-yellow-500',
-      text: 'text-white',
+      bg: 'bg-amber-50',
+      text: 'text-amber-700',
+      dot: 'bg-amber-500',
       label: 'ממתין',
-      icon: '⏳',
     },
   };
 
@@ -461,57 +461,49 @@ function GuestRow({
 
   return (
     <motion.tr
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20, height: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.03 }}
-      className="group hover:bg-amber-50 transition-all duration-300"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: index * 0.015 }}
+      className="border-t hover:bg-gray-50 transition"
     >
-      <td className="px-4 py-4">
+      <td className="px-4 py-3">
         <div className="flex items-center gap-3">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: index * 0.03 + 0.2, type: 'spring' }}
-            className="w-10 h-10 rounded-full bg-linear-to-br from-gold to-gold-dark flex items-center justify-center text-zinc-500 font-bold shadow-lg"
-          >
+          <div className="w-9 h-9 rounded-full bg-linear-to-br from-gold/80 to-gold flex items-center justify-center text-balance font-semibold text-sm shadow-sm">
             {guest.name.charAt(0)}
-          </motion.div>
+          </div>
           <div>
-            <p className="font-semibold text-gray-800">{guest.name}</p>
+            <p className="font-medium text-gray-900">{guest.name}</p>
             {guest.familyGroup && (
               <p className="text-xs text-gray-500">{guest.familyGroup}</p>
             )}
           </div>
         </div>
       </td>
-      <td className="px-4 py-4 dir-ltr text-right font-mono text-gray-600">
+      <td className="px-4 py-3 dir-ltr text-right font-mono text-sm text-gray-600">
         {guest.phone}
       </td>
-      <td className="px-4 py-4 text-center">
-        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
+      <td className="px-4 py-3 text-center">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 text-sm font-medium">
           {guest.invitedCount || '∞'}
         </span>
       </td>
-      <td className="px-4 py-4 text-center">
-        <motion.span
-          whileHover={{ scale: 1.05 }}
-          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${status.bg} ${status.text}`}
+      <td className="px-4 py-3 text-center">
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}
         >
-          <span>{status.icon}</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
           {status.label}
-        </motion.span>
+        </span>
       </td>
-      <td className="px-4 py-4 text-center">
+      <td className="px-4 py-3 text-center">
         {guest.rsvpStatus === 'confirmed' ? (
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center gap-0.5">
             <span className="font-semibold text-emerald-600">
               {(guest.adultsAttending || 0) + (guest.childrenAttending || 0)}
             </span>
             <span className="text-xs text-gray-500">
               {guest.adultsAttending || 0} + {guest.childrenAttending || 0}
             </span>
-            {/* Show meal breakdown if there are special meals */}
             {((guest.vegetarianMeals || 0) > 0 || (guest.veganMeals || 0) > 0 || (guest.otherMeals || 0) > 0) && (
               <div className="flex flex-wrap gap-1 justify-center mt-1">
                 {(guest.vegetarianMeals || 0) > 0 && (
@@ -536,11 +528,11 @@ function GuestRow({
           <span className="text-gray-400">-</span>
         )}
       </td>
-      <td className="px-4 py-4">
+      <td className="px-4 py-3">
         <div className="flex gap-1 justify-center">
           <motion.button
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onEdit}
             className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
             title="ערוך"
@@ -550,8 +542,8 @@ function GuestRow({
             </svg>
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onCopyLink}
             className="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
             title="העתק קישור RSVP"
@@ -561,8 +553,8 @@ function GuestRow({
             </svg>
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onSendWhatsApp}
             className="p-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
             title="שלח WhatsApp"
@@ -573,8 +565,8 @@ function GuestRow({
           </motion.button>
           {(guest.notes || guest.specialMealRequests) && (
             <motion.button
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={onShowNotes}
               className="p-2 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors relative"
               title="הערות ובקשות"
@@ -586,8 +578,8 @@ function GuestRow({
             </motion.button>
           )}
           <motion.button
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onDelete}
             className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
             title="מחק"
@@ -619,6 +611,10 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
   const [familyFilter, setFamilyFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const GUESTS_PER_PAGE = 25;
 
   // Load guests
   const loadGuests = async () => {
@@ -700,7 +696,14 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
     });
 
     setFilteredGuests(filtered);
+    setCurrentPage(1); // Reset to page 1 when filters change
   }, [searchTerm, statusFilter, familyFilter, sortBy, sortOrder, guests]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredGuests.length / GUESTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * GUESTS_PER_PAGE;
+  const endIndex = startIndex + GUESTS_PER_PAGE;
+  const paginatedGuests = filteredGuests.slice(startIndex, endIndex);
 
   // Clear all filters
   const clearFilters = () => {
@@ -1176,38 +1179,128 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="overflow-hidden rounded-2xl shadow-xl border border-gray-100"
+          className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
         >
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-linear-to-r from-gray-50 to-gray-100">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-4 text-right font-semibold text-gray-700">אורח</th>
-                  <th className="px-4 py-4 text-right font-semibold text-gray-700">טלפון</th>
-                  <th className="px-4 py-4 text-center font-semibold text-gray-700">מוזמנים</th>
-                  <th className="px-4 py-4 text-center font-semibold text-gray-700">סטטוס</th>
-                  <th className="px-4 py-4 text-center font-semibold text-gray-700">מגיעים</th>
-                  <th className="px-4 py-4 text-center font-semibold text-gray-700">פעולות</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">אורח</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">מוזמנים</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">סטטוס</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">מגיעים</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">פעולות</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-50">
-                <AnimatePresence mode="popLayout">
-                  {filteredGuests.map((guest, index) => (
-                    <GuestRow
-                      key={guest._id}
-                      guest={guest}
-                      index={index}
-                      onEdit={() => setEditingGuest(guest)}
-                      onDelete={() => handleDelete(guest._id)}
-                      onCopyLink={() => copyRsvpLink(guest.uniqueToken)}
-                      onSendWhatsApp={() => sendWhatsApp(guest)}
-                      onShowNotes={() => setNotesGuest(guest)}
-                    />
-                  ))}
-                </AnimatePresence>
+              <tbody>
+                {paginatedGuests.map((guest, index) => (
+                  <GuestRow
+                    key={guest._id}
+                    guest={guest}
+                    index={index}
+                    onEdit={() => setEditingGuest(guest)}
+                    onDelete={() => handleDelete(guest._id)}
+                    onCopyLink={() => copyRsvpLink(guest.uniqueToken)}
+                    onSendWhatsApp={() => sendWhatsApp(guest)}
+                    onShowNotes={() => setNotesGuest(guest)}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                מציג {startIndex + 1}-{Math.min(endIndex, filteredGuests.length)} מתוך {filteredGuests.length} אורחים
+              </div>
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="13 17 18 12 13 7" />
+                    <polyline points="6 17 11 12 6 7" />
+                  </svg>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </motion.button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <motion.button
+                        key={pageNum}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                          currentPage === pageNum
+                            ? 'bg-gold text-zinc-800 shadow-md'
+                            : 'hover:bg-white text-gray-700 border border-gray-200'
+                        }`}
+                      >
+                        {pageNum}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition"
+                >
+              
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition"
+                >
+               
+
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="11 17 6 12 11 7" />
+                    <polyline points="18 17 13 12 18 7" />
+                  </svg>
+                </motion.button>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
     </div>

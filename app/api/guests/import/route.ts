@@ -51,6 +51,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
     }
 
+    // Check guest limit before processing file
+    const currentGuestCount = await Guest.countDocuments({ weddingId });
+    const maxGuests = wedding.maxGuests || 200;
+
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -63,6 +67,17 @@ export async function POST(request: NextRequest) {
         {
           error: 'Failed to parse Excel file',
           validationErrors: errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if importing these guests would exceed the limit
+    const availableSlots = maxGuests - currentGuestCount;
+    if (guests.length > availableSlots) {
+      return NextResponse.json(
+        {
+          error: `לא ניתן לייבא ${guests.length} אורחים. נותרו רק ${availableSlots} מקומות פנויים מתוך ${maxGuests}. שדרג את החבילה כדי להוסיף עוד אורחים.`,
         },
         { status: 400 }
       );

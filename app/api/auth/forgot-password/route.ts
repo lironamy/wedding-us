@@ -32,20 +32,24 @@ export async function POST(request: NextRequest) {
     const resetToken = generateUUID();
     const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // In a real app, you would:
-    // 1. Save resetToken and resetTokenExpiry to the user document
-    // 2. Send email with reset link containing the token
-    // For now, we'll just return a success message
+    // Save reset token to user
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = resetTokenExpiry;
+    await user.save();
 
-    // TODO: Implement password reset token storage and email sending
-    // The email should be sent from the client using EmailJS
-    // You can create a client-side component to handle this
+    console.log('Saved reset token for user:', user.email);
+    console.log('Token:', resetToken);
+    console.log('Expiry:', resetTokenExpiry);
+
+    // Verify it was saved
+    const verifyUser = await User.findById(user._id);
+    console.log('Verified saved token:', verifyUser?.resetToken);
+    console.log('Verified saved expiry:', verifyUser?.resetTokenExpiry);
 
     return NextResponse.json(
       {
         message: 'אם האימייל קיים במערכת, נשלח אליו קישור לאיפוס סיסמה',
-        // For testing purposes only - remove in production
-        resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined,
+        resetToken: resetToken, // Return token for client to send email
       },
       { status: 200 }
     );

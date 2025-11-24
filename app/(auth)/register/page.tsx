@@ -9,9 +9,9 @@ import Lottie from 'lottie-react';
 import { Button, Input, Alert, Aurora, GradientText, SplitText } from '@/components/ui';
 
 // Wedding rings Lottie animation
-const WEDDING_ANIMATION = 'https://lottie.host/7c4e5a1d-0b1e-4b5a-9c5e-8f5a5b5c5d5e/wedding-rings.json';
+const WEDDING_ANIMATION = 'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json';
 // Fallback animation - celebration/confetti
-const CELEBRATION_ANIMATION = 'https://lottie.host/d5f8a2b3-4c1e-5d6f-7a8b-9c0d1e2f3a4b/celebration.json';
+const CELEBRATION_ANIMATION = 'https://assets2.lottiefiles.com/packages/lf20_lg6lh7fp.json';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function RegisterPage() {
 
   // Load Lottie animation
   useState(() => {
-    fetch('https://lottie.host/e1c94d85-84e5-4a08-b572-77e795d47d08/5jKxfKhWJv.json')
+    fetch(WEDDING_ANIMATION)
       .then(res => res.json())
       .then(data => setAnimationData(data))
       .catch(() => {});

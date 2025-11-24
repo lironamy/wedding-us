@@ -43,8 +43,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
     }
 
-    // Get all scheduled messages
-    const scheduledMessages = await ScheduledMessage.find({ weddingId })
+    // Get all scheduled messages (excluding cancelled)
+    const scheduledMessages = await ScheduledMessage.find({
+      weddingId,
+      status: { $ne: 'cancelled' }
+    })
       .sort({ scheduledFor: 1 })
       .lean();
 
@@ -109,10 +112,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // If regenerating, cancel existing pending schedules
+    // If regenerating, handle existing schedules:
+    // - Delete pending schedules that haven't sent any messages
+    // - Cancel pending schedules that have sent messages (keep for history)
     if (regenerate) {
+      // Delete schedules with no messages sent
+      await ScheduledMessage.deleteMany({
+        weddingId,
+        status: 'pending',
+        sentCount: 0,
+      });
+
+      // Cancel schedules that have sent some messages (keep for history)
       await ScheduledMessage.updateMany(
-        { weddingId, status: 'pending' },
+        { weddingId, status: 'pending', sentCount: { $gt: 0 } },
         { status: 'cancelled' }
       );
     }

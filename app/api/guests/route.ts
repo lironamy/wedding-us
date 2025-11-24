@@ -83,6 +83,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
     }
 
+    // Check guest limit
+    const currentGuestCount = await Guest.countDocuments({ weddingId });
+    const maxGuests = wedding.maxGuests || 200;
+
+    if (currentGuestCount >= maxGuests) {
+      return NextResponse.json(
+        { error: `הגעת למכסת המוזמנים המקסימלית (${maxGuests}). שדרג את החבילה כדי להוסיף עוד אורחים.` },
+        { status: 400 }
+      );
+    }
+
+    // Check if a guest with the same phone already exists for this wedding
+    const existingGuest = await Guest.findOne({
+      weddingId,
+      phone: phone.trim(),
+    });
+
+    if (existingGuest) {
+      return NextResponse.json(
+        { error: `אורח עם מספר הטלפון ${phone} כבר קיים (${existingGuest.name})` },
+        { status: 400 }
+      );
+    }
+
     // Create new guest
     const guest = new Guest({
       guestId: uuidv4(),
