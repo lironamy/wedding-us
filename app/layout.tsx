@@ -4,6 +4,8 @@ import "./globals.css";
 import SessionProvider from "@/components/auth/SessionProvider";
 import { getSession } from "@/lib/auth/get-session";
 import { Toaster } from "react-hot-toast";
+import Footer from "@/components/layout/Footer";
+import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
 
 const rubik = Rubik({
   subsets: ["hebrew", "latin"],
@@ -30,9 +32,13 @@ export default async function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className={`${rubik.className} antialiased`}>
+      <body className={`${rubik.className} antialiased flex flex-col min-h-screen`}>
         <SessionProvider session={session}>
-          {children}
+          <AccessibilityWidget />
+          <div className="flex-grow">
+            {children}
+          </div>
+          <Footer />
           <Toaster
             position="top-center"
             reverseOrder={false}

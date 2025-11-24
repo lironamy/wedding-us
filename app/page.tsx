@@ -41,13 +41,6 @@ export default function Home() {
 
       {/* CTA Section */}
       <CTASection />
-
-      {/* Footer */}
-      <footer className="border-t bg-white">
-        <div className="container mx-auto px-4 py-8 text-center text-gray-600">
-          <p>&copy; 2024 פלטפורמת חתונות. כל הזכויות שמורות.</p>
-        </div>
-      </footer>
     </div>
   );
 }
