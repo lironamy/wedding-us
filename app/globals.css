@@ -5,10 +5,10 @@
   /* Color Palette */
   --background: #ffffff;
   --foreground: #2C3E50;
-  --primary: #C4A57B;
-  --primary-dark: #A88B63;
+  --primary: #a773df;
+  --primary-dark: #7950a5;
   --secondary: #2C3E50;
-  --accent: #E8D4B8;
+  --accent: #cfadf5;
   --muted: #F5F5F5;
   --border: #E0E0E0;
 
@@ -40,7 +40,7 @@
   :root {
     --background: #1a1a1a;
     --foreground: #ededed;
-    --muted: #2a2a2a;
+    --muted: #cfadf5;
     --border: #404040;
   }
 }

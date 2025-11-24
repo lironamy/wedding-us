@@ -285,7 +285,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
               </div>
 
               {/* Warning */}
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
+              <div className="p-3 bg-purple-100/60  border border-amber-200 rounded-xl flex items-center gap-3">
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ repeat: Infinity, duration: 1.5 }}
@@ -576,7 +576,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
                                 ? 'bg-green-50 text-green-700'
                                 : guest.rsvpStatus === 'declined'
                                 ? 'bg-red-50 text-red-700'
-                                : 'bg-amber-50 text-amber-700'
+                                : 'bg-purple-100/60  text-amber-700'
                             }`}
                           >
                             <span
@@ -585,7 +585,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
                                   ? 'bg-green-500'
                                   : guest.rsvpStatus === 'declined'
                                   ? 'bg-red-500'
-                                  : 'bg-amber-500'
+                                  : 'bg-purple-100/60 0'
                               }`}
                             />
                             {guest.rsvpStatus === 'confirmed'

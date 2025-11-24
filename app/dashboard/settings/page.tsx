@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
 import WeddingFormStepper from '@/components/dashboard/WeddingFormStepper';
 import Button from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface Wedding {
@@ -108,50 +106,37 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
+      <div className="fixed inset-0 flex justify-center items-center bg-gray-50">
         <LoadingSpinner size="large" />
       </div>
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
-{/* 
-      {wedding && (
-        <Card className="mb-6">
-          <div className="p-4 bg-blue-50 border-b border-blue-100">
-            <h3 className="font-semibold text-blue-900">קישור להזמנה שלך</h3>
-            <div className="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <code className="flex-1 p-2 bg-white rounded border border-blue-200 text-sm overflow-hidden text-ellipsis whitespace-nowrap block min-w-0" dir="ltr">
-                {`${process.env.NEXT_PUBLIC_APP_URL}/wedding/${wedding.uniqueUrl}`}
-              </code>
-              <Button
-                size="sm"
-                className="shrink-0 w-full sm:w-auto"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${process.env.NEXT_PUBLIC_APP_URL}/wedding/${wedding.uniqueUrl}`
-                  );
-                  toast.success('הקישור הועתק ללוח!');
-                }}
-              >
-                העתק
-              </Button>
-            </div>
+  // Show error as overlay if needed
+  if (error) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 z-50">
+        <div className="max-w-md p-6 bg-white rounded-2xl shadow-xl text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
           </div>
-        </Card>
-      )} */}
+          <h3 className="text-xl font-bold text-gray-900 mb-2">שגיאה</h3>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Button onClick={() => router.push('/dashboard')}>
+            חזרה לדשבורד
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-      <WeddingFormStepper
-        wedding={wedding}
-        onSubmit={handleSubmit}
-        onCancel={() => router.push('/dashboard')}
-      />
-    </div>
+  return (
+    <WeddingFormStepper
+      wedding={wedding}
+      onSubmit={handleSubmit}
+      onCancel={() => router.push('/dashboard')}
+    />
   );
 }

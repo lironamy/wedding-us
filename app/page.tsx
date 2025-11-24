@@ -12,7 +12,7 @@ export default function Home() {
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary">LunSoul</h1>
+          <h1 className="text-2xl font-bold text-primary ">LunSoul</h1>
           <div className="flex gap-4">
             <Link href="/login">
               <Button variant="ghost">התחבר</Button>
@@ -152,7 +152,7 @@ function CTASection() {
           <Link href="/register">
             <Button
               size="lg"
-              className="text-xl px-12 py-8 bg-white !text-[#C4A57B] hover:bg-white/90 shadow-2xl hover:shadow-white/25 transition-all duration-300 hover:scale-105"
+              className="text-xl px-12 py-8 bg-white !text-[#7950a5] hover:bg-white/90 shadow-2xl hover:shadow-white/25 transition-all duration-300 hover:scale-105"
             >
               התחילו עכשיו - חינם
             </Button>

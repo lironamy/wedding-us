@@ -67,9 +67,9 @@ const STATUS_CONFIG: Record<string, {
 }> = {
   pending: {
     label: 'ממתין',
-    bgColor: 'bg-amber-50',
+    bgColor: 'bg-purple-100/60 ',
     textColor: 'text-amber-700',
-    dotColor: 'bg-amber-500',
+    dotColor: 'bg-purple-100/60 0',
   },
   sending: {
     label: 'בשליחה...',

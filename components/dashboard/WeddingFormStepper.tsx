@@ -39,7 +39,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     backgroundPattern: '',
     maxGuests: 200,
     theme: {
-      primaryColor: '#C4A57B',
+      primaryColor: '#7950a5',
       secondaryColor: '#2C3E50',
       fontFamily: 'Assistant'
     }
@@ -113,7 +113,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         backgroundPattern: wedding.backgroundPattern || '',
         maxGuests: wedding.maxGuests || 200,
         theme: wedding.theme || {
-          primaryColor: '#C4A57B',
+          primaryColor: '#7950a5',
           secondaryColor: '#2C3E50',
           fontFamily: 'Assistant'
         }
@@ -244,7 +244,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   };
 
   return (
-    <div className="space-y-6">
+    <>
       <Stepper
         initialStep={1}
         onStepChange={handleStepChange}
@@ -261,6 +261,9 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         disableStepIndicators={false}
         hideStepIndicators={currentStep === 7}
         fullWidthContent={currentStep === 7}
+        fullHeightLayout={true}
+        onCancel={onCancel}
+        cancelButtonText="ביטול"
         isLoading={loading}
       >
         {/* Step 1: Partner Details */}
@@ -537,7 +540,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               <p className="text-gray-500 mt-1">בחרו את כמות המוזמנים המקסימלית</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {packageOptions.map((pkg) => {
                 const isSelected = formData.maxGuests === pkg.guests;
                 const isFree = pkg.price === 0;
@@ -607,6 +610,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                     <li>• ניהול אורחים עד למכסה שנבחרה</li>
                     <li>• שליחת הודעות WhatsApp אוטומטיות</li>
                     <li>• דף RSVP מותאם אישית</li>
+                    <li>• סידורי ישיבה</li>
                     <li>• סטטיסטיקות ודוחות</li>
                   </ul>
                 </div>
@@ -672,7 +676,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                 
 
                   {/* Iframe content */}
-                  <div className="bg-white overflow-hidden" style={{ height: 'calc(100vh - 350px)', minHeight: '500px' }}>
+                  <div className="bg-white overflow-hidden" style={{ height: 'calc(100vh - 250px)', minHeight: '500px', width: '100%' }}>
                     <iframe
                       src={paymentClearingUrl}
                       className="w-full h-full border-0"
@@ -693,33 +697,10 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                   </div>
                 </motion.div>
               )}
-
-              {/* Trust badges */}
-              <div className="flex items-center justify-center gap-6 pt-2">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <span>256-bit SSL</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                  <span>תשלום בטוח</span>
-                </div>
-              </div>
             </div>
           </Step>
         )}
       </Stepper>
-
-      {/* Cancel Button */}
-      <div className="flex justify-center">
-        <Button type="button" variant="secondary" onClick={onCancel}>
-          ביטול
-        </Button>
-      </div>
 
       {/* Payment Success Modal */}
       <AnimatePresence>
@@ -787,6 +768,6 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }

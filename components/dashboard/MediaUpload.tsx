@@ -26,7 +26,7 @@ export default function MediaUpload({
   currentMediaUrl,
   currentMediaType,
   onUpload,
-  theme = { primaryColor: '#C4A57B', secondaryColor: '#2C3E50' }
+  theme = { primaryColor: '#7950a5', secondaryColor: '#2C3E50' }
 }: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(currentMediaUrl);
@@ -61,12 +61,12 @@ export default function MediaUpload({
     const widget = window.cloudinary.createUploadWidget(
       {
         cloudName,
-        uploadPreset: 'wedding_media', // You'll need to create this in Cloudinary
+        uploadPreset: 'wedding_media',
         sources: ['local', 'url', 'camera'],
         multiple: false,
         maxFileSize: 10000000, // 10MB
-        resourceType: 'auto', // Allows both images and videos
-        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi'],
+        resourceType: 'image',
+        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
         cropping: false,
         folder: 'weddings',
         language: 'he',
@@ -82,7 +82,7 @@ export default function MediaUpload({
             },
             local: {
               browse: 'בחר קובץ',
-              dd_title_single: 'גרור קובץ לכאן',
+              dd_title_single: 'גרור תמונה לכאן',
               drop_title_single: 'שחרר כדי להעלות'
             }
           }
@@ -126,29 +126,19 @@ export default function MediaUpload({
           className="text-xl font-semibold mb-4"
           style={{ color: theme.primaryColor }}
         >
-          תמונה או וידאו להזמנה
+          תמונה להזמנה
         </h2>
 
         {previewUrl ? (
           <div className="space-y-4">
             {/* Preview */}
             <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              {previewType === 'video' ? (
-                <video
-                  src={previewUrl}
-                  controls
-                  className="w-full h-full object-cover"
-                >
-                  הדפדפן שלך לא תומך בתגית video.
-                </video>
-              ) : (
-                <Image
-                  src={previewUrl}
-                  alt="תצוגה מקדימה"
-                  fill
-                  className="object-cover"
-                />
-              )}
+              <Image
+                src={previewUrl}
+                alt="תצוגה מקדימה"
+                fill
+                className="object-cover"
+              />
             </div>
 
             {/* Actions */}
@@ -159,7 +149,7 @@ export default function MediaUpload({
                 onClick={openUploadWidget}
                 disabled={uploading}
               >
-                {uploading ? 'מעלה...' : 'החלף מדיה'}
+                {uploading ? 'מעלה...' : 'החלף תמונה'}
               </Button>
               <Button
                 type="button"
@@ -186,9 +176,9 @@ export default function MediaUpload({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p className="mt-4 text-gray-600">לא הועלתה תמונה או וידאו</p>
+              <p className="mt-4 text-gray-600">לא הועלתה תמונה</p>
               <p className="text-sm text-gray-500 mt-2">
-                תמונה או וידאו עד 10MB
+                JPG, PNG, GIF, WEBP עד 10MB
               </p>
               <p className="text-sm text-blue-600 mt-2 font-medium">
                 💡 מומלץ להעלות תמונה עומדת (Portrait) לתצוגה אופטימלית
@@ -201,7 +191,7 @@ export default function MediaUpload({
               disabled={uploading}
               className="w-full"
             >
-              {uploading ? 'מעלה...' : 'העלה תמונה או וידאו'}
+              {uploading ? 'מעלה...' : 'העלה תמונה'}
             </Button>
           </div>
         )}

@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       mediaUrl: body.mediaUrl || null,
       mediaType: body.mediaType || null,
       theme: body.theme || {
-        primaryColor: '#C4A57B',
+        primaryColor: '#7950a5',
         secondaryColor: '#2C3E50',
         fontFamily: 'Assistant'
       },

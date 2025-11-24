@@ -219,7 +219,7 @@ wedding-platform/
 ## Notes
 
 - All text is in Hebrew (RTL)
-- Design uses elegant gold (#C4A57B) and navy (#2C3E50) theme
+- Design uses elegant gold (#7950a5) and navy (#2C3E50) theme
 - Mobile-responsive throughout
 - Type-safe with TypeScript
 - Validation with Zod

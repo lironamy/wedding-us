@@ -407,7 +407,7 @@ const features = [
     title: "מעקב מתנות",
     description: "עקוב אחר מתנות שהתקבלו באמצעות Bit ו-Paybox בקלות",
     color: "from-amber-500/20 to-orange-500/20",
-    iconBg: "bg-amber-50",
+    iconBg: "bg-purple-100/60 ",
   },
   {
     type: "stats" as const,

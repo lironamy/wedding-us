@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Alert } from '@/components/ui/Alert';
+import * as XLSX from 'xlsx-js-style';
 
 interface GiftsDashboardProps {
   weddingId: string;
@@ -46,7 +47,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
   const [giftForm, setGiftForm] = useState({
     guestId: '',
     amount: 0,
-    method: 'bit' as 'bit' | 'paybox' | 'none',
+    method: 'bit' as 'bit' | 'paybox' | 'cash' | 'check' | 'none',
   });
 
   // Load data
@@ -117,26 +118,71 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
     }).format(amount);
   };
 
-  // Export gifts to CSV
+  // Export gifts to Excel
   const handleExport = () => {
-    const headers = ['שם', 'טלפון', 'סכום', 'אמצעי תשלום', 'תאריך'];
+    // Prepare data with headers
+    const headers = ['שם', 'טלפון', 'סכום (₪)', 'אמצעי תשלום', 'תאריך'];
     const rows = gifts.map((gift) => [
       gift.name,
       gift.phone,
-      gift.amount.toString(),
-      gift.method === 'bit' ? 'ביט' : gift.method === 'paybox' ? 'פייבוקס' : 'לא צוין',
+      gift.amount,
+      gift.method === 'bit' ? 'ביט' : gift.method === 'paybox' ? 'פייבוקס' : gift.method === 'cash' ? 'מזומן' : gift.method === 'check' ? 'צ\'ק' : 'לא צוין',
       new Date(gift.date).toLocaleDateString('he-IL'),
     ]);
 
-    const csvContent =
-      '\uFEFF' + // BOM for Hebrew support
-      [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    // Add total row
+    const totalRow = ['סה"כ', '', statistics?.totalGifts || 0, '', ''];
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `gifts_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+    // Combine all data
+    const wsData = [headers, ...rows, totalRow];
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 20 }, // שם
+      { wch: 15 }, // טלפון
+      { wch: 12 }, // סכום
+      { wch: 15 }, // אמצעי תשלום
+      { wch: 12 }, // תאריך
+    ];
+
+    // Style header row
+    const headerStyle = {
+      font: { bold: true, color: { rgb: 'FFFFFF' } },
+      fill: { fgColor: { rgb: '4F46E5' } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+    };
+
+    // Apply header style
+    for (let i = 0; i < headers.length; i++) {
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c: i });
+      if (ws[cellRef]) {
+        ws[cellRef].s = headerStyle;
+      }
+    }
+
+    // Style total row
+    const totalRowIndex = wsData.length - 1;
+    const totalStyle = {
+      font: { bold: true },
+      fill: { fgColor: { rgb: 'F3F4F6' } },
+    };
+
+    for (let i = 0; i < headers.length; i++) {
+      const cellRef = XLSX.utils.encode_cell({ r: totalRowIndex, c: i });
+      if (ws[cellRef]) {
+        ws[cellRef].s = totalStyle;
+      }
+    }
+
+    // Create workbook and add worksheet
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'מתנות');
+
+    // Save file
+    XLSX.writeFile(wb, `gifts_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   if (loading) {
@@ -267,6 +313,10 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
                             ? 'bg-blue-100 text-blue-800'
                             : gift.method === 'paybox'
                             ? 'bg-purple-100 text-purple-800'
+                            : gift.method === 'cash'
+                            ? 'bg-green-100 text-green-800'
+                            : gift.method === 'check'
+                            ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
@@ -274,6 +324,10 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
                           ? 'ביט'
                           : gift.method === 'paybox'
                           ? 'פייבוקס'
+                          : gift.method === 'cash'
+                          ? 'מזומן'
+                          : gift.method === 'check'
+                          ? 'צ\'ק'
                           : 'לא צוין'}
                       </span>
                     </td>
@@ -350,13 +404,15 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
                   onChange={(e) =>
                     setGiftForm({
                       ...giftForm,
-                      method: e.target.value as 'bit' | 'paybox' | 'none',
+                      method: e.target.value as 'bit' | 'paybox' | 'cash' | 'check' | 'none',
                     })
                   }
                   className="w-full px-3 py-2 border rounded-lg"
                 >
                   <option value="bit">ביט</option>
                   <option value="paybox">פייבוקס</option>
+                  <option value="cash">מזומן</option>
+                  <option value="check">צ'ק</option>
                   <option value="none">לא צוין</option>
                 </select>
               </div>

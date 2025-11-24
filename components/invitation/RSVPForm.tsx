@@ -42,7 +42,7 @@ const fireCelebration = () => {
       particleCount: 30,
       spread: 100,
       origin: { y: 0.6 },
-      colors: ['#FFD700', '#C4A57B', '#E8D5B7'],
+      colors: ['#FFD700', '#7950a5', '#E8D5B7'],
       ticks: 150,
       gravity: 1,
       decay: 0.92,
@@ -88,7 +88,7 @@ interface RSVPFormProps {
   themeColor?: string;
 }
 
-export function RSVPForm({ guest, themeColor = '#C4A57B' }: RSVPFormProps) {
+export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
   // If invitedCount is not set or is 0, there's no limit
   const hasLimit = !!(guest.invitedCount && guest.invitedCount > 0);
   const maxGuests: number = hasLimit ? guest.invitedCount! : 99;

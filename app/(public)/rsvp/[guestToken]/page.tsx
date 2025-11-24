@@ -167,7 +167,7 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
   }
 
   const theme = wedding.theme || {
-    primaryColor: '#C4A57B',
+    primaryColor: '#7950a5',
     secondaryColor: '#2C3E50',
     fontFamily: 'Assistant'
   };

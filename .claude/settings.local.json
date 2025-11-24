@@ -38,7 +38,8 @@
       "WebFetch(domain:invoice4uclearingapis.docs.apiary.io)",
       "WebFetch(domain:verifone.cloud)",
       "WebFetch(domain:invoice4uapi.docs.apiary.io)",
-      "WebFetch(domain:www.invoice4u.co.il)"
+      "WebFetch(domain:www.invoice4u.co.il)",
+      "Bash(dir \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\" /b)"
     ],
     "deny": [],
     "ask": []

@@ -34,7 +34,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
     bitPaymentLink: '',
     backgroundPattern: '',
     theme: {
-      primaryColor: '#C4A57B',
+      primaryColor: '#7950a5',
       secondaryColor: '#2C3E50',
       fontFamily: 'Assistant'
     }
@@ -109,7 +109,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
         bitPaymentLink: wedding.bitPaymentLink || '',
         backgroundPattern: wedding.backgroundPattern || '',
         theme: wedding.theme || {
-          primaryColor: '#C4A57B',
+          primaryColor: '#7950a5',
           secondaryColor: '#2C3E50',
           fontFamily: 'Assistant'
         }
@@ -204,7 +204,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                 <select
                   value={formData.partner1Type}
                   onChange={(e) => setFormData((prev) => ({ ...prev, partner1Type: e.target.value as 'groom' | 'bride' }))}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C4A57B] focus:border-transparent bg-white"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7950a5] focus:border-transparent bg-white"
                 >
                   <option value="groom">חתן</option>
                   <option value="bride">כלה</option>
@@ -229,7 +229,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                 <select
                   value={formData.partner2Type}
                   onChange={(e) => setFormData((prev) => ({ ...prev, partner2Type: e.target.value as 'groom' | 'bride' }))}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C4A57B] focus:border-transparent bg-white"
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7950a5] focus:border-transparent bg-white"
                 >
                   <option value="groom">חתן</option>
                   <option value="bride">כלה</option>
@@ -311,7 +311,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C4A57B] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7950a5] focus:border-transparent"
               placeholder="מוזמנים לחגוג איתנו..."
             />
           </div>
@@ -355,7 +355,7 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
                 <Input
                   value={formData.theme.primaryColor}
                   onChange={(e) => handleColorChange('primaryColor', e.target.value)}
-                  placeholder="#C4A57B"
+                  placeholder="#7950a5"
                 />
               </div>
             </div>

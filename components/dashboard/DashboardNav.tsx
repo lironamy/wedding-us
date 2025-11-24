@@ -47,6 +47,7 @@ function HamburgerIcon({ isOpen, onClick }: { isOpen: boolean; onClick: () => vo
         <motion.rect
           x="2"
           y="6"
+          width="24"
           height="2.5"
           rx="1.25"
           fill={isOpen ? '#ec4899' : '#4b5563'}
@@ -73,6 +74,7 @@ function HamburgerIcon({ isOpen, onClick }: { isOpen: boolean; onClick: () => vo
         <motion.rect
           x="8"
           y="20"
+          width="18"
           height="2.5"
           rx="1.25"
           fill={isOpen ? '#ec4899' : '#4b5563'}
@@ -101,7 +103,7 @@ const NavIcons = {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
       <motion.rect
         x="3" y="14" width="4" height="7" rx="1"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{
           height: isActive ? [7, 9, 7] : 7,
           y: isActive ? [14, 12, 14] : 14
@@ -110,7 +112,7 @@ const NavIcons = {
       />
       <motion.rect
         x="10" y="8" width="4" height="13" rx="1"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{
           height: isActive ? [13, 15, 13] : 13,
           y: isActive ? [8, 6, 8] : 8
@@ -119,7 +121,7 @@ const NavIcons = {
       />
       <motion.rect
         x="17" y="3" width="4" height="18" rx="1"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{
           height: isActive ? [18, 16, 18] : 18,
           y: isActive ? [3, 5, 3] : 3
@@ -135,13 +137,13 @@ const NavIcons = {
       {/* Left person */}
       <motion.circle
         cx="7" cy="7" r="3"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ scale: isActive ? [1, 1.1, 1] : 1 }}
         transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
       />
       <motion.path
         d="M1 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         fill="none"
@@ -149,13 +151,13 @@ const NavIcons = {
       {/* Right person */}
       <motion.circle
         cx="17" cy="7" r="3"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ scale: isActive ? [1, 1.1, 1] : 1 }}
         transition={{ duration: 2, repeat: Infinity }}
       />
       <motion.path
         d="M17 11a4 4 0 0 1 4 4v2"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         fill="none"
@@ -168,7 +170,7 @@ const NavIcons = {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
       <motion.path
         d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -177,19 +179,19 @@ const NavIcons = {
       {/* Typing dots */}
       <motion.circle
         cx="8" cy="12" r="1"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ opacity: isActive ? [0.4, 1, 0.4] : 1 }}
         transition={{ duration: 1, repeat: Infinity }}
       />
       <motion.circle
         cx="12" cy="12" r="1"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ opacity: isActive ? [0.4, 1, 0.4] : 1 }}
         transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
       />
       <motion.circle
         cx="16" cy="12" r="1"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ opacity: isActive ? [0.4, 1, 0.4] : 1 }}
         transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
       />
@@ -202,32 +204,32 @@ const NavIcons = {
       {/* Table */}
       <motion.ellipse
         cx="12" cy="12" rx="8" ry="4"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         fill="none"
       />
       {/* Chairs around table */}
       <motion.circle
         cx="12" cy="5" r="2"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ y: isActive ? [0, -1, 0] : 0 }}
         transition={{ duration: 1.5, repeat: Infinity }}
       />
       <motion.circle
         cx="5" cy="12" r="2"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ x: isActive ? [0, -1, 0] : 0 }}
         transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
       />
       <motion.circle
         cx="19" cy="12" r="2"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ x: isActive ? [0, 1, 0] : 0 }}
         transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
       />
       <motion.circle
         cx="12" cy="19" r="2"
-        fill={isActive ? 'currentColor' : '#9ca3af'}
+        fill="currentColor"
         animate={{ y: isActive ? [0, 1, 0] : 0 }}
         transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}
       />
@@ -240,14 +242,14 @@ const NavIcons = {
       {/* Box bottom */}
       <motion.rect
         x="3" y="12" width="18" height="9" rx="1"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         fill="none"
       />
       {/* Box top/lid */}
       <motion.rect
         x="2" y="7" width="20" height="5" rx="1"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         fill="none"
         animate={{ y: isActive ? [7, 5, 7] : 7 }}
@@ -256,13 +258,13 @@ const NavIcons = {
       {/* Vertical ribbon */}
       <motion.line
         x1="12" y1="7" x2="12" y2="21"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
       />
       {/* Bow */}
       <motion.path
         d="M12 7c-2-2-4-2-4 0s2 2 4 0c2 2 4 2 4 0s-2-2-4 0"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         fill="none"
         animate={{ scale: isActive ? [1, 1.1, 1] : 1 }}
@@ -281,12 +283,12 @@ const NavIcons = {
       >
         <path
           d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"
-          stroke={isActive ? 'currentColor' : '#9ca3af'}
+          stroke="currentColor"
           strokeWidth="2"
         />
         <path
           d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
-          stroke={isActive ? 'currentColor' : '#9ca3af'}
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -300,7 +302,7 @@ const NavIcons = {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
       <motion.path
         d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-        stroke={isActive ? 'currentColor' : '#9ca3af'}
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -382,7 +384,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                     active
                       ? 'bg-primary text-white'
-                      : 'text-gray-600 hover:bg-muted hover:text-primary'
+                      : 'text-gray-600 hover:bg-muted hover:text-white'
                   }`}
                 >
                   <NavIcon type={item.iconType} isActive={active} />
@@ -399,7 +401,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                     active
                       ? 'bg-primary text-white'
-                      : 'text-gray-600 hover:bg-muted hover:text-primary'
+                      : 'text-gray-600 hover:bg-muted hover:text-primary-muted'
                   }`}
                 >
                   <NavIcon type={item.iconType} isActive={active} />

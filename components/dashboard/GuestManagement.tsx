@@ -363,7 +363,7 @@ function NotesPopup({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-amber-50 rounded-xl p-4 border border-amber-100"
+              className="bg-purple-100/60  rounded-xl p-4 border border-amber-100"
             >
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -450,9 +450,9 @@ function GuestRow({
       label: 'סירב',
     },
     pending: {
-      bg: 'bg-amber-50',
+      bg: 'bg-purple-100/60 ',
       text: 'text-amber-700',
-      dot: 'bg-amber-500',
+      dot: 'bg-purple-100/60 0',
       label: 'ממתין',
     },
   };
@@ -568,13 +568,13 @@ function GuestRow({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={onShowNotes}
-              className="p-2 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors relative"
+              className="p-2 rounded-lg bg-purple-100/60  text-amber-600 hover:bg-amber-100 transition-colors relative"
               title="הערות ובקשות"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-purple-100/60 0 rounded-full" />
             </motion.button>
           )}
           <motion.button
@@ -809,7 +809,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
 
   const sendWhatsApp = (guest: Guest) => {
     const rsvpLink = `${window.location.origin}/rsvp/${guest.uniqueToken}`;
-    const message = `היי ${guest.name},\n\nאנחנו מתחתנים! 💍\nמוזמן/ת לחתונה שלנו.\n\nלצפייה בהזמנה ואישור הגעה:\n${rsvpLink}`;
+    const message = `היי ${guest.name},\n\nאנחנו מתחתנים! \nמוזמן/ת לחתונה שלנו.\n\nלצפייה בהזמנה ואישור הגעה:\n${rsvpLink}`;
 
     const whatsappUrl = generateWhatsAppUrl(guest.phone, message);
     window.open(whatsappUrl, '_blank');

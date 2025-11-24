@@ -127,7 +127,7 @@ export function sleep(ms: number): Promise<void> {
  */
 export function generateRandomColor(): string {
   const colors = [
-    '#C4A57B', '#A88B63', '#8B7355', '#6B5B4D',
+    '#7950a5', '#A88B63', '#8B7355', '#6B5B4D',
     '#2C3E50', '#34495E', '#5D6D7E', '#85929E',
   ];
   return colors[Math.floor(Math.random() * colors.length)];

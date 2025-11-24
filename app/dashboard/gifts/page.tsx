@@ -27,7 +27,7 @@ export default async function GiftsPage() {
 
   if (!wedding) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-cream to-white">
+      <div className="min-h- ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-4">מעקב מתנות</h1>
@@ -49,7 +49,7 @@ export default async function GiftsPage() {
   const weddingId = wedding._id.toString();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cream to-white">
+    <div className="min-h-screen ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">

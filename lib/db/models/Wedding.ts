@@ -121,7 +121,7 @@ const WeddingSchema = new Schema<IWedding>(
     theme: {
       primaryColor: {
         type: String,
-        default: '#C4A57B', // Elegant gold
+        default: '#7950a5', // Elegant gold
       },
       secondaryColor: {
         type: String,

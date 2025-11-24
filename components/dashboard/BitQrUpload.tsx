@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import jsQR from 'jsqr';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import toast from 'react-hot-toast';
@@ -30,6 +31,7 @@ export default function BitQrUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [scanning, setScanning] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   useEffect(() => {
     // Load Cloudinary upload widget script
@@ -167,16 +169,20 @@ export default function BitQrUpload({
         {/* Instructions and Upload - only show when enabled */}
         {enabled && (
           <div className="space-y-4 mt-4 border-t pt-4">
-            {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-medium text-blue-900 mb-2">איך להוציא את קוד ה-QR מ-Bit?</h3>
-              <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
-                <li>פתחו את אפליקציית Bit בטלפון</li>
-                <li>לחצו על <strong>פרופיל</strong> (בתפריט למטה)</li>
-                <li>לחצו על <strong>&quot;קוד ה-QR הקבוע שלי לקבלת כסף&quot;</strong></li>
-                <li>לחצו על <strong>שיתוף הקוד</strong> ושמרו את התמונה</li>
-                <li>העלו את התמונה כאן למטה</li>
-              </ol>
+            {/* Info Icon with Label */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowInfoModal(true)}
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <span className="text-sm font-medium">איך להוציא את קוד ה-QR מ-Bit?</span>
+              </button>
             </div>
 
             {/* Upload Area */}
@@ -255,6 +261,77 @@ export default function BitQrUpload({
           </div>
         )}
       </div>
+
+      {/* Info Modal */}
+      <AnimatePresence>
+        {showInfoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowInfoModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-5 text-white">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold">איך להוציא את קוד ה-QR מ-Bit?</h3>
+                  <button
+                    onClick={() => setShowInfoModal(false)}
+                    className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                <ol className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">1</span>
+                    <span className="text-gray-700 pt-0.5">פתחו את אפליקציית <strong className="text-blue-600">Bit</strong> בטלפון</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">2</span>
+                    <span className="text-gray-700 pt-0.5">לחצו על <strong>פרופיל</strong> (בתפריט למטה)</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">3</span>
+                    <span className="text-gray-700 pt-0.5">לחצו על <strong>&quot;קוד ה-QR הקבוע שלי לקבלת כסף&quot;</strong></span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">4</span>
+                    <span className="text-gray-700 pt-0.5">לחצו על <strong>שיתוף הקוד</strong> ושמרו את התמונה לגלריה</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm">5</span>
+                    <span className="text-gray-700 pt-0.5">העלו את התמונה כאן 🎉</span>
+                  </li>
+                </ol>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setShowInfoModal(false)}
+                  className="w-full mt-6 py-3 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
+                >
+                  הבנתי!
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Card>
   );
 }
