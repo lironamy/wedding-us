@@ -15,12 +15,14 @@ export default function PaymentCallbackPage() {
   const orderId = searchParams.get('orderId');
 
   // Various possible response parameters from different payment providers
-  const status = searchParams.get('status');
+  const status = searchParams.get('status') || searchParams.get('Status');
+  const successParam = searchParams.get('success'); // Cardcom sends success=true
   const responseCode = searchParams.get('ResponseCode');
+  const responeCode = searchParams.get('ResponeCode'); // Cardcom typo
   const responseCodeLower = searchParams.get('responsecode');
   const dealResponse = searchParams.get('DealResponse'); // Cardcom
-  const operationResponse = searchParams.get('OperationResponse'); // Cardcom
-  const lowProfileCode = searchParams.get('LowProfileCode'); // Cardcom
+  const operationResponse = searchParams.get('OperationResponse') || searchParams.get('Operation'); // Cardcom
+  const lowProfileCode = searchParams.get('LowProfileCode') || searchParams.get('lowprofilecode'); // Cardcom
   const operationResponseText = searchParams.get('OperationResponseText');
 
   const [loading, setLoading] = useState(true);
@@ -45,20 +47,27 @@ export default function PaymentCallbackPage() {
     const processPayment = async () => {
       try {
         // Check if payment was successful
-        // Cardcom: DealResponse=0 or OperationResponse=0 means success
-        // Other: ResponseCode=000 or status=success/completed
+        // Cardcom/Invoice4U success indicators:
+        // - success=true
+        // - ResponseCode=0 or ResponeCode=0 (Cardcom has typo)
+        // - Status=0
+        // - DealResponse=0 or Operation=1
         const isSuccess =
+          successParam === 'true' ||
+          responseCode === '0' ||
           responseCode === '000' ||
+          responeCode === '0' ||
+          responseCodeLower === '0' ||
           responseCodeLower === '000' ||
+          status === '0' ||
           status === 'success' ||
           status === 'completed' ||
           dealResponse === '0' ||
-          operationResponse === '0' ||
+          operationResponse === '1' ||
           // If we have weddingId and package but no error indicators, assume success
-          // (Invoice4U might just redirect without status params)
-          (weddingId && packageGuests && !status && !responseCode && !dealResponse);
+          (weddingId && packageGuests && !status && !responseCode && !dealResponse && !successParam);
 
-        console.log('Payment success check:', { isSuccess, dealResponse, operationResponse, responseCode, status });
+        console.log('Payment success check:', { isSuccess, successParam, dealResponse, operationResponse, responseCode, responeCode, status });
 
         if (isSuccess && weddingId && packageGuests) {
           // Update wedding in database
@@ -120,7 +129,7 @@ export default function PaymentCallbackPage() {
     };
 
     processPayment();
-  }, [weddingId, packageGuests, orderId, status, responseCode, responseCodeLower, dealResponse, operationResponse, searchParams]);
+  }, [weddingId, packageGuests, orderId, status, successParam, responseCode, responeCode, responseCodeLower, dealResponse, operationResponse, searchParams]);
 
   // If in iframe, show minimal UI - parent will handle the modal
   if (isInIframe) {
