@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -9,19 +10,22 @@ import { Card } from '@/components/ui/Card';
 import { Stepper, Step } from '@/components/ui/Stepper';
 import MediaUpload from '@/components/dashboard/MediaUpload';
 import BitQrUpload from '@/components/dashboard/BitQrUpload';
+import RefundRequestModal from '@/components/dashboard/RefundRequestModal';
 import { getGenderText } from '@/lib/utils/genderText';
 
 interface WeddingFormStepperProps {
   wedding?: any;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: any, options?: { skipRedirect?: boolean }) => Promise<void>;
   onCancel: () => void;
 }
 
 export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: WeddingFormStepperProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     groomName: '',
     brideName: '',
+    contactPhone: '',
     partner1Type: 'groom' as 'groom' | 'bride',
     partner2Type: 'bride' as 'groom' | 'bride',
     eventDate: '',
@@ -45,18 +49,9 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     }
   });
 
-  // Package options (TEST PRICES - change back to real prices before production!)
-  const packageOptions = [
-    { guests: 200, price: 0, label: 'חינם' },
-    { guests: 300, price: 1, label: '₪1' },
-    { guests: 400, price: 2, label: '₪2' },
-    { guests: 500, price: 3, label: '₪3' },
-    { guests: 600, price: 4, label: '₪4' },
-    { guests: 700, price: 5, label: '₪5' },
-    { guests: 800, price: 1, label: '₪1' },
-    { guests: 900, price: 2, label: '₪2' },
-    { guests: 1000, price: 3, label: '₪3' },
-  ];
+  // Package options - loaded from database
+  const [packageOptions, setPackageOptions] = useState<{ guests: number; price: number; label: string }[]>([]);
+  const [pricingLoading, setPricingLoading] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -69,6 +64,18 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   const [paymentError, setPaymentError] = useState('');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paidPackageGuests, setPaidPackageGuests] = useState(0);
+
+  // Refund modal state
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundData, setRefundData] = useState({
+    currentPackage: 0,
+    requestedPackage: 0,
+    paidAmount: 0,
+  });
+
+  // Already paid modal state
+  const [showAlreadyPaidModal, setShowAlreadyPaidModal] = useState(false);
+  const [alreadyPaidMessage, setAlreadyPaidMessage] = useState('');
 
   const partnerTypeLabels = {
     groom: 'חתן',
@@ -96,6 +103,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       setFormData({
         groomName: wedding.groomName || '',
         brideName: wedding.brideName || '',
+        contactPhone: wedding.contactPhone || '',
         partner1Type: wedding.partner1Type || 'groom',
         partner2Type: wedding.partner2Type || 'bride',
         eventDate: wedding.eventDate ? new Date(wedding.eventDate).toISOString().split('T')[0] : '',
@@ -120,6 +128,29 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       });
     }
   }, [wedding]);
+
+  // Load package pricing from database
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const response = await fetch('/api/admin/pricing');
+        const data = await response.json();
+        if (data.pricing && data.pricing.length > 0) {
+          setPackageOptions(data.pricing.map((p: any) => ({
+            guests: p.guests,
+            price: p.price,
+            label: p.label,
+          })));
+        }
+      } catch (error) {
+        console.error('Error fetching pricing:', error);
+      } finally {
+        setPricingLoading(false);
+      }
+    };
+
+    fetchPricing();
+  }, []);
 
   // Listen for payment messages from iframe
   useEffect(() => {
@@ -155,6 +186,19 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     setFormData((prev) => ({ ...prev, mediaUrl: url, mediaType: type }));
   };
 
+  const validateIsraeliPhone = (phone: string): boolean => {
+    // Remove spaces, dashes, and other common separators
+    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+
+    // Israeli mobile: 05X-XXXXXXX (10 digits starting with 05)
+    // Israeli landline: 0X-XXXXXXX (9-10 digits starting with 0)
+    // With country code: +972 or 972
+    const israeliMobileRegex = /^(0[5][0-9]{8}|(\+?972)[5][0-9]{8})$/;
+    const israeliLandlineRegex = /^(0[2-9][0-9]{7,8}|(\+?972)[2-9][0-9]{7,8})$/;
+
+    return israeliMobileRegex.test(cleanPhone) || israeliLandlineRegex.test(cleanPhone);
+  };
+
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -164,6 +208,11 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       }
       if (!formData.brideName.trim()) {
         newErrors.brideName = `שם ה${partnerTypeLabels[formData.partner2Type]} חובה`;
+      }
+      if (!formData.contactPhone.trim()) {
+        newErrors.contactPhone = 'מספר טלפון חובה';
+      } else if (!validateIsraeliPhone(formData.contactPhone)) {
+        newErrors.contactPhone = 'מספר טלפון לא תקין (לדוגמה: 050-1234567)';
       }
     }
 
@@ -187,11 +236,42 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   };
 
   const handleStepChange = async (newStep: number) => {
+    console.log('=== handleStepChange ===');
+    console.log('Previous step:', currentStep);
+    console.log('New step:', newStep);
+    console.log('Wedding ID:', wedding?._id);
+    console.log('FormData:', JSON.stringify(formData, null, 2));
+
+    const prevStep = currentStep;
     setCurrentStep(newStep);
 
-    // When entering payment step (step 7), fetch clearing URL
-    if (newStep === 7 && formData.maxGuests > 200 && wedding?._id && !paymentClearingUrl) {
-      await fetchPaymentUrl();
+    // Auto-save when leaving step 1 (partner details including contactPhone)
+    if (prevStep === 1 && newStep > 1 && wedding?._id) {
+      try {
+        console.log('=== Auto-saving partner details after step 1 ===');
+        await onSubmit(formData, { skipRedirect: true });
+        console.log('Partner details saved successfully');
+      } catch (error) {
+        console.error('Error auto-saving partner details:', error);
+      }
+    }
+
+    // When entering payment step (step 7), save wedding data first, then fetch clearing URL
+    if (newStep === 7 && wedding?._id) {
+      // Save wedding data before payment (without redirect)
+      try {
+        console.log('=== Saving wedding data before payment step ===');
+        console.log('Calling onSubmit with formData...');
+        await onSubmit(formData, { skipRedirect: true });
+        console.log('Wedding data saved successfully');
+      } catch (error) {
+        console.error('Error saving wedding data:', error);
+      }
+
+      // Then fetch payment URL if needed
+      if (formData.maxGuests > 200 && !paymentClearingUrl) {
+        await fetchPaymentUrl();
+      }
     }
   };
 
@@ -199,9 +279,19 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     setPaymentLoading(true);
     setPaymentError('');
 
+    console.log('=== Fetching Payment URL ===');
+    console.log('Wedding ID:', wedding?._id);
+    console.log('Selected package (maxGuests):', formData.maxGuests);
+    console.log('Current wedding maxGuests:', wedding?.maxGuests);
+    console.log('Wedding payment status:', wedding?.paymentStatus);
+    console.log('Wedding paid package:', wedding?.paymentDetails?.packageGuests);
+    console.log('Wedding paid amount:', wedding?.paymentDetails?.amount);
+
     try {
       const selectedPackage = packageOptions.find(p => p.guests === formData.maxGuests);
       if (!selectedPackage) return;
+
+      console.log('Selected package price:', selectedPackage.price);
 
       const response = await fetch('/api/payments/create', {
         method: 'POST',
@@ -214,11 +304,34 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       });
 
       const data = await response.json();
+      console.log('Payment API response:', data);
 
-      if (data.success && data.clearingUrl) {
-        setPaymentClearingUrl(data.clearingUrl);
+      if (data.success) {
+        if (data.alreadyPaid) {
+          // Already paid - show confirmation modal
+          setAlreadyPaidMessage(data.message || 'כבר שילמת עבור חבילה זו');
+          setShowAlreadyPaidModal(true);
+        } else if (!data.paymentRequired) {
+          // Free package - show confirmation modal
+          setAlreadyPaidMessage(data.message || 'החבילה הופעלה בהצלחה');
+          setShowAlreadyPaidModal(true);
+        } else if (data.clearingUrl) {
+          setPaymentClearingUrl(data.clearingUrl);
+        }
+      } else if (data.tooManyGuests) {
+        // User has too many guests for the requested package
+        console.log('Too many guests:', data.guestCount, 'for package:', data.requestedPackage);
+        setPaymentError(data.message);
+      } else if (data.requiresRefund) {
+        // Show refund modal
+        setRefundData({
+          currentPackage: data.currentPackage,
+          requestedPackage: data.requestedPackage,
+          paidAmount: data.paidAmount,
+        });
+        setShowRefundModal(true);
       } else {
-        setPaymentError(data.error || 'אירעה שגיאה ביצירת התשלום');
+        setPaymentError(data.error || data.message || 'אירעה שגיאה ביצירת התשלום');
       }
     } catch (error) {
       console.error('Error fetching payment URL:', error);
@@ -229,12 +342,21 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   };
 
   const handleFinalSubmit = async () => {
-    if (!validateStep(currentStep)) return;
+    console.log('=== handleFinalSubmit ===');
+    console.log('Current step:', currentStep);
+    console.log('FormData:', JSON.stringify(formData, null, 2));
+
+    if (!validateStep(currentStep)) {
+      console.log('Validation failed for step:', currentStep);
+      return;
+    }
 
     setLoading(true);
     try {
+      console.log('Calling onSubmit...');
       // Save the wedding data
       await onSubmit(formData);
+      console.log('onSubmit completed successfully');
       // Payment is handled in step 7 iframe - user will be redirected after payment
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -270,6 +392,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         }
         disableStepIndicators={false}
         hideStepIndicators={currentStep === 7}
+        hideFooter={currentStep === 7}
         fullWidthContent={currentStep === 7}
         fullHeightLayout={true}
         onCancel={onCancel}
@@ -286,58 +409,58 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
 
             <div className="grid grid-cols-1 gap-4 sm:gap-6">
               {/* Partner 1 */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                {`שם ה${partnerTypeLabels[formData.partner1Type]}`}
-                 <span className="text-red-500">*</span>
-                </label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <select
-                    value={formData.partner1Type}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, partner1Type: e.target.value as 'groom' | 'bride' }))}
-                    className="w-full sm:w-auto px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-base"
-                    style={{ fontSize: '16px' }}
-                  >
-                    <option value="groom">חתן</option>
-                    <option value="bride">כלה</option>
-                  </select>
+              <div className="flex flex-row gap-2 items-start">
+                <select
+                  value={formData.partner1Type}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, partner1Type: e.target.value as 'groom' | 'bride' }))}
+                  className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
+                  style={{ fontSize: '16px' }}
+                >
+                  <option value="groom">חתן</option>
+                  <option value="bride">כלה</option>
+                </select>
+                <div className="flex-1">
                   <Input
+                    label={`שם ה${partnerTypeLabels[formData.partner1Type]}`}
                     name="groomName"
                     value={formData.groomName}
                     onChange={handleChange}
                     error={errors.groomName}
-                    label={`שם ה${partnerTypeLabels[formData.partner1Type]}`}
-                    className="flex-1"
                   />
                 </div>
               </div>
 
               {/* Partner 2 */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  {`שם ה${partnerTypeLabels[formData.partner2Type]}`}
-                 <span className="text-red-500">*</span>
-                </label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <select
-                    value={formData.partner2Type}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, partner2Type: e.target.value as 'groom' | 'bride' }))}
-                    className="w-full sm:w-auto px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-base"
-                    style={{ fontSize: '16px' }}
-                  >
-                    <option value="groom">חתן</option>
-                    <option value="bride">כלה</option>
-                  </select>
+              <div className="flex flex-row gap-2 items-start">
+                <select
+                  value={formData.partner2Type}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, partner2Type: e.target.value as 'groom' | 'bride' }))}
+                  className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
+                  style={{ fontSize: '16px' }}
+                >
+                  <option value="groom">חתן</option>
+                  <option value="bride">כלה</option>
+                </select>
+                <div className="flex-1">
                   <Input
+                    label={`שם ה${partnerTypeLabels[formData.partner2Type]}`}
                     name="brideName"
                     value={formData.brideName}
                     onChange={handleChange}
                     error={errors.brideName}
-                    label={`שם ה${partnerTypeLabels[formData.partner2Type]}`}
-                    className="flex-1"
                   />
                 </div>
               </div>
+
+              {/* Contact Phone */}
+              <Input
+                label="מספר טלפון ליצירת קשר"
+                name="contactPhone"
+                type="tel"
+                value={formData.contactPhone}
+                onChange={handleChange}
+                error={errors.contactPhone}
+              />
             </div>
           </div>
         </Step>
@@ -397,7 +520,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
           <div className="space-y-4 sm:space-y-6">
             <div className="text-center mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">מדיה ותוכן</h2>
-              <p className="text-sm sm:text-base text-gray-500 mt-1">הוסיפו תמונה או וידאו והודעה אישית</p>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">הוסיפו תמונה והודעה אישית</p>
             </div>
 
             <MediaUpload
@@ -560,7 +683,30 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                     key={pkg.guests}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => setFormData((prev) => ({ ...prev, maxGuests: pkg.guests }))}
+                    onClick={async () => {
+                      console.log('=== Package Selection ===');
+                      console.log('Current package (before change):', formData.maxGuests);
+                      console.log('Selected new package:', pkg.guests);
+                      console.log('Wedding paid status:', wedding?.paymentStatus);
+                      console.log('Wedding paid package:', wedding?.paymentDetails?.packageGuests);
+                      console.log('Wedding paid amount:', wedding?.paymentDetails?.amount);
+
+                      // Fetch current guest count
+                      if (wedding?._id) {
+                        try {
+                          const res = await fetch(`/api/guests?weddingId=${wedding._id}&countOnly=true`);
+                          const data = await res.json();
+                          console.log('Current guest count:', data.count);
+                          if (pkg.guests < data.count) {
+                            console.log(`⚠️ WARNING: User has ${data.count} guests but selected package for ${pkg.guests}!`);
+                          }
+                        } catch (e) {
+                          console.log('Could not fetch guest count');
+                        }
+                      }
+
+                      setFormData((prev) => ({ ...prev, maxGuests: pkg.guests }));
+                    }}
                     className={`relative cursor-pointer rounded-xl sm:rounded-2xl border-2 p-3 sm:p-6 transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
@@ -768,6 +914,78 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                   <Button
                     variant="outline"
                     onClick={() => router.push('/dashboard')}
+                    className="w-full"
+                  >
+                    חזרה לדשבורד
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Refund Request Modal */}
+      <RefundRequestModal
+        isOpen={showRefundModal}
+        onClose={() => setShowRefundModal(false)}
+        weddingId={wedding?._id || ''}
+        currentPackage={refundData.currentPackage}
+        requestedPackage={refundData.requestedPackage}
+        paidAmount={refundData.paidAmount}
+        userEmail={session?.user?.email || ''}
+        userName={session?.user?.name || ''}
+        userPhone={wedding?.contactPhone || formData.contactPhone || ''}
+      />
+
+      {/* Already Paid / Free Package Confirmation Modal */}
+      <AnimatePresence>
+        {showAlreadyPaidModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+            >
+              {/* Success Icon */}
+              <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 flex justify-center">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 text-center">
+                <h2 className="text-xl font-bold text-gray-900 mb-3">{alreadyPaidMessage}</h2>
+                <p className="text-gray-600 mb-6">
+                  החבילה שלך: {formData.maxGuests} מוזמנים
+                </p>
+
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => {
+                      setShowAlreadyPaidModal(false);
+                      router.push('/dashboard/guests');
+                    }}
+                    className="w-full"
+                  >
+                    המשך לניהול אורחים
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowAlreadyPaidModal(false);
+                      router.push('/dashboard');
+                    }}
                     className="w-full"
                   >
                     חזרה לדשבורד

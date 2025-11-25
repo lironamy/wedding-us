@@ -10,6 +10,7 @@ interface Wedding {
   _id: string;
   groomName: string;
   brideName: string;
+  contactPhone?: string;
   partner1Type?: 'groom' | 'bride';
   partner2Type?: 'groom' | 'bride';
   eventDate: string;
@@ -30,6 +31,7 @@ interface Wedding {
   payboxPhone?: string;
   enableBitGifts?: boolean;
   bitQrImage?: string;
+  maxGuests?: number;
   uniqueUrl: string;
   status: string;
 }
@@ -56,6 +58,8 @@ export default function SettingsPage() {
         (w: Wedding) => w.status === 'active' || w.status === 'draft'
       );
 
+      console.log('=== fetchWedding result ===');
+      console.log('Active wedding contactPhone:', activeWedding?.contactPhone);
       setWedding(activeWedding || null);
     } catch (err) {
       console.error('Error fetching wedding:', err);
@@ -65,16 +69,28 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: any, options?: { skipRedirect?: boolean }) => {
+    console.log('=== Settings Page handleSubmit ===');
+    console.log('Options:', options);
+    console.log('Skip redirect:', options?.skipRedirect);
+
     try {
       // Debug: log data being sent
       console.log('Submitting wedding data:', data);
+      console.log('groomName:', data.groomName);
+      console.log('brideName:', data.brideName);
+      console.log('contactPhone:', data.contactPhone);
       console.log('partner1Type:', data.partner1Type);
       console.log('partner2Type:', data.partner2Type);
+      console.log('eventDate:', data.eventDate);
+      console.log('eventTime:', data.eventTime);
+      console.log('venue:', data.venue);
+      console.log('venueAddress:', data.venueAddress);
       console.log('backgroundPattern:', data.backgroundPattern);
       console.log('enableBitGifts:', data.enableBitGifts);
       console.log('bitQrImage:', data.bitQrImage);
       console.log('bitPhone:', data.bitPhone);
+      console.log('maxGuests:', data.maxGuests);
 
       const url = wedding
         ? `/api/weddings/${wedding._id}`
@@ -82,22 +98,36 @@ export default function SettingsPage() {
 
       const method = wedding ? 'PUT' : 'POST';
 
+      console.log('API URL:', url);
+      console.log('Method:', method);
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('API Error:', errorData);
         throw new Error(errorData.error || 'Failed to save wedding');
       }
 
       const savedWedding = await response.json();
+      console.log('=== Saved wedding response ===');
+      console.log('Full response:', JSON.stringify(savedWedding, null, 2));
+      console.log('contactPhone in response:', savedWedding.contactPhone);
       setWedding(savedWedding);
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      // Only redirect if not skipped
+      if (!options?.skipRedirect) {
+        console.log('Redirecting to dashboard...');
+        router.push('/dashboard');
+      } else {
+        console.log('Skipping redirect');
+      }
     } catch (err: any) {
       console.error('Error saving wedding:', err);
       setError(err.message || 'שגיאה בשמירת החתונה');

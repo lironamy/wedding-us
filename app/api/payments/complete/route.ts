@@ -43,11 +43,16 @@ export async function POST(request: NextRequest) {
 
     if (success) {
       // Payment successful - update wedding
+      // Calculate total amount paid (previous + new)
+      const previousAmount = wedding.paymentDetails?.amount || 0;
+      const newPaymentAmount = wedding.pendingPayment?.amount || 0;
+      const totalAmount = previousAmount + newPaymentAmount;
+
       wedding.maxGuests = packageGuests;
       wedding.paymentStatus = 'paid';
       wedding.paymentDetails = {
         transactionId: orderId,
-        amount: wedding.pendingPayment?.amount || 0,
+        amount: totalAmount,
         paidAt: new Date(),
         packageGuests,
       };

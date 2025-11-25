@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const weddingId = searchParams.get('weddingId');
+    const countOnly = searchParams.get('countOnly') === 'true';
 
     if (!weddingId) {
       return NextResponse.json({ error: 'Wedding ID is required' }, { status: 400 });
@@ -31,6 +32,12 @@ export async function GET(request: NextRequest) {
 
     if (!wedding) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
+    }
+
+    // If only count is needed, return just the count
+    if (countOnly) {
+      const count = await Guest.countDocuments({ weddingId });
+      return NextResponse.json({ count }, { status: 200 });
     }
 
     // Get all guests for this wedding

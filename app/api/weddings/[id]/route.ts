@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
+import Guest from '@/lib/db/models/Guest';
 
 interface RouteParams {
   params: Promise<{
@@ -81,6 +82,8 @@ export async function PUT(
     const body = await request.json();
 
     // Debug: log the fields being sent
+    console.log('=== API ROUTE: Updating wedding ===');
+    console.log('Received contactPhone:', body.contactPhone);
     console.log('Updating wedding with partner1Type:', body.partner1Type);
     console.log('Updating wedding with partner2Type:', body.partner2Type);
     console.log('Updating wedding with backgroundPattern:', body.backgroundPattern);
@@ -88,10 +91,26 @@ export async function PUT(
     console.log('Updating wedding with bitQrImage:', body.bitQrImage);
     console.log('Updating wedding with bitPhone:', body.bitPhone);
 
+    // Check if trying to reduce maxGuests below current guest count
+    if (body.maxGuests !== undefined && body.maxGuests < wedding.maxGuests) {
+      const currentGuestCount = await Guest.countDocuments({ weddingId: id });
+      console.log('Package downgrade check - Guest count:', currentGuestCount, 'Requested maxGuests:', body.maxGuests);
+
+      if (currentGuestCount > body.maxGuests) {
+        return NextResponse.json({
+          error: `יש לך כרגע ${currentGuestCount} אורחים. כדי לעבור לחבילה של ${body.maxGuests} מוזמנים, יש למחוק ${currentGuestCount - body.maxGuests} אורחים קודם.`,
+          tooManyGuests: true,
+          guestCount: currentGuestCount,
+          requestedPackage: body.maxGuests,
+        }, { status: 400 });
+      }
+    }
+
     // Update fields
     const allowedFields = [
       'groomName',
       'brideName',
+      'contactPhone',
       'partner1Type',
       'partner2Type',
       'eventDate',
@@ -126,15 +145,20 @@ export async function PUT(
 
     await wedding.save();
 
-    // Debug: log what was saved
-    console.log('Saved wedding partner1Type:', wedding.partner1Type);
-    console.log('Saved wedding partner2Type:', wedding.partner2Type);
-    console.log('Saved wedding backgroundPattern:', wedding.backgroundPattern);
-    console.log('Saved wedding enableBitGifts:', wedding.enableBitGifts);
-    console.log('Saved wedding bitQrImage:', wedding.bitQrImage);
-    console.log('Saved wedding bitPhone:', wedding.bitPhone);
+    // Reload the document to get all fields properly
+    const updatedWedding = await Wedding.findById(id).lean() as any;
 
-    return NextResponse.json(wedding, { status: 200 });
+    // Debug: log what was saved
+    console.log('=== API ROUTE: After save ===');
+    console.log('Saved wedding contactPhone:', updatedWedding?.contactPhone);
+    console.log('Saved wedding partner1Type:', updatedWedding?.partner1Type);
+    console.log('Saved wedding partner2Type:', updatedWedding?.partner2Type);
+    console.log('Saved wedding backgroundPattern:', updatedWedding?.backgroundPattern);
+    console.log('Saved wedding enableBitGifts:', updatedWedding?.enableBitGifts);
+    console.log('Saved wedding bitQrImage:', updatedWedding?.bitQrImage);
+    console.log('Saved wedding bitPhone:', updatedWedding?.bitPhone);
+
+    return NextResponse.json(updatedWedding, { status: 200 });
   } catch (error) {
     console.error('Error updating wedding:', error);
     return NextResponse.json(

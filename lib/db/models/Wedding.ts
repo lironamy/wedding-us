@@ -5,6 +5,7 @@ export interface IWedding {
   userId: Types.ObjectId | string;
   groomName: string;
   brideName: string;
+  contactPhone?: string;
   partner1Type?: 'groom' | 'bride';
   partner2Type?: 'groom' | 'bride';
   eventDate: Date;
@@ -45,6 +46,22 @@ export interface IWedding {
     packageGuests: number;
     createdAt: Date;
   };
+  // Refund tracking
+  refundRequest?: {
+    requestedAt: Date;
+    previousPackage: number;
+    newPackage: number;
+    previousAmount: number;
+    refundAmount: number;
+    status: 'pending' | 'completed' | 'rejected';
+  };
+  // Store original payment details when refunded to free package
+  refundedPaymentDetails?: {
+    transactionId: string;
+    amount: number;
+    paidAt: Date;
+    packageGuests: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,6 +88,10 @@ const WeddingSchema = new Schema<IWedding>(
       // Ensure proper UTF-8 encoding
       set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
       get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+    },
+    contactPhone: {
+      type: String,
+      trim: true,
     },
     partner1Type: {
       type: String,
@@ -183,6 +204,23 @@ const WeddingSchema = new Schema<IWedding>(
       amount: Number,
       packageGuests: Number,
       createdAt: Date,
+    },
+    refundRequest: {
+      requestedAt: Date,
+      previousPackage: Number,
+      newPackage: Number,
+      previousAmount: Number,
+      refundAmount: Number,
+      status: {
+        type: String,
+        enum: ['pending', 'completed', 'rejected'],
+      },
+    },
+    refundedPaymentDetails: {
+      transactionId: String,
+      amount: Number,
+      paidAt: Date,
+      packageGuests: Number,
     },
   },
   {

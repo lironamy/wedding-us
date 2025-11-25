@@ -50,15 +50,15 @@ export default function AccessibilityWidget() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Accessibility Button - Always visible */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-1/2 -translate-y-1/2 z-50 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors"
+        className="fixed left-1 bottom-2 z-50 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-md transition-colors"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="פתח תפריט נגישות"
       >
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
         </svg>
       </motion.button>
@@ -78,11 +78,11 @@ export default function AccessibilityWidget() {
 
             {/* Panel */}
             <motion.div
-              initial={{ x: -400, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -400, opacity: 0 }}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed left-4 top-1/2 -translate-y-1/2 w-full max-w-sm max-h-[85vh] bg-white rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
+              className="fixed left-1 bottom-14 w-full max-w-sm max-h-[70vh] bg-white rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col"
             >
               {/* Header */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white flex-shrink-0">

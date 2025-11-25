@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       userId: session.user.id,
       groomName,
       brideName,
+      contactPhone: body.contactPhone || '',
       partner1Type: body.partner1Type || 'groom',
       partner2Type: body.partner2Type || 'bride',
       eventDate: new Date(eventDate),
@@ -101,6 +102,7 @@ export async function POST(request: NextRequest) {
       payboxPhone: body.payboxPhone || '',
       enableBitGifts: body.enableBitGifts || false,
       bitQrImage: body.bitQrImage || '',
+      maxGuests: body.maxGuests || 200,
       uniqueUrl,
       status: 'draft'
     });

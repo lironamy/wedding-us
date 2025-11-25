@@ -1,5 +1,5 @@
 'use client';
-
+import Image from "next/image";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -370,8 +370,15 @@ export default function DashboardNav({ user }: DashboardNavProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-primary">פלטפורמת חתונות</span>
-          </Link>
+            <Image
+                src="https://64.media.tumblr.com/6b5b4ea2d4bb71bcde8a81698e46625c/887d2b552e1bb2d6-a1/s1280x1920/672bf645a85cc73ca04a8c8804f3856360e34405.pnj"
+                alt="LunSoul logo"
+                width={180}
+                height={54}
+                priority
+                className="h-10 w-auto object-contain drop-shadow-zinc-500 drop-shadow-xs"
+              />          
+            </Link>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-1">
@@ -413,15 +420,30 @@ export default function DashboardNav({ user }: DashboardNavProps) {
 
           {/* User Menu & Hamburger */}
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="text-sm text-gray-600 hidden sm:block">
+            <div className="text-sm text-gray-600 hidden sm:block whitespace-nowrap">
               <div className="font-medium">{user.name}</div>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="hidden sm:inline-flex"
-            >
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 bg-red-50 border border-red-100"
+              >
+              <motion.svg
+                width="18" height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                whileHover={{ x: [0, 5, 0] }}
+                transition={{ duration: 0.3 }}
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16,17 21,12 16,7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </motion.svg>
               התנתק
             </Button>
             <HamburgerIcon
@@ -466,24 +488,24 @@ export default function DashboardNav({ user }: DashboardNavProps) {
               {/* Decorative top bar */}
               <div className="h-1 bg-linear-to-r from-primary via-pink-400 to-purple-500" />
 
-              <div className="container mx-auto px-5 py-6">
+              <div className="container mx-auto px-4 py-3">
                 {/* Header with close button */}
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="flex items-center justify-between mb-6"
+                  className="flex items-center justify-between mb-3"
                 >
-                  <span className="text-xl font-bold bg-linear-to-r from-primary to-pink-500 bg-clip-text text-transparent">
+                  <span className="text-lg font-bold bg-linear-to-r from-primary to-pink-500 bg-clip-text text-transparent">
                     תפריט
                   </span>
                   <motion.button
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center"
+                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center"
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.1, backgroundColor: '#fce7f3' }}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -495,29 +517,29 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   initial={{ opacity: 0, y: 20, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
-                  className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-pink-500 to-purple-600 p-5 mb-6 shadow-lg shadow-primary/30"
+                  className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary via-pink-500 to-purple-600 p-3 mb-3 shadow-lg shadow-primary/30"
                 >
                   {/* Decorative circles */}
-                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full" />
-                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/10 rounded-full" />
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/10 rounded-full" />
+                  <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-white/10 rounded-full" />
 
-                  <div className="relative flex items-center gap-4">
+                  <div className="relative flex items-center gap-3">
                     <motion.div
-                      className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xl font-bold shadow-inner"
+                      className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-base font-bold shadow-inner"
                       whileHover={{ rotate: [0, -10, 10, 0] }}
                       transition={{ duration: 0.5 }}
                     >
                       {user.name.charAt(0)}
                     </motion.div>
                     <div className="text-white">
-                      <div className="font-bold text-lg">{user.name}</div>
-                      <div className="text-white/70 text-sm">{user.email}</div>
+                      <div className="font-bold text-sm">{user.name}</div>
+                      <div className="text-white/70 text-xs">{user.email}</div>
                     </div>
                   </div>
                 </motion.div>
 
                 {/* Navigation Items with stagger */}
-                <nav className="space-y-2">
+                <nav className="space-y-1">
                   {navItems.map((item, index) => {
                     const active = isActive(item.href);
                     return (
@@ -526,7 +548,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                         initial={{ opacity: 0, x: -40 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{
-                          delay: 0.2 + index * 0.07,
+                          delay: 0.2 + index * 0.05,
                           type: 'spring',
                           stiffness: 200,
                           damping: 20
@@ -537,16 +559,16 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <motion.div
-                            className={`flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-medium transition-all ${
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                               active
-                                ? 'bg-primary text-white shadow-lg shadow-primary/40'
+                                ? 'bg-primary text-white shadow-md shadow-primary/40'
                                 : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
                             }`}
                             whileHover={{ scale: 1.02, x: 5 }}
                             whileTap={{ scale: 0.98 }}
                           >
                             <motion.span
-                              className={`w-11 h-11 rounded-xl flex items-center justify-center ${
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                                 active ? 'bg-white/20' : 'bg-gradient-to-br from-gray-100 to-gray-50'
                               }`}
                               whileHover={{ rotate: [0, -5, 5, 0] }}
@@ -559,8 +581,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                                 layoutId="mobileActiveIndicator"
                                 className="mr-auto flex items-center gap-1"
                               >
-                                <span className="w-2 h-2 rounded-full bg-white" />
-                                <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-white" />
                               </motion.div>
                             )}
                           </motion.div>
@@ -576,7 +597,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                         initial={{ opacity: 0, scaleX: 0 }}
                         animate={{ opacity: 1, scaleX: 1 }}
                         transition={{ delay: 0.5 }}
-                        className="h-px bg-linear-to-r from-transparent via-gray-300 to-transparent my-4"
+                        className="h-px bg-linear-to-r from-transparent via-gray-300 to-transparent my-2"
                       />
                       {adminNavItems.map((item, index) => {
                         const active = isActive(item.href);
@@ -586,7 +607,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                             initial={{ opacity: 0, x: -40 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{
-                              delay: 0.55 + index * 0.07,
+                              delay: 0.55 + index * 0.05,
                               type: 'spring',
                               stiffness: 200
                             }}
@@ -596,15 +617,15 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
                               <motion.div
-                                className={`flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-medium transition-all ${
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                                   active
-                                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/40'
+                                    ? 'bg-purple-600 text-white shadow-md shadow-purple-600/40'
                                     : 'text-purple-600 hover:bg-purple-50 active:bg-purple-100'
                                 }`}
                                 whileHover={{ scale: 1.02, x: 5 }}
                                 whileTap={{ scale: 0.98 }}
                               >
-                                <span className={`w-11 h-11 rounded-xl flex items-center justify-center ${
+                                <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                                   active ? 'bg-white/20' : 'bg-purple-100'
                                 }`}>
                                   <NavIcon type={item.iconType} isActive={active} />
@@ -624,16 +645,16 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6, type: 'spring' }}
-                  className="mt-6 pt-4"
+                  className="mt-3 pt-2"
                 >
                   <motion.button
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl text-base font-medium text-red-600 bg-red-50 border-2 border-red-100"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 bg-red-50 border border-red-100"
                     whileHover={{ scale: 1.02, backgroundColor: '#fef2f2', borderColor: '#fecaca' }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <motion.svg
-                      width="22" height="22"
+                      width="18" height="18"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
@@ -647,12 +668,12 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                       <polyline points="16,17 21,12 16,7" />
                       <line x1="21" y1="12" x2="9" y2="12" />
                     </motion.svg>
-                    התנתקות מהמערכת
+                    התנתקות
                   </motion.button>
                 </motion.div>
 
                 {/* Bottom safe area */}
-                <div className="h-6" />
+                <div className="h-3" />
               </div>
             </motion.div>
           </>

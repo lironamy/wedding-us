@@ -54,6 +54,12 @@ export default async function AdminLayout({
                 >
                   משתמשים
                 </Link>
+                <Link
+                  href="/admin/pricing"
+                  className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700"
+                >
+                  מחירי חבילות
+                </Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">

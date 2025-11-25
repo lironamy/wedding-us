@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import ParallaxHero from "@/components/landing/ParallaxHero";
@@ -12,7 +13,16 @@ export default function Home() {
       {/* Fixed Header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary ">LunSoul</h1>
+          <Link href="/" className="flex items-center">
+              <Image
+                src="https://64.media.tumblr.com/6b5b4ea2d4bb71bcde8a81698e46625c/887d2b552e1bb2d6-a1/s1280x1920/672bf645a85cc73ca04a8c8804f3856360e34405.pnj"
+                alt="LunSoul logo"
+                width={180}
+                height={54}
+                priority
+                className="h-10 w-auto object-contain drop-shadow-zinc-800 drop-shadow-xs"
+              />  
+          </Link>
           <div className="flex gap-4">
             <Link href="/login">
               <Button variant="ghost">התחבר</Button>
