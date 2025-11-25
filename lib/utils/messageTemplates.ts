@@ -54,37 +54,39 @@ export interface MessageVariables {
   giftLink?: string;
   partner1Type?: PartnerType;
   partner2Type?: PartnerType;
+  happyText?: string;
+  excitedText?: string;
 }
 
 /**
  * Message templates collection
+ * Note: Guest name is NOT included here because the WhatsApp template already has "שלום {{1}}"
+ * These templates are used as the {{2}} parameter (message body)
  */
 export const MESSAGE_TEMPLATES: Record<MessageType, MessageTemplate> = {
   invitation: {
     type: 'invitation',
     title: 'הזמנה ראשונית',
     description: 'הודעת הזמנה ראשונית לחתונה',
-    template: `היי {guestName}, {gender:happy} ו{gender:excited}
-להזמינכם לחתונה שלנו ${emoji.ring}
+    template: `{gender:happy} ו{gender:excited} להזמינכם לחתונה שלנו ${emoji.ring}
 
-נפגש ביום {eventDate}
-ב"{venue}" בשעה {eventTime}
+${emoji.calendar} {eventDate}
+${emoji.clock} {eventTime}
+${emoji.pin} {venue}
 
 {gender:excited} לחגוג איתכם,
 {groomName} ו{brideName}
 
-לחצו על הקישור לאישור הגעה
+לאישור הגעה:
 {rsvpLink}`,
-    variables: ['guestName', 'groomName', 'brideName', 'eventDate', 'eventTime', 'venue', 'rsvpLink', 'giftLink'],
+    variables: ['groomName', 'brideName', 'eventDate', 'eventTime', 'venue', 'rsvpLink', 'giftLink'],
   },
 
   rsvp_reminder: {
     type: 'rsvp_reminder',
     title: 'תזכורת ראשונה - אישור הגעה',
     description: 'תזכורת ראשונה לאורחים שטרם אישרו הגעה',
-    template: `היי {guestName}! ${emoji.wave}
-
-עדיין לא קיבלנו אישור הגעה ממך לחתונה שלנו.
+    template: `עדיין לא קיבלנו אישור הגעה ממך לחתונה שלנו ${emoji.wave}
 
 ${emoji.bride}${emoji.groom} {groomName} & {brideName}
 ${emoji.calendar} {eventDate} | ${emoji.clock} {eventTime}
@@ -93,16 +95,14 @@ ${emoji.calendar} {eventDate} | ${emoji.clock} {eventTime}
 {rsvpLink}
 
 תודה רבה! ${emoji.twoHearts}`,
-    variables: ['guestName', 'groomName', 'brideName', 'eventDate', 'eventTime', 'rsvpLink'],
+    variables: ['groomName', 'brideName', 'eventDate', 'eventTime', 'rsvpLink'],
   },
 
   rsvp_reminder_2: {
     type: 'rsvp_reminder_2',
     title: 'תזכורת שנייה - אישור הגעה',
     description: 'תזכורת אחרונה לאורחים שטרם אישרו הגעה',
-    template: `שלום {guestName},
-
-זו תזכורת אחרונה לאישור הגעה לחתונה שלנו ${emoji.wedding}
+    template: `זו תזכורת אחרונה לאישור הגעה לחתונה שלנו ${emoji.wedding}
 
 החתונה מתקרבת והיינו {gender:wanting} לדעת אם תוכלו להגיע.
 
@@ -113,16 +113,14 @@ ${emoji.pin} {venue}
 {rsvpLink}
 
 {gender:waiting} לתשובה! ${emoji.pray}`,
-    variables: ['guestName', 'eventDate', 'eventTime', 'venue', 'rsvpLink'],
+    variables: ['eventDate', 'eventTime', 'venue', 'rsvpLink'],
   },
 
   day_before: {
     type: 'day_before',
     title: 'תזכורת יום לפני',
     description: 'תזכורת יום לפני האירוע כולל מספר שולחן',
-    template: `היי {guestName}! ${emoji.party}
-
-מחר {gender:gettingMarried}! ${emoji.wedding}
+    template: `מחר {gender:gettingMarried}! ${emoji.party}${emoji.wedding}
 {gender:waiting} לראות אתכם באירוע.
 
 ${emoji.pin} מיקום: {venue}
@@ -133,24 +131,22 @@ ${emoji.chair} מספר שולחן: {tableNumber}
 {appUrl}/wedding/directions
 
 נתראה מחר! ${emoji.heart}${emoji.sparkles}`,
-    variables: ['guestName', 'venue', 'eventTime', 'tableNumber', 'appUrl'],
+    variables: ['venue', 'eventTime', 'tableNumber', 'appUrl'],
   },
 
   thank_you: {
     type: 'thank_you',
     title: 'תודה',
     description: 'הודעת תודה לאחר האירוע',
-    template: `שלום {guestName}! ${emoji.twoHearts}
+    template: `תודה ענקית שהייתם חלק מהיום המיוחד שלנו! ${emoji.twoHearts}${emoji.confetti}
 
-תודה ענקית שהייתם חלק מהיום המיוחד שלנו! ${emoji.confetti}
-
-הנוכחות שלכם הפכה את החתונה למושלמת ואנחנו {gender:grateful} תודה על שחגגתם איתנו.
+הנוכחות שלכם הפכה את החתונה למושלמת ואנחנו {gender:grateful} על שחגגתם איתנו.
 
 {gender:hoping} שנהניתם והיה לכם כיף!
 
 באהבה,
 {groomName} & {brideName} ${emoji.heart}`,
-    variables: ['guestName', 'groomName', 'brideName'],
+    variables: ['groomName', 'brideName'],
   },
 };
 

@@ -32,22 +32,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get Content SID for this message type
-    const contentSidMap: Record<string, string | undefined> = {
-      invitation: process.env.TWILIO_CONTENT_SID_INVITATION,
-      rsvp_reminder: process.env.TWILIO_CONTENT_SID_REMINDER,
-      rsvp_reminder_2: process.env.TWILIO_CONTENT_SID_REMINDER,
-      day_before: process.env.TWILIO_CONTENT_SID_DAY_BEFORE,
-      thank_you: process.env.TWILIO_CONTENT_SID_THANK_YOU,
-    };
-
-    const contentSid = contentSidMap[messageType];
+    // Use a single universal template for all message types
+    // Template format: שלום {{1}}\n{{2}}
+    // Where {{1}} = guest name, {{2}} = full message body
+    const contentSid = process.env.TWILIO_CONTENT_SID;
 
     if (!contentSid) {
       return NextResponse.json(
         {
           error: 'Template not configured',
-          message: `Please set TWILIO_CONTENT_SID_${messageType.toUpperCase()} in environment variables`,
+          message: 'Please set TWILIO_CONTENT_SID in environment variables',
           details: 'WhatsApp requires approved templates for bulk messaging'
         },
         { status: 400 }
@@ -103,40 +97,45 @@ export async function POST(request: NextRequest) {
     const excitedText = getGenderText('excited', partner1Type, partner2Type); // מתרגשים/מתרגשות
 
     // Prepare messages for bulk send with template variables
+    // Template format in Twilio: שלום {{1}}\nתודה רבה על הזמן שהקדשת.
+    // We put the guest name + full message body in {{1}}
+    // Result: שלום [name + message body]\nתודה רבה על הזמן שהקדשת.
     const messagesToSend = guests.map((guest) => {
       const rsvpLink = `${appUrl}/rsvp/${guest.uniqueToken}`;
 
-      // Template variables - must match your Twilio Content Template
-      // Template format (with image header as {{1}}):
-      // [IMAGE {{1}} - dynamic from wedding.mediaUrl]
-      //
-      // היי {{2}}, {{3}}
-      // להזמינכם לחתונה שלנו 💍
-      //
-      // נפגש ביום {{4}}
-      // ב"{{5}}" בשעה {{6}}
-      //
-      // {{7}} לחגוג איתכם,
-      // {{8}}
-      //
-      // לחצו על הקישור לאישור הגעה
-      // {{9}}
-      const variables: TemplateVariables = {
-        '1': wedding.mediaUrl || '', // Image URL (header)
-        '2': guest.name,
-        '3': happyText, // שמחים/שמחות
-        '4': formatHebrewDate(new Date(wedding.eventDate)),
-        '5': wedding.venue,
-        '6': wedding.eventTime,
-        '7': excitedText, // מתרגשים/מתרגשות
-        '8': `${wedding.groomName} ו${wedding.brideName}`,
-        '9': rsvpLink,
-      };
+      // Generate the full message body based on message type
+      const messageBody = generateMessage(messageType as MessageType, {
+        guestName: '',
+        groomName: wedding.groomName,
+        brideName: wedding.brideName,
+        eventDate: formatHebrewDate(new Date(wedding.eventDate)),
+        eventTime: wedding.eventTime,
+        venue: wedding.venue,
+        rsvpLink,
+        tableNumber: guest.tableNumber,
+        appUrl,
+        happyText,
+        excitedText,
+        partner1Type,
+        partner2Type,
+      });
 
-      // Add table number for day_before messages
-      if (messageType === 'day_before' && guest.tableNumber) {
-        variables['10'] = guest.tableNumber.toString();
-      }
+      // Template variables for WhatsApp template:
+      // שלום {{name}}
+      // {{message}}
+      // תודה רבה על הזמן שהקדשת.
+      // צוות לונסול
+      // Note: WhatsApp/Twilio doesn't allow newlines in variables
+      // Replace newlines with spaces and collapse multiple spaces
+      const sanitizedMessage = messageBody
+        .replace(/\n+/g, ' ')  // Replace newlines with space
+        .replace(/\s{4,}/g, '   ')  // Max 3 consecutive spaces
+        .trim();
+
+      const variables: TemplateVariables = {
+        'name': guest.name,
+        'message': sanitizedMessage,
+      };
 
       return {
         phone: guest.phone,

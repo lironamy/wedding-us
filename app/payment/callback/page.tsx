@@ -23,7 +23,13 @@ export default function PaymentCallbackPage() {
 
   useEffect(() => {
     // Check if we're in an iframe
-    const inIframe = window.self !== window.top;
+    let inIframe = false;
+    try {
+      inIframe = window.self !== window.top;
+    } catch (e) {
+      // If we can't access window.top, we're definitely in an iframe
+      inIframe = true;
+    }
     setIsInIframe(inIframe);
 
     const processPayment = async () => {
@@ -102,7 +108,7 @@ export default function PaymentCallbackPage() {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-12 h-12 mx-auto mb-4 border-4 border-primary border-t-transparent rounded-full"
+              className="w-12 h-12 mx-auto mb-4 border-4 border-purple-500 border-t-transparent rounded-full"
             />
             <p className="text-gray-600">מעבד את התשלום...</p>
           </div>
@@ -148,7 +154,7 @@ export default function PaymentCallbackPage() {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-16 h-16 mx-auto mb-6 border-4 border-primary border-t-transparent rounded-full"
+              className="w-16 h-16 mx-auto mb-6 border-4 border-purple-500 border-t-transparent rounded-full"
             />
             <h2 className="text-xl font-semibold text-gray-800">מעבד את התשלום...</h2>
             <p className="text-gray-500 mt-2">אנא המתן</p>

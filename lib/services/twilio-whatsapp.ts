@@ -80,6 +80,7 @@ export class TwilioWhatsAppService {
 
       console.log('📱 [Twilio] Sending WhatsApp template message to:', formattedTo);
       console.log('📝 [Twilio] Content SID:', contentSid);
+      console.log('📝 [Twilio] Variables:', JSON.stringify(variables, null, 2));
 
       const result = await this.client.messages.create({
         from: this.fromNumber,

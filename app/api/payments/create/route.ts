@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       customerName: session.user.name || '',
       customerPhone: '', // Will be filled by user in iframe
       description: `שדרוג חבילה ל-${packageGuests} מוזמנים`,
-      returnUrl: `${appUrl}/dashboard/payment/callback?weddingId=${weddingId}&package=${packageGuests}&orderId=${orderId}`,
+      returnUrl: `${appUrl}/payment/callback?weddingId=${weddingId}&package=${packageGuests}&orderId=${orderId}`,
       orderId,
       createDocument: true,
       documentHeadline: `קבלה - שדרוג חבילה ל-${packageGuests} מוזמנים`,
