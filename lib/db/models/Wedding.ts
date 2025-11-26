@@ -10,6 +10,7 @@ export interface IWedding {
   partner2Type?: 'groom' | 'bride';
   eventDate: Date;
   eventTime: string;
+  chuppahTime?: string;
   venue: string;
   venueAddress: string;
   venueCoordinates?: {
@@ -25,6 +26,7 @@ export interface IWedding {
     fontFamily: string;
   };
   backgroundPattern?: string;
+  invitationTemplate?: string;
   bitPhone?: string;
   payboxPhone?: string;
   bitQrImage?: string;
@@ -111,6 +113,10 @@ const WeddingSchema = new Schema<IWedding>(
       type: String,
       required: [true, 'Event time is required'],
     },
+    chuppahTime: {
+      type: String,
+      trim: true,
+    },
     venue: {
       type: String,
       required: [true, 'Venue is required'],
@@ -156,6 +162,10 @@ const WeddingSchema = new Schema<IWedding>(
     backgroundPattern: {
       type: String,
       default: '',
+    },
+    invitationTemplate: {
+      type: String,
+      default: 'classic',
     },
     bitPhone: {
       type: String,

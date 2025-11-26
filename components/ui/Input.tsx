@@ -36,6 +36,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ? 'border-primary'
         : 'border-gray-300';
 
+    // For date/time inputs, hide the default placeholder when empty
+    const isDateOrTime = type === 'date' || type === 'time';
+    const shouldHidePlaceholder = isDateOrTime && !hasValue && !isFocused;
+
     return (
       <div className="w-full">
         <div className="relative">
@@ -58,7 +62,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               ${label ? 'pt-5 pb-2' : ''}
               ${className}
             `}
-            style={{ fontSize: '16px' }}
+            style={{
+              fontSize: '16px',
+              ...(shouldHidePlaceholder ? { color: 'transparent' } : {})
+            }}
             placeholder={!label ? props.placeholder : ' '}
             {...props}
           />

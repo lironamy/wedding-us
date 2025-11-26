@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface Wedding {
   _id: string;
+  userId: string;
   groomName: string;
   brideName: string;
   contactPhone?: string;
@@ -15,6 +16,7 @@ interface Wedding {
   partner2Type?: 'groom' | 'bride';
   eventDate: string;
   eventTime: string;
+  chuppahTime?: string;
   venue: string;
   venueAddress: string;
   venueCoordinates?: { lat: number; lng: number };
@@ -59,7 +61,10 @@ export default function SettingsPage() {
       );
 
       console.log('=== fetchWedding result ===');
+      console.log('Total weddings returned:', weddings.length);
+      console.log('All weddings:', weddings.map((w: Wedding) => ({ userId: w.userId, contactPhone: w.contactPhone, status: w.status })));
       console.log('Active wedding contactPhone:', activeWedding?.contactPhone);
+      console.log('Active wedding userId:', activeWedding?.userId);
       setWedding(activeWedding || null);
     } catch (err) {
       console.error('Error fetching wedding:', err);

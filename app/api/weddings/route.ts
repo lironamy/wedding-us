@@ -19,6 +19,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'לא מורשה' }, { status: 401 });
     }
 
+    console.log('=== GET /api/weddings ===');
+    console.log('Session user id:', session.user.id);
+    console.log('Session user email:', session.user.email);
+    console.log('Session user role:', session.user.role);
+
     await dbConnect();
 
     // If admin, return all weddings; if couple, return only their weddings
@@ -26,7 +31,15 @@ export async function GET(request: NextRequest) {
       ? {}
       : { userId: session.user.id };
 
+    console.log('Query:', JSON.stringify(query));
+
     const weddings = await Wedding.find(query).sort({ createdAt: -1 });
+
+    console.log('Found weddings count:', weddings.length);
+    if (weddings.length > 0) {
+      console.log('First wedding userId:', weddings[0].userId);
+      console.log('First wedding contactPhone:', weddings[0].contactPhone);
+    }
 
     return NextResponse.json(weddings, { status: 200 });
   } catch (error) {
@@ -86,6 +99,7 @@ export async function POST(request: NextRequest) {
       partner2Type: body.partner2Type || 'bride',
       eventDate: new Date(eventDate),
       eventTime,
+      chuppahTime: body.chuppahTime || '',
       venue,
       venueAddress,
       venueCoordinates: body.venueCoordinates || null,
@@ -98,6 +112,7 @@ export async function POST(request: NextRequest) {
         fontFamily: 'Assistant'
       },
       backgroundPattern: body.backgroundPattern || '',
+      invitationTemplate: body.invitationTemplate || 'classic',
       bitPhone: body.bitPhone || '',
       payboxPhone: body.payboxPhone || '',
       enableBitGifts: body.enableBitGifts || false,

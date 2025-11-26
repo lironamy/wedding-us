@@ -11,7 +11,10 @@ import { Stepper, Step } from '@/components/ui/Stepper';
 import MediaUpload from '@/components/dashboard/MediaUpload';
 import BitQrUpload from '@/components/dashboard/BitQrUpload';
 import RefundRequestModal from '@/components/dashboard/RefundRequestModal';
+import TemplateSelector from '@/components/dashboard/TemplateSelector';
+import InvitationRenderer from '@/components/invitation/InvitationRenderer';
 import { getGenderText } from '@/lib/utils/genderText';
+import hebrewDate from 'hebrew-date';
 
 interface WeddingFormStepperProps {
   wedding?: any;
@@ -30,6 +33,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     partner2Type: 'bride' as 'groom' | 'bride',
     eventDate: '',
     eventTime: '',
+    chuppahTime: '',
     venue: '',
     venueAddress: '',
     description: '',
@@ -41,6 +45,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     bitQrImage: '',
     bitPaymentLink: '',
     backgroundPattern: '',
+    invitationTemplate: 'classic',
     maxGuests: 200,
     theme: {
       primaryColor: '#7950a5',
@@ -93,7 +98,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   ];
 
   // Dynamic steps - add payment step only if paid package
-  const baseStepsLabels = ['בני הזוג', 'תאריך ומיקום', 'מדיה', 'מתנות', 'עיצוב', 'חבילה'];
+  const baseStepsLabels = ['פרטי האירוע', 'מדיה', 'מתנות', 'עיצוב', 'תצוגה מקדימה', 'חבילה'];
   const stepsLabels = formData.maxGuests > 200
     ? [...baseStepsLabels, 'תשלום']
     : baseStepsLabels;
@@ -108,6 +113,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         partner2Type: wedding.partner2Type || 'bride',
         eventDate: wedding.eventDate ? new Date(wedding.eventDate).toISOString().split('T')[0] : '',
         eventTime: wedding.eventTime || '',
+        chuppahTime: wedding.chuppahTime || '',
         venue: wedding.venue || '',
         venueAddress: wedding.venueAddress || '',
         description: wedding.description || '',
@@ -119,6 +125,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         bitQrImage: wedding.bitQrImage || '',
         bitPaymentLink: wedding.bitPaymentLink || '',
         backgroundPattern: wedding.backgroundPattern || '',
+        invitationTemplate: wedding.invitationTemplate || 'classic',
         maxGuests: wedding.maxGuests || 200,
         theme: wedding.theme || {
           primaryColor: '#7950a5',
@@ -202,6 +209,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
+    // Step 1: Combined Partner Details + Date & Venue
     if (step === 1) {
       if (!formData.groomName.trim()) {
         newErrors.groomName = `שם ה${partnerTypeLabels[formData.partner1Type]} חובה`;
@@ -214,9 +222,6 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       } else if (!validateIsraeliPhone(formData.contactPhone)) {
         newErrors.contactPhone = 'מספר טלפון לא תקין (לדוגמה: 050-1234567)';
       }
-    }
-
-    if (step === 2) {
       if (!formData.eventDate) newErrors.eventDate = 'תאריך האירוע חובה';
       if (!formData.eventTime) newErrors.eventTime = 'שעת האירוע חובה';
       if (!formData.venue.trim()) newErrors.venue = 'שם האולם חובה';
@@ -245,14 +250,14 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     const prevStep = currentStep;
     setCurrentStep(newStep);
 
-    // Auto-save when leaving step 1 (partner details including contactPhone)
+    // Auto-save when leaving step 1 (event details: partner details + date/venue)
     if (prevStep === 1 && newStep > 1 && wedding?._id) {
       try {
-        console.log('=== Auto-saving partner details after step 1 ===');
+        console.log('=== Auto-saving event details after step 1 ===');
         await onSubmit(formData, { skipRedirect: true });
-        console.log('Partner details saved successfully');
+        console.log('Event details saved successfully');
       } catch (error) {
-        console.error('Error auto-saving partner details:', error);
+        console.error('Error auto-saving event details:', error);
       }
     }
 
@@ -399,123 +404,132 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         cancelButtonText="ביטול"
         isLoading={loading}
       >
-        {/* Step 1: Partner Details */}
+        {/* Step 1: Event Details (Partner Details + Date & Venue) */}
         <Step>
           <div className="space-y-4 sm:space-y-6">
             <div className="text-center mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">פרטי הזוג</h2>
-              <p className="text-sm sm:text-base text-gray-500 mt-1">הזינו את שמות הזוג</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">פרטי האירוע</h2>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">הזינו את פרטי הזוג והאירוע</p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:gap-6">
-              {/* Partner 1 */}
-              <div className="flex flex-row gap-2 items-start">
-                <select
-                  value={formData.partner1Type}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, partner1Type: e.target.value as 'groom' | 'bride' }))}
-                  className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
-                  style={{ fontSize: '16px' }}
-                >
-                  <option value="groom">חתן</option>
-                  <option value="bride">כלה</option>
-                </select>
-                <div className="flex-1">
-                  <Input
-                    label={`שם ה${partnerTypeLabels[formData.partner1Type]}`}
-                    name="groomName"
-                    value={formData.groomName}
-                    onChange={handleChange}
-                    error={errors.groomName}
-                  />
+            {/* Partner Details Section */}
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-medium text-gray-800">פרטי הזוג</h3>
+              <div className="grid grid-cols-1 gap-4">
+                {/* Partner 1 */}
+                <div className="flex flex-row gap-2 items-start">
+                  <select
+                    value={formData.partner1Type}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, partner1Type: e.target.value as 'groom' | 'bride' }))}
+                    className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
+                    style={{ fontSize: '16px' }}
+                  >
+                    <option value="groom">חתן</option>
+                    <option value="bride">כלה</option>
+                  </select>
+                  <div className="flex-1">
+                    <Input
+                      label={`שם ה${partnerTypeLabels[formData.partner1Type]}`}
+                      name="groomName"
+                      value={formData.groomName}
+                      onChange={handleChange}
+                      error={errors.groomName}
+                    />
+                  </div>
                 </div>
+
+                {/* Partner 2 */}
+                <div className="flex flex-row gap-2 items-start">
+                  <select
+                    value={formData.partner2Type}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, partner2Type: e.target.value as 'groom' | 'bride' }))}
+                    className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
+                    style={{ fontSize: '16px' }}
+                  >
+                    <option value="groom">חתן</option>
+                    <option value="bride">כלה</option>
+                  </select>
+                  <div className="flex-1">
+                    <Input
+                      label={`שם ה${partnerTypeLabels[formData.partner2Type]}`}
+                      name="brideName"
+                      value={formData.brideName}
+                      onChange={handleChange}
+                      error={errors.brideName}
+                    />
+                  </div>
+                </div>
+
+                {/* Contact Phone */}
+                <Input
+                  label="מספר טלפון ליצירת קשר"
+                  name="contactPhone"
+                  type="tel"
+                  value={formData.contactPhone}
+                  onChange={handleChange}
+                  error={errors.contactPhone}
+                />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-4" />
+
+            {/* Date & Venue Section */}
+            <div className="space-y-4">
+              <h3 className="text-base sm:text-lg font-medium text-gray-800">תאריך ומיקום</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <Input
+                  label="תאריך האירוע"
+                  name="eventDate"
+                  type="date"
+                  value={formData.eventDate}
+                  onChange={handleChange}
+                  error={errors.eventDate}
+                  required
+                />
+
+                <Input
+                  label="שעת האירוע"
+                  name="eventTime"
+                  type="time"
+                  value={formData.eventTime}
+                  onChange={handleChange}
+                  error={errors.eventTime}
+                  required
+                />
               </div>
 
-              {/* Partner 2 */}
-              <div className="flex flex-row gap-2 items-start">
-                <select
-                  value={formData.partner2Type}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, partner2Type: e.target.value as 'groom' | 'bride' }))}
-                  className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
-                  style={{ fontSize: '16px' }}
-                >
-                  <option value="groom">חתן</option>
-                  <option value="bride">כלה</option>
-                </select>
-                <div className="flex-1">
-                  <Input
-                    label={`שם ה${partnerTypeLabels[formData.partner2Type]}`}
-                    name="brideName"
-                    value={formData.brideName}
-                    onChange={handleChange}
-                    error={errors.brideName}
-                  />
-                </div>
-              </div>
-
-              {/* Contact Phone */}
               <Input
-                label="מספר טלפון ליצירת קשר"
-                name="contactPhone"
-                type="tel"
-                value={formData.contactPhone}
-                onChange={handleChange}
-                error={errors.contactPhone}
-              />
-            </div>
-          </div>
-        </Step>
-
-        {/* Step 2: Date & Venue */}
-        <Step>
-          <div className="space-y-4 sm:space-y-6">
-            <div className="text-center mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">תאריך ומיקום</h2>
-              <p className="text-sm sm:text-base text-gray-500 mt-1">מתי ואיפה האירוע?</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <Input
-                label="תאריך האירוע"
-                name="eventDate"
-                type="date"
-                value={formData.eventDate}
-                onChange={handleChange}
-                error={errors.eventDate}
-                required
-              />
-
-              <Input
-                label="שעת האירוע"
-                name="eventTime"
+                label="שעת החופה"
+                name="chuppahTime"
                 type="time"
-                value={formData.eventTime}
+                value={formData.chuppahTime}
                 onChange={handleChange}
-                error={errors.eventTime}
+              />
+
+              <Input
+                label="שם האולם"
+                name="venue"
+                value={formData.venue}
+                onChange={handleChange}
+                error={errors.venue}
+                required
+              />
+
+              <Input
+                label="כתובת מלאה- רחוב מספר עיר"
+                name="venueAddress"
+                value={formData.venueAddress}
+                onChange={handleChange}
+                error={errors.venueAddress}
                 required
               />
             </div>
-
-            <Input
-              label="שם האולם"
-              name="venue"
-              value={formData.venue}
-              onChange={handleChange}
-              error={errors.venue}
-              required
-            />
-
-            <Input
-              label="כתובת מלאה- רחוב מספר עיר"
-              name="venueAddress"
-              value={formData.venueAddress}
-              onChange={handleChange}
-              error={errors.venueAddress}
-              required
-            />
           </div>
         </Step>
 
-        {/* Step 3: Media & Description */}
+        {/* Step 2: Media & Description */}
         <Step>
           <div className="space-y-4 sm:space-y-6">
             <div className="text-center mb-4 sm:mb-6">
@@ -551,7 +565,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
           </div>
         </Step>
 
-        {/* Step 4: Gifts */}
+        {/* Step 3: Gifts */}
         <Step>
           <div className="space-y-4 sm:space-y-6">
             <div className="text-center mb-4 sm:mb-6">
@@ -569,13 +583,24 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
           </div>
         </Step>
 
-        {/* Step 5: Design */}
+        {/* Step 4: Design */}
         <Step>
           <div className="space-y-4 sm:space-y-6">
             <div className="text-center mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">עיצוב ההזמנה</h2>
-              <p className="text-sm sm:text-base text-gray-500 mt-1">התאימו את הצבעים והאפקטים</p>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">בחרו תבנית והתאימו את העיצוב</p>
             </div>
+
+            {/* Template Selection */}
+            <div className="mb-8">
+              <TemplateSelector
+                selectedTemplate={formData.invitationTemplate}
+                onSelectTemplate={(templateId) => setFormData((prev) => ({ ...prev, invitationTemplate: templateId }))}
+              />
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-6" />
 
             {/* Colors */}
             <div className="grid grid-cols-1 gap-4 sm:gap-6">
@@ -666,6 +691,97 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                 ))}
               </div>
             </div>
+          </div>
+        </Step>
+
+        {/* Step 5: Preview */}
+        <Step>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="text-center mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">תצוגה מקדימה</h2>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">כך תיראה ההזמנה שלכם</p>
+            </div>
+
+            {/* Preview Container */}
+            <div className="relative bg-gray-100 rounded-2xl overflow-hidden shadow-inner">
+              {/* Phone Frame */}
+              <div className="mx-auto max-w-sm">
+                <div className="bg-black rounded-t-3xl pt-2 px-4">
+                  <div className="bg-black h-6 rounded-full w-24 mx-auto" />
+                </div>
+                <div
+                  className="bg-white overflow-y-auto border-x-4 border-black"
+                  style={{ height: '60vh', maxHeight: '600px' }}
+                >
+                  <InvitationRenderer
+                    wedding={{
+                      ...formData,
+                      _id: wedding?._id || 'preview',
+                      eventDate: formData.eventDate || new Date().toISOString().split('T')[0],
+                      uniqueUrl: wedding?.uniqueUrl || 'preview',
+                      status: wedding?.status || 'draft',
+                    } as any}
+                    dateParts={(() => {
+                      const date = formData.eventDate ? new Date(formData.eventDate) : new Date();
+                      const hebrew = hebrewDate(date);
+
+                      // Convert Hebrew day number to Hebrew letters
+                      const convertToHebrewDay = (day: number) => {
+                        if (day <= 0 || day > 30) return String(day);
+                        if (day === 15) return 'ט״ו';
+                        if (day === 16) return 'ט״ז';
+                        const units = ['', 'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט'];
+                        const tens = ['', 'י', 'כ', 'ל'];
+                        const dayTens = Math.floor(day / 10);
+                        const dayUnits = day % 10;
+                        const letters: string[] = [];
+                        if (dayTens > 0) letters.push(tens[dayTens]);
+                        if (dayUnits > 0) letters.push(units[dayUnits]);
+                        if (letters.length === 1) return `${letters[0]}׳`;
+                        return letters.map((l, i) => i === letters.length - 2 ? `${l}״` : l).join('');
+                      };
+
+                      const hebrewMonthFormatter = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { month: 'long' });
+                      const hebrewMonth = hebrewMonthFormatter.format(date);
+
+                      return {
+                        day: date.getDate(),
+                        month: date.toLocaleDateString('he-IL', { month: 'long' }),
+                        year: date.getFullYear(),
+                        weekday: date.toLocaleDateString('he-IL', { weekday: 'long' }),
+                        hebrewDate: `${convertToHebrewDay(hebrew.date)} ב${hebrewMonth}`.trim(),
+                        hebrewWeekday: date.toLocaleDateString('he-IL', { weekday: 'long' }),
+                      };
+                    })()}
+                    isRSVP={false}
+                  />
+                </div>
+                <div className="bg-black rounded-b-3xl pb-2 px-4">
+                  <div className="bg-gray-800 h-1 rounded-full w-32 mx-auto mt-2" />
+                </div>
+              </div>
+            </div>
+
+            {/* Confirmation Box */}
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2">
+                    <path d="M9 12l2 2 4-4" />
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-800">מרוצים מהעיצוב?</p>
+                  <p className="text-xs text-green-600">לחצו על "המשך" כדי לעבור לבחירת חבילה</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Edit Hint */}
+            <p className="text-center text-xs text-gray-400">
+              ניתן לחזור לשלבים הקודמים כדי לערוך את הפרטים
+            </p>
           </div>
         </Step>
 

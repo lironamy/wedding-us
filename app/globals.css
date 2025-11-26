@@ -133,6 +133,17 @@
 html {
   direction: rtl;
   text-align: right;
+  /* Support for safe-area on mobile devices */
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Safe area utilities for mobile browsers */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 body {

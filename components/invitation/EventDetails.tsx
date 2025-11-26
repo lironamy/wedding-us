@@ -4,6 +4,7 @@ import { formatHebrewDate } from '@/lib/utils/date';
 interface EventDetailsProps {
   eventDate: string;
   eventTime: string;
+  chuppahTime?: string;
   venue: string;
   venueAddress: string;
   theme: {
@@ -15,6 +16,7 @@ interface EventDetailsProps {
 export default function EventDetails({
   eventDate,
   eventTime,
+  chuppahTime,
   venue,
   venueAddress,
   theme
@@ -90,11 +92,45 @@ export default function EventDetails({
                 className="text-lg font-semibold mb-1"
                 style={{ color: theme.secondaryColor }}
               >
-                שעה
+                שעת קבלת פנים
               </h3>
               <p className="text-gray-700">{eventTime}</p>
             </div>
           </div>
+
+          {/* Chuppah Time */}
+          {chuppahTime && (
+            <div className="flex items-start gap-4">
+              <div
+                className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: `${theme.primaryColor}20` }}
+              >
+                <svg
+                  className="w-6 h-6"
+                  style={{ color: theme.primaryColor }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3
+                  className="text-lg font-semibold mb-1"
+                  style={{ color: theme.secondaryColor }}
+                >
+                  שעת החופה
+                </h3>
+                <p className="text-gray-700">{chuppahTime}</p>
+              </div>
+            </div>
+          )}
 
           {/* Venue */}
           <div className="flex items-start gap-4">

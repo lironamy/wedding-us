@@ -30,7 +30,7 @@ export default async function RootLayout({
     <html lang="he" dir="rtl">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className={`${rubik.className} antialiased flex flex-col min-h-screen`}>
         <SessionProvider session={session}>

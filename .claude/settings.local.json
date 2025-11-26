@@ -41,7 +41,8 @@
       "WebFetch(domain:www.invoice4u.co.il)",
       "Bash(dir \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\" /b)",
       "WebFetch(domain:reactbits.dev)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "WebFetch(domain:64.media.tumblr.com)"
     ],
     "deny": [],
     "ask": []

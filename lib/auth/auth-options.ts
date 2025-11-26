@@ -81,11 +81,17 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, trigger, session, account }) {
+      console.log('=== JWT Callback ===');
+      console.log('user:', user ? { id: user.id, email: user.email, role: user.role } : 'undefined');
+      console.log('account provider:', account?.provider);
+      console.log('token before:', { id: token.id, email: token.email, role: token.role });
+
       if (user) {
         // For Google login, fetch the actual MongoDB user
         if (account?.provider === 'google') {
           await dbConnect();
           const dbUser = await User.findOne({ email: user.email });
+          console.log('Google login - dbUser found:', dbUser ? { _id: dbUser._id.toString(), email: dbUser.email, role: dbUser.role } : 'not found');
           if (dbUser) {
             token.role = dbUser.role;
             token.id = dbUser._id.toString();
@@ -96,6 +102,8 @@ export const authOptions: NextAuthOptions = {
           token.id = user.id;
         }
       }
+
+      console.log('token after:', { id: token.id, email: token.email, role: token.role });
 
       // Handle session update
       if (trigger === 'update' && session) {
