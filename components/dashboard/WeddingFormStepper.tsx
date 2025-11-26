@@ -406,22 +406,22 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       >
         {/* Step 1: Event Details (Partner Details + Date & Venue) */}
         <Step>
-          <div className="space-y-4 sm:space-y-6">
-            <div className="text-center mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">פרטי האירוע</h2>
-              <p className="text-sm sm:text-base text-gray-500 mt-1">הזינו את פרטי הזוג והאירוע</p>
+          <div className="space-y-3 sm:space-y-5">
+            <div className="text-center mb-2 sm:mb-4">
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900">פרטי האירוע</h2>
+              <p className="text-xs sm:text-base text-gray-500 mt-0.5 sm:mt-1">הזינו את פרטי הזוג והאירוע</p>
             </div>
 
             {/* Partner Details Section */}
-            <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-medium text-gray-800">פרטי הזוג</h3>
-              <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2 sm:space-y-4">
+              <h3 className="text-sm sm:text-lg font-medium text-gray-800">פרטי הזוג</h3>
+              <div className="grid grid-cols-1 gap-2 sm:gap-4">
                 {/* Partner 1 */}
                 <div className="flex flex-row gap-2 items-start">
                   <select
                     value={formData.partner1Type}
                     onChange={(e) => setFormData((prev) => ({ ...prev, partner1Type: e.target.value as 'groom' | 'bride' }))}
-                    className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
+                    className="w-16 sm:w-24 px-1.5 sm:px-3 py-2.5 sm:py-3.5 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
                     style={{ fontSize: '16px' }}
                   >
                     <option value="groom">חתן</option>
@@ -443,7 +443,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                   <select
                     value={formData.partner2Type}
                     onChange={(e) => setFormData((prev) => ({ ...prev, partner2Type: e.target.value as 'groom' | 'bride' }))}
-                    className="w-20 sm:w-24 px-2 sm:px-3 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm sm:text-base"
+                    className="w-16 sm:w-24 px-1.5 sm:px-3 py-2.5 sm:py-3.5 border-2 border-gray-300 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
                     style={{ fontSize: '16px' }}
                   >
                     <option value="groom">חתן</option>
@@ -462,7 +462,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
 
                 {/* Contact Phone */}
                 <Input
-                  label="מספר טלפון ליצירת קשר"
+                  label="טלפון ליצירת קשר"
                   name="contactPhone"
                   type="tel"
                   value={formData.contactPhone}
@@ -473,24 +473,27 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
             </div>
 
             {/* Divider */}
-            <div className="border-t border-gray-200 my-4" />
+            <div className="border-t border-gray-200 my-2 sm:my-4" />
 
             {/* Date & Venue Section */}
-            <div className="space-y-4">
-              <h3 className="text-base sm:text-lg font-medium text-gray-800">תאריך ומיקום</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <Input
-                  label="תאריך האירוע"
-                  name="eventDate"
-                  type="date"
-                  value={formData.eventDate}
-                  onChange={handleChange}
-                  error={errors.eventDate}
-                  required
-                />
+            <div className="space-y-2 sm:space-y-4">
+              <h3 className="text-sm sm:text-lg font-medium text-gray-800">תאריך ומיקום</h3>
 
+              {/* Date */}
+              <Input
+                label="תאריך האירוע"
+                name="eventDate"
+                type="date"
+                value={formData.eventDate}
+                onChange={handleChange}
+                error={errors.eventDate}
+                required
+              />
+
+              {/* Times side by side */}
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
                 <Input
-                  label="שעת האירוע"
+                  label="שעת קבלת פנים"
                   name="eventTime"
                   type="time"
                   value={formData.eventTime}
@@ -498,15 +501,14 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                   error={errors.eventTime}
                   required
                 />
+                <Input
+                  label="שעת חופה"
+                  name="chuppahTime"
+                  type="time"
+                  value={formData.chuppahTime}
+                  onChange={handleChange}
+                />
               </div>
-
-              <Input
-                label="שעת החופה"
-                name="chuppahTime"
-                type="time"
-                value={formData.chuppahTime}
-                onChange={handleChange}
-              />
 
               <Input
                 label="שם האולם"
@@ -518,7 +520,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               />
 
               <Input
-                label="כתובת מלאה- רחוב מספר עיר"
+                label="כתובת מלאה (רחוב, מספר, עיר)"
                 name="venueAddress"
                 value={formData.venueAddress}
                 onChange={handleChange}
