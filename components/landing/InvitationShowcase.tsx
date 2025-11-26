@@ -27,18 +27,18 @@ export default function InvitationShowcase() {
               צרו חוויה בלתי נשכחת לאורחים שלכם עם הזמנות אינטראקטיביות
               שכוללות תמונות, סרטונים ואפקטים מרהיבים
             </p>
-            <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-              <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md">
-                <span className="text-2xl">🎬</span>
-                <span className="text-gray-700">סרטונים מותאמים</span>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center lg:justify-start">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎬</span>
+                <span className="text-gray-600">סרטונים מותאמים</span>
               </div>
-              <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md">
-                <span className="text-2xl">✨</span>
-                <span className="text-gray-700">אפקטים מיוחדים</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">✨</span>
+                <span className="text-gray-600">אפקטים מיוחדים</span>
               </div>
-              <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md">
-                <span className="text-2xl">📱</span>
-                <span className="text-gray-700">תצוגה מושלמת בנייד</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📱</span>
+                <span className="text-gray-600">תצוגה מושלמת בנייד</span>
               </div>
             </div>
           </motion.div>

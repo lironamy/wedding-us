@@ -479,7 +479,7 @@ export default function AnimatedFeatures() {
                 whileHover={{ scale: 1.03, y: -5 }}
                 onHoverStart={() => setHoveredIndex(index)}
                 onHoverEnd={() => setHoveredIndex(null)}
-                className={`relative bg-white rounded-3xl p-8 shadow-lg border border-gray-100 overflow-hidden group cursor-pointer`}
+                className={`relative bg-white rounded-3xl p-8 shadow-lg border border-gray-100 overflow-hidden group`}
               >
                 {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />

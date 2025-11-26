@@ -538,11 +538,15 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows={4}
+                rows={2}
+                maxLength={80}
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-base"
                 style={{ fontSize: '16px' }}
-                placeholder="מוזמנים לחגוג איתנו..."
+                placeholder="מים רבים לא יוכלו לכבות את האהבה ונהרות לא ישטפוה"
               />
+              <p className="text-xs text-gray-500 text-left">
+                {formData.description?.length || 0}/80 תווים
+              </p>
             </div>
           </div>
         </Step>

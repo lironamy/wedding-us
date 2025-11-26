@@ -371,7 +371,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-2">
             <Image
-                src="https://64.media.tumblr.com/6b5b4ea2d4bb71bcde8a81698e46625c/887d2b552e1bb2d6-a1/s1280x1920/672bf645a85cc73ca04a8c8804f3856360e34405.pnj"
+                src="https://64.media.tumblr.com/c913c60efe6c1383980700787f1dac8a/8bb9fe9a2c1eb8a0-3f/s400x600/b06839161faa4e07f94ad3570aaf42d6be24a574.pnj"
                 alt="LunSoul logo"
                 width={180}
                 height={54}

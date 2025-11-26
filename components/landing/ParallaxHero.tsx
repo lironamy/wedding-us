@@ -17,8 +17,11 @@ export default function ParallaxHero() {
   const mountainsRef = useRef<HTMLDivElement>(null);
   const wallRef = useRef<HTMLDivElement>(null);
   const grassRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
+
+  // New Hero refs
+  const newHeroContentRef = useRef<HTMLDivElement>(null);
+  const stickersRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Reset scroll position on load
@@ -48,11 +51,16 @@ export default function ParallaxHero() {
         gsap.set(mountainsRef.current, { y: "30%", opacity: 0 });
         gsap.set(wallRef.current, { x: "50%", opacity: 0 });
         gsap.set(grassRef.current, { y: "40%", opacity: 0 });
-        gsap.set(contentRef.current, { opacity: 1, y: 0 });
         gsap.set(titleRef.current, { opacity: 0, y: -30 });
 
-        // Phase 1: Fade out the initial content and bring in distant mountains
-        tl.to(contentRef.current, {
+        // New Hero initial states
+        gsap.set([newHeroContentRef.current, stickersRef.current], {
+          opacity: 1,
+          y: 0
+        });
+
+        // Phase 1: Fade out the new hero content (including phone mockup)
+        tl.to([newHeroContentRef.current, stickersRef.current], {
           opacity: 0,
           y: -100,
           duration: 0.5,
@@ -147,7 +155,10 @@ export default function ParallaxHero() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative h-screen w-full overflow-hidden bg-[#e8ddd5]">
+    <div ref={containerRef} className="relative h-screen w-full overflow-hidden">
+      {/* Background - Cream gradient that transitions to parallax scene */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#faf8f5] via-[#f5f0eb] to-[#e8ddd5]" style={{ zIndex: 0 }} />
+
       {/* Scene container - maintains aspect ratio */}
       <div
         ref={sceneRef}
@@ -234,47 +245,164 @@ export default function ParallaxHero() {
 
       </div>
 
-      {/* Initial Content Overlay */}
-      <div
-        ref={contentRef}
-        className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
-        style={{ zIndex: 10 }}
-      >
-        <h1 className="text-5xl md:text-7xl font-bold text-[#6e6262] mb-6 drop-shadow-lg">
-          החתונה שלכם
-        </h1>
-        <p className="text-xl md:text-2xl text-[#6e6262]/80 mb-4 drop-shadow-md max-w-2xl">
-          בניהול מושלם
-        </p>
-        <div className="animate-bounce mt-8">
-          <svg
-            className="w-8 h-8 text-[#6e6262] drop-shadow-md"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
+      {/* Scattered Stickers - Responsive positioning */}
+      <div ref={stickersRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: 15 }}>
+       
+
+       
+      </div>
+
+      {/* Main New Hero Content */}
+      <div ref={newHeroContentRef} className="relative z-10 container mx-auto px-3 sm:px-4 h-screen lg:h-auto flex items-center lg:block pt-0 lg:pt-64 pb-0 lg:pb-20" style={{ zIndex: 12 }}>
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-0 sm:gap-0 lg:gap-0 xl:gap-0 w-full">
+
+          {/* Right side - Text Content */}
+          <div className="flex-1 text-center lg:text-right order-2 lg:order-1 max-w-2xl lg:max-w-none">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-[#6e6262] mb-4 sm:mb-6">
+              <span className="block !leading-[1]">ניהול אירועים</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-l from-primary to-accent !leading-[1] pb-1">
+                בקליק אחד
+              </span>
+            </h1>
+
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl text-[#6e6262]/70 mb-6 sm:mb-8 max-w-lg sm:max-w-xl mx-auto lg:mx-0 lg:mr-0 px-2 sm:px-0">
+              אישורי הגעה בוואטסאפ, ניהול אורחים, סידורי ישיבה ומעקב מתנות.
+              <br className="hidden sm:block" />
+              <span className="sm:hidden"> </span>
+              הכל במקום אחד - בחינם!
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8 px-4 sm:px-0">
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-xl">
+                  התחילו עכשיו - חינם
+                </Button>
+              </Link>
+              <Link href="/login" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-2 border-[#6e6262]/30 text-[#6e6262] hover:bg-[#6e6262]/5">
+                  יש לי חשבון
+                </Button>
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 md:gap-8 mt-6 sm:mt-8">
+              <div className="text-center min-w-[70px] sm:min-w-[80px]">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-primary">200</div>
+                <div className="text-xs sm:text-sm text-[#6e6262]/60">אורחים בחינם</div>
+              </div>
+              <div className="text-center min-w-[70px] sm:min-w-[80px]">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-primary">100%</div>
+                <div className="text-xs sm:text-sm text-[#6e6262]/60">אוטומטי</div>
+              </div>
+              <div className="text-center min-w-[70px] sm:min-w-[80px]">
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-primary">0₪</div>
+                <div className="text-xs sm:text-sm text-[#6e6262]/60">להתחלה</div>
+              </div>
+            </div>
+
+            {/* Bottom Features - inside content for mobile */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-x-4 sm:gap-x-6 gap-y-2 mt-6 sm:mt-8">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                <span className="text-xs sm:text-sm text-[#6e6262]/80">שליחה אוטומטית בוואטסאפ</span>
+              </div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="text-xs sm:text-sm text-[#6e6262]/80">ניהול אורחים וסידורי ישיבה</span>
+              </div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs sm:text-sm text-[#6e6262]/80">מעקב מתנות ותשלומים</span>
+              </div>
+            </div>
+
+            {/* Scroll indicator - mobile only */}
+            <div
+              className="flex justify-center mt-6 sm:mt-8 animate-bounce lg:hidden cursor-pointer"
+              onClick={() => {
+                const nextSection = document.querySelector('section');
+                if (nextSection) {
+                  nextSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
+              <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#6e6262]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Left side - Hero Image - Hidden on mobile */}
+          <div className="hidden lg:flex flex-1 justify-center order-1 lg:order-2 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <div className="relative">
+              <Image
+                src="https://64.media.tumblr.com/8dd7d2aac171d60333f77c7b13cda0c8/4c1761c18f9f0786-1e/s1280x1920/0eaa856e3948627555ed6c7782a0ec1c96b78590.pnj"
+                alt="Wedding couple"
+                width={500}
+                height={600}
+                className="object-contain max-h-[70vh] w-auto"
+                style={{ filter: 'drop-shadow(0 25px 50px rgba(139, 92, 246, 0.4))' }}
+                priority
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator - desktop only, below both columns */}
+        <div
+          className="hidden lg:flex flex-col items-center mt-6 cursor-pointer"
+          onClick={() => {
+            const nextSection = document.querySelector('section');
+            if (nextSection) {
+              const targetPosition = nextSection.getBoundingClientRect().top + window.pageYOffset;
+              const startPosition = window.pageYOffset;
+              const distance = targetPosition - startPosition;
+              const duration = 7000; // 8 seconds - slow scroll to enjoy the parallax
+              let start: number | null = null;
+
+              const animation = (currentTime: number) => {
+                if (start === null) start = currentTime;
+                const timeElapsed = currentTime - start;
+                const progress = Math.min(timeElapsed / duration, 1);
+                // easeOutQuad - starts normal, slows down at the end
+                const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+                window.scrollTo(0, startPosition + distance * easeOutQuad);
+                if (timeElapsed < duration) {
+                  requestAnimationFrame(animation);
+                }
+              };
+              requestAnimationFrame(animation);
+            }
+          }}
+        >
+          <span className="text-xs text-[#6e6262]/50 mb-1">click me</span>
+          <svg className="w-8 h-8 xl:w-10 xl:h-10 text-[#6e6262]/50 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
       </div>
 
-      {/* Title - Appears at the end at the top */}
+      {/* Title - Appears at the end at the top - responsive */}
       <div
         ref={titleRef}
-        className="absolute top-56 left-1/2 -translate-x-1/2 text-center opacity-0"
+        className="absolute top-32 sm:top-40 md:top-48 lg:top-56 left-1/2 -translate-x-1/2 text-center opacity-0 w-full px-4"
         style={{ zIndex: 15 }}
       >
-        <h2 className="text-4xl md:text-6xl mb-5 font-bold text-zinc-400 drop-shadow-2xl">
-          התחילו את המסע שלכם
+        <h2
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-5 text-[#b8966d] drop-shadow-2xl"
+          style={{ fontFamily: 'var(--font-wedding)' }}
+        >
+          Save The Date
         </h2>
       </div>
-
-     
 
       {/* Scroll indicator gradient */}
       <div

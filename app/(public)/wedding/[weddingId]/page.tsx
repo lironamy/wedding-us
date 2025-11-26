@@ -217,7 +217,7 @@ export default async function WeddingInvitationPage({ params }: PageProps) {
 
           {/* Quote */}
           <p className="text-center text-sm text-gray-400 px-4">
-            מים רבים לא יוכלו לכבות את האהבה ונהרות לא ישטפוה
+            {wedding.description || 'מים רבים לא יוכלו לכבות את האהבה ונהרות לא ישטפוה'}
           </p>
 
           {/* Invitation Text */}
