@@ -326,15 +326,32 @@ export default function ParallaxHero() {
 
             {/* Scroll indicator - mobile only */}
             <div
-              className="flex justify-center mt-6 sm:mt-8 animate-bounce lg:hidden cursor-pointer"
+              className="flex flex-col items-center mt-6 sm:mt-8 lg:hidden cursor-pointer"
               onClick={() => {
                 const nextSection = document.querySelector('section');
                 if (nextSection) {
-                  nextSection.scrollIntoView({ behavior: 'smooth' });
+                  const targetPosition = nextSection.getBoundingClientRect().top + window.pageYOffset;
+                  const startPosition = window.pageYOffset;
+                  const distance = targetPosition - startPosition;
+                  const duration = 7000; // 7 seconds - slow scroll to enjoy the parallax
+                  let start: number | null = null;
+
+                  const animation = (currentTime: number) => {
+                    if (start === null) start = currentTime;
+                    const timeElapsed = currentTime - start;
+                    const progress = Math.min(timeElapsed / duration, 1);
+                    const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+                    window.scrollTo(0, startPosition + distance * easeOutQuad);
+                    if (timeElapsed < duration) {
+                      requestAnimationFrame(animation);
+                    }
+                  };
+                  requestAnimationFrame(animation);
                 }
               }}
             >
-              <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#6e6262]/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span className="text-xs text-[#6e6262]/50 mb-1">click me</span>
+              <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#6e6262]/50 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
             </div>
@@ -397,7 +414,7 @@ export default function ParallaxHero() {
         style={{ zIndex: 15 }}
       >
         <h2
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-5 text-[#b8966d] drop-shadow-2xl"
+          className="text-5xl sm:text-5xl  lg:text-7xl xl:text-8xl text-[#b8966d] drop-shadow-2xl"
           style={{ fontFamily: 'var(--font-wedding)' }}
         >
           Save The Date
