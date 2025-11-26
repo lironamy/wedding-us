@@ -696,92 +696,111 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
 
         {/* Step 5: Preview */}
         <Step>
-          <div className="space-y-4 sm:space-y-6">
-            <div className="text-center mb-4 sm:mb-6">
+          <div className="space-y-4">
+            <div className="text-center mb-2">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900">תצוגה מקדימה</h2>
-              <p className="text-sm sm:text-base text-gray-500 mt-1">כך תיראה ההזמנה שלכם</p>
+              <p className="text-sm text-gray-500 mt-1">כך תיראה ההזמנה שלכם במובייל</p>
             </div>
 
             {/* Preview Container */}
-            <div className="relative bg-gray-100 rounded-2xl overflow-hidden shadow-inner">
-              {/* Phone Frame */}
-              <div className="mx-auto max-w-sm">
-                <div className="bg-black rounded-t-3xl pt-2 px-4">
-                  <div className="bg-black h-6 rounded-full w-24 mx-auto" />
-                </div>
-                <div
-                  className="bg-white overflow-y-auto border-x-4 border-black"
-                  style={{ height: '60vh', maxHeight: '600px' }}
-                >
-                  <InvitationRenderer
-                    wedding={{
-                      ...formData,
-                      _id: wedding?._id || 'preview',
-                      eventDate: formData.eventDate || new Date().toISOString().split('T')[0],
-                      uniqueUrl: wedding?.uniqueUrl || 'preview',
-                      status: wedding?.status || 'draft',
-                    } as any}
-                    dateParts={(() => {
-                      const date = formData.eventDate ? new Date(formData.eventDate) : new Date();
-                      const hebrew = hebrewDate(date);
+            <div className="flex justify-center py-4">
+              {/* Phone Frame - iPhone style */}
+              <div
+                className="relative bg-gradient-to-b from-gray-800 via-gray-900 to-gray-800 rounded-[3rem] p-2 shadow-2xl"
+                style={{
+                  width: '280px',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255,255,255,0.1)'
+                }}
+              >
+                {/* Phone inner bezel */}
+                <div className="bg-black rounded-[2.5rem] overflow-hidden relative">
+                  {/* Dynamic Island / Notch */}
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 bg-black rounded-full px-6 py-1.5 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-800" />
+                    <div className="w-12 h-3 rounded-full bg-gray-800" />
+                  </div>
 
-                      // Convert Hebrew day number to Hebrew letters
-                      const convertToHebrewDay = (day: number) => {
-                        if (day <= 0 || day > 30) return String(day);
-                        if (day === 15) return 'ט״ו';
-                        if (day === 16) return 'ט״ז';
-                        const units = ['', 'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט'];
-                        const tens = ['', 'י', 'כ', 'ל'];
-                        const dayTens = Math.floor(day / 10);
-                        const dayUnits = day % 10;
-                        const letters: string[] = [];
-                        if (dayTens > 0) letters.push(tens[dayTens]);
-                        if (dayUnits > 0) letters.push(units[dayUnits]);
-                        if (letters.length === 1) return `${letters[0]}׳`;
-                        return letters.map((l, i) => i === letters.length - 2 ? `${l}״` : l).join('');
-                      };
+                  {/* Screen content */}
+                  <div
+                    className="bg-white overflow-hidden"
+                    style={{ height: '500px' }}
+                  >
+                    <div
+                      className="overflow-y-auto overflow-x-hidden h-full"
+                      style={{
+                        transform: 'scale(0.65)',
+                        transformOrigin: 'top center',
+                        width: '154%',
+                        marginRight: '-27%',
+                        height: '769px' // 500px / 0.65 = 769px to compensate for scale
+                      }}
+                    >
+                    <InvitationRenderer
+                      wedding={{
+                        ...formData,
+                        _id: wedding?._id || 'preview',
+                        eventDate: formData.eventDate || new Date().toISOString().split('T')[0],
+                        uniqueUrl: wedding?.uniqueUrl || 'preview',
+                        status: wedding?.status || 'draft',
+                      } as any}
+                      dateParts={(() => {
+                        const date = formData.eventDate ? new Date(formData.eventDate) : new Date();
+                        const hebrew = hebrewDate(date);
 
-                      const hebrewMonthFormatter = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { month: 'long' });
-                      const hebrewMonth = hebrewMonthFormatter.format(date);
+                        const convertToHebrewDay = (day: number) => {
+                          if (day <= 0 || day > 30) return String(day);
+                          if (day === 15) return 'ט״ו';
+                          if (day === 16) return 'ט״ז';
+                          const units = ['', 'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט'];
+                          const tens = ['', 'י', 'כ', 'ל'];
+                          const dayTens = Math.floor(day / 10);
+                          const dayUnits = day % 10;
+                          const letters: string[] = [];
+                          if (dayTens > 0) letters.push(tens[dayTens]);
+                          if (dayUnits > 0) letters.push(units[dayUnits]);
+                          if (letters.length === 1) return `${letters[0]}׳`;
+                          return letters.map((l, i) => i === letters.length - 2 ? `${l}״` : l).join('');
+                        };
 
-                      return {
-                        day: date.getDate(),
-                        month: date.toLocaleDateString('he-IL', { month: 'long' }),
-                        year: date.getFullYear(),
-                        weekday: date.toLocaleDateString('he-IL', { weekday: 'long' }),
-                        hebrewDate: `${convertToHebrewDay(hebrew.date)} ב${hebrewMonth}`.trim(),
-                        hebrewWeekday: date.toLocaleDateString('he-IL', { weekday: 'long' }),
-                      };
-                    })()}
-                    isRSVP={false}
-                  />
+                        const hebrewMonthFormatter = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { month: 'long' });
+                        const hebrewMonth = hebrewMonthFormatter.format(date);
+
+                        return {
+                          day: date.getDate(),
+                          month: date.toLocaleDateString('he-IL', { month: 'long' }),
+                          year: date.getFullYear(),
+                          weekday: date.toLocaleDateString('he-IL', { weekday: 'long' }),
+                          hebrewDate: `${convertToHebrewDay(hebrew.date)} ב${hebrewMonth}`.trim(),
+                          hebrewWeekday: date.toLocaleDateString('he-IL', { weekday: 'long' }),
+                        };
+                      })()}
+                      isRSVP={false}
+                    />
+                    </div>
+                  </div>
+
+                  {/* Home indicator */}
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-gray-600 rounded-full" />
                 </div>
-                <div className="bg-black rounded-b-3xl pb-2 px-4">
-                  <div className="bg-gray-800 h-1 rounded-full w-32 mx-auto mt-2" />
-                </div>
+
+                {/* Side buttons - volume */}
+                <div className="absolute -left-0.5 top-24 w-0.5 h-6 bg-gray-700 rounded-l-full" />
+                <div className="absolute -left-0.5 top-32 w-0.5 h-10 bg-gray-700 rounded-l-full" />
+                <div className="absolute -left-0.5 top-44 w-0.5 h-10 bg-gray-700 rounded-l-full" />
+                {/* Side button - power */}
+                <div className="absolute -right-0.5 top-32 w-0.5 h-14 bg-gray-700 rounded-r-full" />
               </div>
             </div>
 
-            {/* Confirmation Box */}
-            <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2">
-                    <path d="M9 12l2 2 4-4" />
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-green-800">מרוצים מהעיצוב?</p>
-                  <p className="text-xs text-green-600">לחצו על "המשך" כדי לעבור לבחירת חבילה</p>
-                </div>
-              </div>
+            {/* Confirmation message */}
+            <div className="text-center space-y-2">
+              <p className="text-sm text-gray-600">
+                ניתן לגלול בתוך התצוגה כדי לראות את כל ההזמנה
+              </p>
+              <p className="text-xs text-gray-400">
+                לא מרוצים? חזרו לשלבים הקודמים לעריכה
+              </p>
             </div>
-
-            {/* Edit Hint */}
-            <p className="text-center text-xs text-gray-400">
-              ניתן לחזור לשלבים הקודמים כדי לערוך את הפרטים
-            </p>
           </div>
         </Step>
 
