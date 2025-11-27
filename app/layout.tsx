@@ -62,6 +62,8 @@ export default async function RootLayout({
             }}
           />
         </SessionProvider>
+        {/* Portal for date/time pickers */}
+        <div id="datepicker-portal" />
       </body>
     </html>
   );

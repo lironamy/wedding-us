@@ -8,6 +8,7 @@ export class TablesStore {
   statistics: TableStatistics | null = null;
   loading = false;
   error: string | null = null;
+  isLoaded = false;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -28,9 +29,10 @@ export class TablesStore {
     );
   }
 
-  // Load tables and statistics
-  async loadTables() {
+  // Load tables and statistics (skip if already loaded)
+  async loadTables(forceReload = false) {
     if (!this.weddingId) return;
+    if (this.isLoaded && !forceReload) return;
 
     this.loading = true;
     this.error = null;
@@ -52,6 +54,7 @@ export class TablesStore {
           this.statistics = statsData.statistics;
         }
         this.loading = false;
+        this.isLoaded = true;
       });
     } catch (error: any) {
       runInAction(() => {
@@ -101,7 +104,16 @@ export class TablesStore {
     tableNumber: number;
     capacity: number;
     tableType: 'adults' | 'kids' | 'mixed';
-  }) {
+  }): Promise<{
+    success: boolean;
+    error?: string;
+    conflict?: {
+      tableId: string;
+      tableName: string;
+      tableNumber: number;
+      guestsCount: number;
+    };
+  }> {
     try {
       const response = await fetch(`/api/tables/${tableId}`, {
         method: 'PUT',
@@ -112,6 +124,10 @@ export class TablesStore {
       const data = await response.json();
 
       if (!response.ok) {
+        // Check for conflict (status 409)
+        if (response.status === 409 && data.conflict) {
+          return { success: false, error: data.error, conflict: data.conflict };
+        }
         throw new Error(data.error || 'Failed to update table');
       }
 
@@ -245,11 +261,45 @@ export class TablesStore {
     }, 0);
   }
 
+  // Swap two tables (numbers only)
+  async swapTables(tableAId: string, tableBId: string) {
+    try {
+      const response = await fetch('/api/tables/swap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tableAId, tableBId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to swap tables');
+      }
+
+      // Update local state with swapped tables
+      runInAction(() => {
+        for (const updatedTable of data.tables) {
+          const index = this.tables.findIndex((t) => t._id === updatedTable._id);
+          if (index !== -1) {
+            this.tables[index] = updatedTable;
+          }
+        }
+        // Re-sort tables by table number
+        this.tables.sort((a, b) => a.tableNumber - b.tableNumber);
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
   // Reset store
   reset() {
     this.tables = [];
     this.statistics = null;
     this.loading = false;
     this.error = null;
+    this.isLoaded = false;
   }
 }

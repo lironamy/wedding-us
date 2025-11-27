@@ -10,6 +10,7 @@ import ScheduledMessage, {
 import { getTwilioService } from '@/lib/services/twilio-whatsapp';
 import { formatHebrewDate } from '@/lib/utils/date';
 import { getGenderText, type PartnerType } from '@/lib/utils/genderText';
+import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
 
 // Verify cron secret to prevent unauthorized access
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -154,18 +155,22 @@ async function processScheduledMessage(scheduledMessage: any) {
     throw new Error('Twilio not configured');
   }
 
-  // Get content SID for this message type
-  const contentSidMap: Record<string, string | undefined> = {
-    invitation: process.env.TWILIO_CONTENT_SID_INVITATION,
-    rsvp_reminder: process.env.TWILIO_CONTENT_SID_REMINDER,
-    rsvp_reminder_2: process.env.TWILIO_CONTENT_SID_REMINDER,
-    day_before: process.env.TWILIO_CONTENT_SID_DAY_BEFORE,
-    thank_you: process.env.TWILIO_CONTENT_SID_THANK_YOU,
-  };
+  // Get template info to determine if it needs image or not
+  const templateInfo = MESSAGE_TEMPLATES[messageType as MessageType];
+  if (!templateInfo) {
+    throw new Error(`Invalid message type: ${messageType}`);
+  }
 
-  const contentSid = contentSidMap[messageType];
+  // Select the correct Content SID based on whether template has image or not
+  const contentSid = templateInfo.hasImage
+    ? process.env.TWILIO_CONTENT_SID_WITH_IMAGE
+    : process.env.TWILIO_CONTENT_SID_TEXT_ONLY;
+
   if (!contentSid) {
-    throw new Error(`Content SID not configured for message type: ${messageType}`);
+    const missingVar = templateInfo.hasImage
+      ? 'TWILIO_CONTENT_SID_WITH_IMAGE'
+      : 'TWILIO_CONTENT_SID_TEXT_ONLY';
+    throw new Error(`${missingVar} not configured for message type: ${messageType}`);
   }
 
   // Prepare variables

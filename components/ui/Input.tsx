@@ -8,6 +8,20 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   helperText?: string;
 }
 
+// Calendar Icon Component
+const CalendarIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+  </svg>
+);
+
+// Clock Icon Component
+const ClockIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className = '', label, error, helperText, type = 'text', value, defaultValue, onFocus, onBlur, ...props }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
@@ -36,13 +50,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ? 'border-primary'
         : 'border-gray-300';
 
-    // For date/time inputs, hide the default placeholder when empty
+    // For date/time inputs
     const isDateOrTime = type === 'date' || type === 'time';
     const shouldHidePlaceholder = isDateOrTime && !hasValue && !isFocused;
 
     return (
       <div className="w-full">
         <div className="relative">
+          {/* Icon for date/time inputs */}
+          {isDateOrTime && (
+            <div className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10 transition-colors duration-200 ${isFocused ? 'text-primary' : 'text-gray-400'}`}>
+              {type === 'date' ? <CalendarIcon /> : <ClockIcon />}
+            </div>
+          )}
           <input
             ref={ref}
             type={type}
@@ -56,10 +76,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               bg-white
               text-gray-800 text-base
               transition-all duration-200
-              focus:outline-none
+              focus:outline-none focus:ring-2 focus:ring-primary/20
               disabled:opacity-50 disabled:cursor-not-allowed
               ${borderColor}
               ${label ? 'pt-5 pb-2' : ''}
+              ${isDateOrTime ? 'pl-11 cursor-pointer' : ''}
               ${className}
             `}
             style={{

@@ -195,10 +195,10 @@ export function TwilioSetup() {
                   <div>TWILIO_AUTH_TOKEN=********************************</div>
                   <div>TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886</div>
                   <div className="mt-2"># Content SIDs (מהקונסול אחרי אישור)</div>
-                  <div>TWILIO_CONTENT_SID_INVITATION=HX********************************</div>
-                  <div>TWILIO_CONTENT_SID_REMINDER=HX********************************</div>
-                  <div>TWILIO_CONTENT_SID_DAY_BEFORE=HX********************************</div>
-                  <div>TWILIO_CONTENT_SID_THANK_YOU=HX********************************</div>
+                  <div># טמפלייט עם תמונה (להזמנות ותזכורות)</div>
+                  <div>TWILIO_CONTENT_SID_WITH_IMAGE=HX********************************</div>
+                  <div># טמפלייט טקסט בלבד (ליום לפני ותודה)</div>
+                  <div>TWILIO_CONTENT_SID_TEXT_ONLY=HX********************************</div>
                 </div>
                 <p className="text-xs text-gray-600 mt-2">
                   הוסף את השורות האלו לקובץ <code>.env.local</code> בשורש הפרויקט

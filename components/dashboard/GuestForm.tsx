@@ -201,9 +201,10 @@ export function GuestForm({ weddingId, guest, onSuccess, onCancel }: GuestFormPr
 
         <div>
           <Input
-            label="קבוצה משפחתית (אופציונלי)"
+            label="קבוצה (אופציונלי)"
             name="familyGroup"
             type="text"
+            placeholder="לדוגמה: משפחת כהן, חברים מהעבודה"
             value={formData.familyGroup || ''}
             onChange={(e) => setFormData({ ...formData, familyGroup: e.target.value })}
             disabled={loading}

@@ -1,5 +1,13 @@
 import mongoose, { Schema, models, Types } from 'mongoose';
 
+export interface ISeatingSettings {
+  mode: 'auto' | 'manual';
+  seatsPerTable: number;
+  autoRecalcPolicy: 'onRsvpChangeGroupOnly' | 'onRsvpChangeAll' | 'manualOnly';
+  adjacencyPolicy: 'forbidSameTableOnly' | 'forbidSameAndAdjacent';
+  simulationEnabled: boolean;
+}
+
 export interface IWedding {
   _id: string;
   userId: Types.ObjectId | string;
@@ -38,6 +46,8 @@ export interface IWedding {
   maxGuests: number;
   uniqueUrl: string;
   status: 'draft' | 'active' | 'completed' | 'archived';
+  // Seating settings
+  seatingSettings?: ISeatingSettings;
   // Payment fields
   paymentStatus?: 'free' | 'pending' | 'paid' | 'failed';
   paymentDetails?: {
@@ -195,6 +205,33 @@ const WeddingSchema = new Schema<IWedding>(
     enableBitGifts: {
       type: Boolean,
       default: false,
+    },
+    seatingSettings: {
+      mode: {
+        type: String,
+        enum: ['auto', 'manual'],
+        default: 'manual',
+      },
+      seatsPerTable: {
+        type: Number,
+        default: 12,
+        min: 1,
+        max: 20,
+      },
+      autoRecalcPolicy: {
+        type: String,
+        enum: ['onRsvpChangeGroupOnly', 'onRsvpChangeAll', 'manualOnly'],
+        default: 'onRsvpChangeGroupOnly',
+      },
+      adjacencyPolicy: {
+        type: String,
+        enum: ['forbidSameTableOnly', 'forbidSameAndAdjacent'],
+        default: 'forbidSameTableOnly',
+      },
+      simulationEnabled: {
+        type: Boolean,
+        default: false,
+      },
     },
     maxGuests: {
       type: Number,

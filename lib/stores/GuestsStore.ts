@@ -7,6 +7,7 @@ export class GuestsStore {
   guests: Guest[] = [];
   loading = false;
   error: string | null = null;
+  isLoaded = false;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -51,9 +52,10 @@ export class GuestsStore {
     ).sort();
   }
 
-  // Load guests
-  async loadGuests() {
+  // Load guests (skip if already loaded)
+  async loadGuests(forceReload = false) {
     if (!this.weddingId) return;
+    if (this.isLoaded && !forceReload) return;
 
     this.loading = true;
     this.error = null;
@@ -69,6 +71,7 @@ export class GuestsStore {
       runInAction(() => {
         this.guests = data.guests || [];
         this.loading = false;
+        this.isLoaded = true;
       });
     } catch (error: any) {
       runInAction(() => {
@@ -165,5 +168,6 @@ export class GuestsStore {
     this.guests = [];
     this.loading = false;
     this.error = null;
+    this.isLoaded = false;
   }
 }

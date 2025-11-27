@@ -261,15 +261,15 @@ export default function ParallaxHero() {
 
           {/* Right side - Text Content */}
           <div className="flex-1 text-center lg:text-right order-2 lg:order-1 max-w-2xl lg:max-w-none">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-[#6e6262] mb-4 sm:mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-[#4a4a4a] mb-4 sm:mb-6">
               <span className="block !leading-[1]">ניהול אירועים</span>
               <span className="block text-transparent bg-clip-text bg-gradient-to-l from-primary to-accent !leading-[1] pb-1">
                 בקליק אחד
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl text-[#6e6262]/70 mb-6 sm:mb-8 max-w-lg sm:max-w-xl mx-auto lg:mx-0 lg:mr-0 px-2 sm:px-0 leading-relaxed">
-              אישורי הגעה בוואטסאפ, ניהול אורחים, סידור הושבה ומעקב מתנות - <strong className="text-[#6e6262]">הכל במקום אחד בחינם!</strong>
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl text-[#6e6262]/80 mb-6 sm:mb-8 max-w-lg sm:max-w-xl mx-auto lg:mx-0 lg:mr-0 px-2 sm:px-0 leading-relaxed">
+              אישורי הגעה בוואטסאפ, ניהול אורחים, סידור הושבה אוטומטי ומעקב מתנות - <strong className="text-[#6e6262]">הכל במקום אחד בחינם!</strong>
             </p>
 
             {/* CTA Buttons */}
@@ -290,15 +290,15 @@ export default function ParallaxHero() {
             <div className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 md:gap-8 mt-6 sm:mt-8">
               <div className="text-center min-w-[70px] sm:min-w-[80px]">
                 <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-[#4a4a4a]">200</div>
-                <div className="text-xs sm:text-sm text-[#6e6262]/60">אורחים בחינם</div>
+                <div className="text-xs sm:text-sm text-[#6e6262]/80">אורחים בחינם</div>
               </div>
               <div className="text-center min-w-[70px] sm:min-w-[80px]">
                 <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-[#4a4a4a]">100%</div>
-                <div className="text-xs sm:text-sm text-[#6e6262]/60">אוטומטי</div>
+                <div className="text-xs sm:text-sm text-[#6e6262]/80">אוטומטי</div>
               </div>
               <div className="text-center min-w-[70px] sm:min-w-[80px]">
                 <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-[#4a4a4a]">0₪</div>
-                <div className="text-xs sm:text-sm text-[#6e6262]/60">להתחלה</div>
+                <div className="text-xs sm:text-sm text-[#6e6262]/80">להתחלה</div>
               </div>
             </div>
 

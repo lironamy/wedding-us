@@ -6,7 +6,7 @@ import Guest from '@/lib/db/models/Guest';
 import Wedding from '@/lib/db/models/Wedding';
 import Message from '@/lib/db/models/Message';
 import { getTwilioService, type TemplateVariables } from '@/lib/services/twilio-whatsapp';
-import { generateMessage, type MessageType } from '@/lib/utils/messageTemplates';
+import { generateMessage, MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
 import { formatHebrewDate } from '@/lib/utils/date';
 import { getGenderText, type PartnerType } from '@/lib/utils/genderText';
 
@@ -32,17 +32,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use a single universal template for all message types
-    // Template format: שלום {{1}}\n{{2}}
-    // Where {{1}} = guest name, {{2}} = full message body
-    const contentSid = process.env.TWILIO_CONTENT_SID;
+    // Get template info to determine if it needs image or not
+    const templateInfo = MESSAGE_TEMPLATES[messageType as MessageType];
+    if (!templateInfo) {
+      return NextResponse.json(
+        { error: 'Invalid message type' },
+        { status: 400 }
+      );
+    }
+
+    // Select the correct Content SID based on whether template has image or not
+    // hasImage: true = invitation, rsvp_reminder, rsvp_reminder_2 (use template with image)
+    // hasImage: false = day_before, thank_you (use text-only template)
+    const contentSid = templateInfo.hasImage
+      ? process.env.TWILIO_CONTENT_SID_WITH_IMAGE
+      : process.env.TWILIO_CONTENT_SID_TEXT_ONLY;
 
     if (!contentSid) {
+      const missingVar = templateInfo.hasImage
+        ? 'TWILIO_CONTENT_SID_WITH_IMAGE'
+        : 'TWILIO_CONTENT_SID_TEXT_ONLY';
       return NextResponse.json(
         {
           error: 'Template not configured',
-          message: 'Please set TWILIO_CONTENT_SID in environment variables',
-          details: 'WhatsApp requires approved templates for bulk messaging'
+          message: `Please set ${missingVar} in environment variables`,
+          details: `This message type requires ${templateInfo.hasImage ? 'image' : 'text-only'} template`
         },
         { status: 400 }
       );
@@ -97,9 +111,13 @@ export async function POST(request: NextRequest) {
     const excitedText = getGenderText('excited', partner1Type, partner2Type); // מתרגשים/מתרגשות
 
     // Prepare messages for bulk send with template variables
-    // Template format in Twilio: שלום {{1}}\nתודה רבה על הזמן שהקדשת.
-    // We put the guest name + full message body in {{1}}
-    // Result: שלום [name + message body]\nתודה רבה על הזמן שהקדשת.
+    // Template WITH IMAGE (invitation, reminders):
+    //   {{1}} = Media URL (image)
+    //   {{2}} = Guest name
+    //   {{3}} = Message body
+    // Template TEXT ONLY (day_before, thank_you):
+    //   {{1}} = Guest name
+    //   {{2}} = Message body
     const messagesToSend = guests.map((guest) => {
       const rsvpLink = `${appUrl}/rsvp/${guest.uniqueToken}`;
 
@@ -120,22 +138,28 @@ export async function POST(request: NextRequest) {
         partner2Type,
       });
 
-      // Template variables for WhatsApp template:
-      // שלום {{name}}
-      // {{message}}
-      // תודה רבה על הזמן שהקדשת.
-      // צוות לונסול
-      // Note: WhatsApp/Twilio doesn't allow newlines in variables
-      // Replace newlines with spaces and collapse multiple spaces
+      // Clean up whitespace - message is already in Format B (with | separators)
       const sanitizedMessage = messageBody
-        .replace(/\n+/g, ' ')  // Replace newlines with space
-        .replace(/\s{4,}/g, '   ')  // Max 3 consecutive spaces
+        .replace(/\s+/g, ' ')  // Single spaces only
         .trim();
 
-      const variables: TemplateVariables = {
-        'name': guest.name,
-        'message': sanitizedMessage,
-      };
+      // Set variables based on template type
+      let variables: TemplateVariables;
+
+      if (templateInfo.hasImage) {
+        // Template with image: {{1}}=media, {{2}}=name, {{3}}=message
+        variables = {
+          '1': wedding.mediaUrl || '',  // Media URL (invitation image)
+          '2': guest.name,
+          '3': sanitizedMessage,
+        };
+      } else {
+        // Text-only template: {{1}}=name, {{2}}=message
+        variables = {
+          '1': guest.name,
+          '2': sanitizedMessage,
+        };
+      }
 
       return {
         phone: guest.phone,

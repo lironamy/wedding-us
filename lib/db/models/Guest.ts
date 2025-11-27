@@ -8,11 +8,16 @@ export interface IGuest {
   phone: string;
   email?: string;
   familyGroup?: string;
+  groupId?: Types.ObjectId | string; // Reference to GuestGroup
   invitedCount?: number;
+  expectedPartySize?: number; // For simulation mode
   uniqueToken: string; // UUID for RSVP link
   rsvpStatus: 'pending' | 'confirmed' | 'declined';
   adultsAttending?: number;
   childrenAttending?: number;
+  // Seating lock fields
+  lockedSeat?: boolean;
+  lockedTableId?: Types.ObjectId | string;
   // Meal counts
   regularMeals?: number;
   vegetarianMeals?: number;
@@ -69,7 +74,15 @@ const GuestSchema = new Schema<IGuest>(
       type: String,
       trim: true,
     },
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: 'GuestGroup',
+    },
     invitedCount: {
+      type: Number,
+      min: 1,
+    },
+    expectedPartySize: {
       type: Number,
       min: 1,
     },
@@ -139,6 +152,14 @@ const GuestSchema = new Schema<IGuest>(
     tableNumber: {
       type: Number,
     },
+    lockedSeat: {
+      type: Boolean,
+      default: false,
+    },
+    lockedTableId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Table',
+    },
     giftAmount: {
       type: Number,
       min: 0,
@@ -174,6 +195,7 @@ GuestSchema.index({ weddingId: 1 });
 GuestSchema.index({ rsvpStatus: 1 });
 GuestSchema.index({ familyGroup: 1 });
 GuestSchema.index({ phone: 1 });
+GuestSchema.index({ weddingId: 1, groupId: 1, rsvpStatus: 1 });
 
 // Delete cached model in development to pick up schema changes
 if (process.env.NODE_ENV !== 'production' && models.Guest) {

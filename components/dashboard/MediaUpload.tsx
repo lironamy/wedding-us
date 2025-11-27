@@ -184,7 +184,10 @@ export default function MediaUpload({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-primary hover:bg-gray-50 transition-all duration-200"
+              onClick={openUploadWidget}
+            >
               <svg
                 className="mx-auto h-12 w-12 text-gray-400"
                 fill="none"
@@ -198,7 +201,7 @@ export default function MediaUpload({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p className="mt-4 text-gray-600">לא הועלתה תמונה</p>
+              <p className="mt-4 text-gray-600">לחץ כאן להעלאת תמונה</p>
               <p className="text-sm text-gray-500 mt-2">
                 JPG, PNG, GIF, WEBP עד 10MB
               </p>

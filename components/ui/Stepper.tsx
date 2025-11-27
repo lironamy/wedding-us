@@ -117,17 +117,40 @@ export function Stepper({
 
   // Full Height Layout - sticky header/footer with scrollable content
   if (fullHeightLayout) {
+    const progressPercentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+
     return (
       <div
         className="fixed inset-x-0 top-16 bottom-0 flex flex-col bg-purple-100/60"
         style={{ height: 'calc(100dvh - 4rem)' }}
         {...rest}
       >
-        {/* Sticky Header - Step Indicators */}
+        {/* Sticky Header - Step Indicators (Desktop) / Progress Bar (Mobile) */}
         {!hideStepIndicators && (
           <div className={`flex-shrink-0 z-20 bg-purple-100/60 px-2 sm:px-4 py-3 sm:py-5 ${stepCircleContainerClassName}`}>
             <div className="max-w-4xl mx-auto">
-              <div className={`${stepContainerClassName} flex w-full items-center justify-between`}>
+              {/* Mobile Progress Bar */}
+              <div className="sm:hidden">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {stepsLabels[currentStep - 1] || `שלב ${currentStep}`}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    {currentStep} / {totalSteps}
+                  </span>
+                </div>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-primary to-pink-500 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercentage}%` }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                  />
+                </div>
+              </div>
+
+              {/* Desktop Step Indicators */}
+              <div className={`${stepContainerClassName} hidden sm:flex w-full items-center justify-between`}>
                 {stepsArray.map((_, index) => {
                   const stepNumber = index + 1;
                   const isNotLastStep = index < totalSteps - 1;

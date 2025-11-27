@@ -106,6 +106,15 @@ export async function PUT(
       }
     }
 
+    // Handle seatingMode -> seatingSettings conversion
+    if (body.seatingMode) {
+      wedding.seatingSettings = {
+        ...wedding.seatingSettings,
+        mode: body.seatingMode
+      };
+      wedding.markModified('seatingSettings');
+    }
+
     // Update fields
     const allowedFields = [
       'groomName',
@@ -131,6 +140,7 @@ export async function PUT(
       'enableBitGifts',
       'bitQrImage',
       'maxGuests',
+      'seatingSettings',
       'status'
     ];
 

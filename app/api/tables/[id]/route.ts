@@ -83,12 +83,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         weddingId: table.weddingId,
         tableNumber,
         _id: { $ne: id },
-      });
+      }).populate('assignedGuests', 'name');
 
       if (existingTable) {
+        // Return conflict info for swap option
         return NextResponse.json(
-          { error: `Table number ${tableNumber} already exists` },
-          { status: 400 }
+          {
+            error: `Table number ${tableNumber} already exists`,
+            conflict: {
+              tableId: existingTable._id,
+              tableName: existingTable.tableName,
+              tableNumber: existingTable.tableNumber,
+              guestsCount: existingTable.assignedGuests?.length || 0,
+            }
+          },
+          { status: 409 } // Conflict status
         );
       }
     }
