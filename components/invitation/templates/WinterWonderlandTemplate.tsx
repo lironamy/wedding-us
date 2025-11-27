@@ -228,6 +228,9 @@ export default function WinterWonderlandTemplate({ wedding, guest, dateParts, is
                     src={wedding.mediaUrl}
                     alt={`${wedding.groomName} & ${wedding.brideName}`}
                     className="w-full aspect-square object-cover"
+                    style={wedding.mediaPosition ? {
+                      objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                    } : undefined}
                   />
                 )}
               </div>

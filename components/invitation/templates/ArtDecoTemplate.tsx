@@ -169,6 +169,9 @@ export default function ArtDecoTemplate({ wedding, guest, dateParts, isRSVP }: I
                       src={wedding.mediaUrl}
                       alt={`${wedding.groomName} & ${wedding.brideName}`}
                       className="w-full h-full object-cover sepia-[30%]"
+                      style={wedding.mediaPosition ? {
+                        objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                      } : undefined}
                     />
                   )}
                 </div>

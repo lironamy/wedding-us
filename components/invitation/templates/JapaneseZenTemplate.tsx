@@ -74,7 +74,7 @@ export default function JapaneseZenTemplate({ wedding, guest, dateParts, isRSVP 
       <RedSeal delay={1.5} />
 
       {/* Main content */}
-      <div className="relative z-10 max-w-lg mx-auto px-6 py-16">
+      <div className="relative z-10 max-w-lg mx-auto px-6  ">
 
         {/* Welcome text */}
         <motion.div
@@ -123,6 +123,9 @@ export default function JapaneseZenTemplate({ wedding, guest, dateParts, isRSVP 
                 src={wedding.mediaUrl}
                 alt={`${wedding.groomName} & ${wedding.brideName}`}
                 className="w-full aspect-square object-cover grayscale-[20%]"
+                style={wedding.mediaPosition ? {
+                  objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                } : undefined}
               />
             )}
           </motion.div>

@@ -62,7 +62,7 @@ export default function LuxuryMinimalTemplate({ wedding, guest, dateParts, isRSV
         rel="stylesheet"
       />
 
-      <div className="max-w-2xl mx-auto px-8 py-16">
+      <div className="max-w-2xl mx-auto px-8  ">
         {/* Top decorative line */}
         <motion.div
           initial={{ scaleX: 0 }}
@@ -96,6 +96,9 @@ export default function LuxuryMinimalTemplate({ wedding, guest, dateParts, isRSV
                     src={wedding.mediaUrl}
                     alt={`${wedding.groomName} & ${wedding.brideName}`}
                     className="w-full h-full object-cover grayscale-[20%]"
+                    style={wedding.mediaPosition ? {
+                      objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                    } : undefined}
                   />
                 )}
               </div>

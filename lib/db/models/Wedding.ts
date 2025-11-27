@@ -20,6 +20,10 @@ export interface IWedding {
   description?: string;
   mediaUrl?: string;
   mediaType?: 'image' | 'video';
+  mediaPosition?: {
+    x: number;
+    y: number;
+  };
   theme: {
     primaryColor: string;
     secondaryColor: string;
@@ -144,6 +148,16 @@ const WeddingSchema = new Schema<IWedding>(
     mediaType: {
       type: String,
       enum: ['image', 'video'],
+    },
+    mediaPosition: {
+      x: {
+        type: Number,
+        default: 50,
+      },
+      y: {
+        type: Number,
+        default: 50,
+      },
     },
     theme: {
       primaryColor: {

@@ -122,6 +122,7 @@ export async function PUT(
       'description',
       'mediaUrl',
       'mediaType',
+      'mediaPosition',
       'theme',
       'backgroundPattern',
       'invitationTemplate',

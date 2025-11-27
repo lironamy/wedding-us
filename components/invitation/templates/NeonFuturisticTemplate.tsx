@@ -185,7 +185,10 @@ export default function NeonFuturisticTemplate({ wedding, guest, dateParts, isRS
                   src={wedding.mediaUrl}
                   alt={`${wedding.groomName} & ${wedding.brideName}`}
                   className="w-full aspect-square object-cover"
-                  style={{ filter: 'contrast(1.1) saturate(1.2)' }}
+                  style={wedding.mediaPosition ? {
+                    filter: 'contrast(1.1) saturate(1.2)',
+                    objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                  } : { filter: 'contrast(1.1) saturate(1.2)' }}
                 />
               )}
             </div>

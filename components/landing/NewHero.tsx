@@ -161,15 +161,15 @@ export default function NewHero() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-              <Link href="/register">
-                <Button size="lg" className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-xl">
-                  התחילו עכשיו - חינם
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8 px-4 sm:px-0">
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-lg bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-xl">
+                  הרשמו בחינם
                 </Button>
               </Link>
-              <Link href="/login">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2 border-[#6e6262]/30 text-[#6e6262] hover:bg-[#6e6262]/5">
-                  יש לי חשבון
+              <Link href="/login" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-lg border-2 border-[#6e6262]/30 text-[#6e6262] hover:bg-[#6e6262]/5">
+                  התחברו
                 </Button>
               </Link>
             </div>

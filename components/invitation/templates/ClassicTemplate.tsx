@@ -26,7 +26,7 @@ export default function ClassicTemplate({ wedding, guest, dateParts, isRSVP }: I
       {/* Hero Image - Fixed at top */}
       {wedding.mediaUrl && (
         <div className="fixed top-0 left-0 right-0 w-full z-0 flex justify-center">
-          <div className="w-full md:w-[520px]">
+          <div className={`w-full md:w-[520px] ${wedding.mediaPosition ? 'aspect-[4/5] max-h-[70vh]' : ''}`}>
             {wedding.mediaType === 'video' ? (
               <video
                 src={wedding.mediaUrl}
@@ -34,13 +34,16 @@ export default function ClassicTemplate({ wedding, guest, dateParts, isRSVP }: I
                 muted
                 loop
                 playsInline
-                className="w-full h-auto object-contain block"
+                className="w-full h-full object-contain block"
               />
             ) : (
               <img
                 src={wedding.mediaUrl}
                 alt={`${wedding.groomName} & ${wedding.brideName}`}
-                className="w-full h-auto object-contain block"
+                className={`w-full block ${wedding.mediaPosition ? 'h-full object-cover' : 'h-auto object-contain'}`}
+                style={wedding.mediaPosition ? {
+                  objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                } : undefined}
               />
             )}
           </div>
@@ -49,11 +52,18 @@ export default function ClassicTemplate({ wedding, guest, dateParts, isRSVP }: I
 
       {/* Spacer */}
       {wedding.mediaUrl && (
-        <div className="w-full md:w-[520px] md:mx-auto invisible mb-[-90px] md:mb-[-110px]">
+        <div className={`w-full md:w-[520px] md:mx-auto invisible mb-[-90px] md:mb-[-110px] ${wedding.mediaPosition ? 'aspect-[4/5] max-h-[70vh]' : ''}`}>
           {wedding.mediaType === 'video' ? (
-            <video src={wedding.mediaUrl} className="w-full h-auto object-contain block" muted />
+            <video src={wedding.mediaUrl} className="w-full h-full object-contain block" muted />
           ) : (
-            <img src={wedding.mediaUrl} alt="" className="w-full h-auto object-contain block" />
+            <img
+              src={wedding.mediaUrl}
+              alt=""
+              className={`w-full block ${wedding.mediaPosition ? 'h-full object-cover' : 'h-auto object-contain'}`}
+              style={wedding.mediaPosition ? {
+                objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+              } : undefined}
+            />
           )}
         </div>
       )}

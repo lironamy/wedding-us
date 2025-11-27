@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
       description: body.description || '',
       mediaUrl: body.mediaUrl || null,
       mediaType: body.mediaType || null,
+      mediaPosition: body.mediaPosition || { x: 50, y: 50 },
       theme: body.theme || {
         primaryColor: '#7950a5',
         secondaryColor: '#2C3E50',

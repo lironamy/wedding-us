@@ -139,6 +139,9 @@ export default function MoroccanTemplate({ wedding, guest, dateParts, isRSVP = f
                     src={wedding.mediaUrl}
                     alt={`${wedding.groomName} & ${wedding.brideName}`}
                     className="w-full aspect-[4/3] object-cover"
+                    style={wedding.mediaPosition ? {
+                      objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                    } : undefined}
                   />
                 )}
                 {/* Gradient overlay for text */}

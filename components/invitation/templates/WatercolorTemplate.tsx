@@ -141,7 +141,11 @@ export default function WatercolorTemplate({ wedding, guest, dateParts, isRSVP =
                 src={wedding.mediaUrl}
                 alt={`${wedding.groomName} & ${wedding.brideName}`}
                 className="relative w-full aspect-square object-cover rounded-2xl"
-                style={{ border: '4px solid white', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+                style={{
+                  border: '4px solid white',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                  ...(wedding.mediaPosition && { objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%` })
+                }}
               />
             )}
           </motion.div>

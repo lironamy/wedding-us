@@ -26,15 +26,15 @@ export default function Home() {
                 width={180}
                 height={54}
                 priority
-                className="h-10 w-auto object-contain drop-shadow-zinc-500 drop-shadow-xs"
+                className="h-10 w-auto object-contain"
               />  
           </Link>
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <Link href="/login">
-              <Button variant="ghost">התחבר</Button>
+              <Button variant="outline" className="rounded-lg border-[#6e6262]/30 text-[#6e6262] hover:bg-[#6e6262]/5">התחברו</Button>
             </Link>
             <Link href="/register">
-              <Button>הירשם</Button>
+              <Button className="rounded-lg">הרשמו</Button>
             </Link>
           </div>
         </div>
@@ -93,7 +93,7 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 md:py-32 overflow-hidden bg-gradient-to-b from-gray-50 to-white relative">
+    <section className="pb-16  md:py-20 overflow-hidden bg-gradient-to-b from-gray-50 to-white relative">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
@@ -101,14 +101,14 @@ function HowItWorks() {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <span className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
             פשוט וקל
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#6e6262] mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#6e6262] mb-3">
             איך זה עובד?
           </h2>
-          <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-500 text-base max-w-2xl mx-auto">
             שלושה צעדים פשוטים לחתונה מאורגנת
           </p>
         </div>
@@ -118,52 +118,39 @@ function HowItWorks() {
           {/* Connecting Line - Desktop */}
           <div className="hidden md:block absolute top-24 left-1/2 -translate-x-1/2 w-[70%] h-1 bg-gradient-to-r from-primary via-accent to-primary rounded-full opacity-30" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
-            {steps.map((step, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {steps.map((step) => (
               <div
                 key={step.number}
                 className="relative group"
-                style={{ animationDelay: `${index * 150}ms` }}
               >
                 {/* Card */}
-                <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/20 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
+                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/20 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                   {/* Gradient overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                   {/* Content */}
                   <div className="relative z-10">
                     {/* Number Badge */}
-                    <div className="flex justify-center mb-6">
+                    <div className="flex justify-center mb-4">
                       <div className="relative">
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                           {step.number}
                         </div>
-                        <span className="absolute -top-3 -right-3 text-2xl md:text-3xl group-hover:animate-bounce">
-                          {step.icon}
-                        </span>
                         {/* Pulse effect - only on hover */}
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-30 group-hover:animate-ping" style={{ animationDuration: '2s' }} />
+                        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-30 group-hover:animate-ping" style={{ animationDuration: '2s' }} />
                       </div>
                     </div>
 
                     {/* Text */}
-                    <h3 className="text-xl md:text-2xl font-bold text-[#6e6262] mb-3 text-center">
+                    <h3 className="text-lg md:text-xl font-bold text-[#6e6262] mb-2 text-center">
                       {step.title}
                     </h3>
-                    <p className="text-gray-500 text-center text-sm md:text-base leading-relaxed">
+                    <p className="text-gray-500 text-center text-sm leading-relaxed">
                       {step.description}
                     </p>
                   </div>
                 </div>
-
-                {/* Arrow for mobile */}
-                {index < steps.length - 1 && (
-                  <div className="md:hidden flex justify-center my-4">
-                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -213,25 +200,18 @@ function CTASection() {
         <p className="cursor-target text-xl md:text-2xl text-white/90 mb-12 max-w-2xl mx-auto cta-target px-4 py-2 cursor-none">
           הצטרפו לאלפי זוגות שכבר מנהלים את החתונה שלהם בקלות ובסטייל
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/register" className="cursor-target cursor-none">
-            <Button
-              size="lg"
-              className="text-xl px-12 py-8 bg-white !text-[#7950a5] hover:bg-white/90 shadow-2xl hover:shadow-white/25 transition-all duration-300 "
-            >
-              התחילו עכשיו - חינם
-            </Button>
-          </Link>
-          <Link href="/login" className="cursor-target cursor-none">
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-xl px-12 py-8 bg-transparent border-2 border-white text-white hover:bg-white/10 transition-all duration-300"
-            >
-              יש לי חשבון
-            </Button>
-          </Link>
-        </div>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-center mb-6 sm:mb-8 px-4 sm:px-0">
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button size="lg" className=" cursor-target w-full sm:w-auto border-2 border-white text-white text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-lg bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-xl">
+                  הרשמו בחינם
+                </Button>
+              </Link>
+              <Link href="/login" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="cursor-target hover:border-2 hover:border-white w-full bg-indigo-100 sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-lg border-2 border-[#6e6262]/30 text-[#6e6262] hover:bg-[#6e6262]/5">
+                  התחברו
+                </Button>
+              </Link>
+            </div>
       </div>
     </section>
   );

@@ -14,14 +14,14 @@ const AnimatedIcons = {
         width="48"
         height="36"
         rx="4"
-        fill="#fce7f3"
-        stroke="#ec4899"
+        fill="#ede9fe"
+        stroke="#7c3aed"
         strokeWidth="2"
       />
       {/* Envelope flap */}
       <motion.path
         d="M8 20L32 38L56 20"
-        stroke="#ec4899"
+        stroke="#7c3aed"
         strokeWidth="2"
         strokeLinecap="round"
         fill="none"
@@ -31,7 +31,7 @@ const AnimatedIcons = {
       {/* Heart */}
       <motion.path
         d="M32 28C32 28 28 24 25 24C22 24 20 26.5 20 29C20 34 32 40 32 40C32 40 44 34 44 29C44 26.5 42 24 39 24C36 24 32 28 32 28Z"
-        fill="#ec4899"
+        fill="#7c3aed"
         animate={isHovered ? { scale: 1.2, y: -2 } : { scale: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         style={{ transformOrigin: "center" }}
@@ -46,16 +46,16 @@ const AnimatedIcons = {
         cx="32"
         cy="20"
         r="8"
-        fill="#3b82f6"
+        fill="#7c3aed"
         animate={isHovered ? { y: -3 } : { y: 0 }}
         transition={{ duration: 0.3 }}
       />
       <motion.path
         d="M20 52C20 42 24 36 32 36C40 36 44 42 44 52"
-        stroke="#3b82f6"
+        stroke="#7c3aed"
         strokeWidth="3"
         strokeLinecap="round"
-        fill="#dbeafe"
+        fill="#ede9fe"
         animate={isHovered ? { y: -3 } : { y: 0 }}
         transition={{ duration: 0.3 }}
       />
@@ -64,13 +64,13 @@ const AnimatedIcons = {
         cx="14"
         cy="26"
         r="6"
-        fill="#60a5fa"
+        fill="#a78bfa"
         animate={isHovered ? { x: -4, y: -2 } : { x: 0, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
       />
       <motion.path
         d="M4 52C4 44 8 40 14 40C18 40 22 42 24 46"
-        stroke="#60a5fa"
+        stroke="#a78bfa"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
@@ -82,13 +82,13 @@ const AnimatedIcons = {
         cx="50"
         cy="26"
         r="6"
-        fill="#60a5fa"
+        fill="#a78bfa"
         animate={isHovered ? { x: 4, y: -2 } : { x: 0, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
       />
       <motion.path
         d="M60 52C60 44 56 40 50 40C46 40 42 42 40 46"
-        stroke="#60a5fa"
+        stroke="#a78bfa"
         strokeWidth="2.5"
         strokeLinecap="round"
         fill="none"
@@ -107,8 +107,8 @@ const AnimatedIcons = {
         width="32"
         height="56"
         rx="6"
-        fill="#dcfce7"
-        stroke="#22c55e"
+        fill="#ede9fe"
+        stroke="#7c3aed"
         strokeWidth="2"
       />
       {/* Screen */}
@@ -120,7 +120,7 @@ const AnimatedIcons = {
         width="16"
         height="8"
         rx="4"
-        fill="#22c55e"
+        fill="#7c3aed"
         animate={isHovered ? { x: 2, opacity: 1 } : { x: 0, opacity: 0.9 }}
         transition={{ duration: 0.2 }}
       />
@@ -130,8 +130,8 @@ const AnimatedIcons = {
         width="14"
         height="8"
         rx="4"
-        fill="#bbf7d0"
-        stroke="#22c55e"
+        fill="#ede9fe"
+        stroke="#7c3aed"
         strokeWidth="1"
         animate={isHovered ? { x: -2, opacity: 1 } : { x: 0, opacity: 0.9 }}
         transition={{ duration: 0.2, delay: 0.1 }}
@@ -142,7 +142,7 @@ const AnimatedIcons = {
         width="12"
         height="6"
         rx="3"
-        fill="#22c55e"
+        fill="#7c3aed"
         animate={isHovered ? { x: 2, scale: 1.1 } : { x: 0, scale: 1 }}
         transition={{ duration: 0.2, delay: 0.2 }}
       />
@@ -151,7 +151,7 @@ const AnimatedIcons = {
         cx="32"
         cy="56"
         r="3"
-        fill="#22c55e"
+        fill="#7c3aed"
         animate={isHovered ? { scale: 1.3 } : { scale: 1 }}
         transition={{ duration: 0.3 }}
       />
@@ -176,8 +176,8 @@ const AnimatedIcons = {
           cx="32"
           cy="32"
           r="16"
-          fill="#f3e8ff"
-          stroke="#a855f7"
+          fill="#ede9fe"
+          stroke="#7c3aed"
           strokeWidth="2"
           animate={isHovered ? { scale: 1.05 } : { scale: 1 }}
           transition={{ duration: 0.3 }}
@@ -190,7 +190,7 @@ const AnimatedIcons = {
             cx={pos.cx}
             cy={pos.cy}
             r="5"
-            fill="#a855f7"
+            fill="#7c3aed"
             animate={isHovered ? {
               cx: pos.hoverCx,
               cy: pos.hoverCy,
@@ -206,7 +206,7 @@ const AnimatedIcons = {
           cx="32"
           cy="32"
           r="4"
-          fill="#a855f7"
+          fill="#7c3aed"
           animate={isHovered ? { scale: 1.3 } : { scale: 1 }}
           transition={{ duration: 0.3 }}
           style={{ transformOrigin: "center" }}
@@ -224,8 +224,8 @@ const AnimatedIcons = {
         width="44"
         height="28"
         rx="4"
-        fill="#fef3c7"
-        stroke="#f59e0b"
+        fill="#ede9fe"
+        stroke="#7c3aed"
         strokeWidth="2"
       />
       {/* Box lid */}
@@ -235,8 +235,8 @@ const AnimatedIcons = {
         width="52"
         height="10"
         rx="3"
-        fill="#fde68a"
-        stroke="#f59e0b"
+        fill="#ddd6fe"
+        stroke="#7c3aed"
         strokeWidth="2"
         animate={isHovered ? { y: 14, rotate: -5 } : { y: 20, rotate: 0 }}
         transition={{ duration: 0.3 }}
@@ -248,19 +248,19 @@ const AnimatedIcons = {
         y="20"
         width="6"
         height="36"
-        fill="#f59e0b"
+        fill="#7c3aed"
       />
       {/* Horizontal ribbon */}
-      <rect x="10" y="38" width="44" height="6" fill="#f59e0b" />
+      <rect x="10" y="38" width="44" height="6" fill="#7c3aed" />
       {/* Bow */}
       <motion.g
         animate={isHovered ? { scale: 1.2, y: -8 } : { scale: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         style={{ transformOrigin: "32px 20px" }}
       >
-        <ellipse cx="24" cy="16" rx="8" ry="5" fill="#f59e0b" />
-        <ellipse cx="40" cy="16" rx="8" ry="5" fill="#f59e0b" />
-        <circle cx="32" cy="18" r="4" fill="#fbbf24" />
+        <ellipse cx="24" cy="16" rx="8" ry="5" fill="#7c3aed" />
+        <ellipse cx="40" cy="16" rx="8" ry="5" fill="#7c3aed" />
+        <circle cx="32" cy="18" r="4" fill="#a78bfa" />
       </motion.g>
       {/* Sparkles when hovered */}
       {isHovered && (
@@ -269,7 +269,7 @@ const AnimatedIcons = {
             cx="52"
             cy="12"
             r="2"
-            fill="#fbbf24"
+            fill="#a78bfa"
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2 }}
@@ -278,7 +278,7 @@ const AnimatedIcons = {
             cx="12"
             cy="14"
             r="1.5"
-            fill="#fbbf24"
+            fill="#a78bfa"
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2, delay: 0.1 }}
@@ -287,7 +287,7 @@ const AnimatedIcons = {
             cx="48"
             cy="8"
             r="1"
-            fill="#fbbf24"
+            fill="#a78bfa"
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.2, delay: 0.2 }}
@@ -300,9 +300,9 @@ const AnimatedIcons = {
   stats: ({ isHovered }: { isHovered: boolean }) => (
     <svg className="w-12 h-12" viewBox="0 0 64 64" fill="none">
       {/* Chart background */}
-      <rect x="8" y="8" width="48" height="48" rx="4" fill="#f0fdfa" stroke="#14b8a6" strokeWidth="2" />
+      <rect x="8" y="8" width="48" height="48" rx="4" fill="#ede9fe" stroke="#7c3aed" strokeWidth="2" />
       {/* Grid lines */}
-      <path d="M8 24H56M8 40H56" stroke="#99f6e4" strokeWidth="1" />
+      <path d="M8 24H56M8 40H56" stroke="#ddd6fe" strokeWidth="1" />
       {/* Bars */}
       <motion.rect
         x="14"
@@ -310,7 +310,7 @@ const AnimatedIcons = {
         width="8"
         height="18"
         rx="2"
-        fill="#14b8a6"
+        fill="#7c3aed"
         animate={isHovered ? { height: 28, y: 22 } : { height: 18, y: 32 }}
         transition={{ duration: 0.4, delay: 0 }}
       />
@@ -320,7 +320,7 @@ const AnimatedIcons = {
         width="8"
         height="26"
         rx="2"
-        fill="#2dd4bf"
+        fill="#a78bfa"
         animate={isHovered ? { height: 34, y: 16 } : { height: 26, y: 24 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       />
@@ -330,14 +330,14 @@ const AnimatedIcons = {
         width="8"
         height="32"
         rx="2"
-        fill="#14b8a6"
+        fill="#7c3aed"
         animate={isHovered ? { height: 38, y: 12 } : { height: 32, y: 18 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       />
       {/* Trend line */}
       <motion.path
         d="M18 36L32 28L46 20"
-        stroke="#0d9488"
+        stroke="#5b21b6"
         strokeWidth="2"
         strokeLinecap="round"
         fill="none"
@@ -349,7 +349,7 @@ const AnimatedIcons = {
         cx="18"
         cy="36"
         r="3"
-        fill="#0d9488"
+        fill="#5b21b6"
         animate={isHovered ? { cy: 28 } : { cy: 36 }}
         transition={{ duration: 0.4 }}
       />
@@ -357,7 +357,7 @@ const AnimatedIcons = {
         cx="32"
         cy="28"
         r="3"
-        fill="#0d9488"
+        fill="#5b21b6"
         animate={isHovered ? { cy: 20 } : { cy: 28 }}
         transition={{ duration: 0.4, delay: 0.1 }}
       />
@@ -365,7 +365,7 @@ const AnimatedIcons = {
         cx="46"
         cy="20"
         r="3"
-        fill="#0d9488"
+        fill="#5b21b6"
         animate={isHovered ? { cy: 12 } : { cy: 20 }}
         transition={{ duration: 0.4, delay: 0.2 }}
       />
@@ -378,43 +378,43 @@ const features = [
     type: "invitation" as const,
     title: "הזמנות דיגיטליות",
     description: "צור הזמנות אלגנטיות עם תמונות וסרטונים, התאם אישית את העיצוב והצבעים",
-    color: "from-pink-500/20 to-rose-500/20",
-    iconBg: "bg-pink-50",
+    color: "from-primary/10 to-accent/10",
+    iconBg: "bg-primary/10",
   },
   {
     type: "guests" as const,
     title: "ניהול אורחים",
     description: "ייבוא אורחים מאקסל, מעקב אחר אישורי הגעה, וניהול קבוצות משפחתיות",
-    color: "from-blue-500/20 to-cyan-500/20",
-    iconBg: "bg-blue-50",
+    color: "from-primary/10 to-accent/10",
+    iconBg: "bg-primary/10",
   },
   {
     type: "whatsapp" as const,
     title: "הודעות WhatsApp",
     description: "שלח הזמנות ותזכורות דרך WhatsApp באופן אוטומטי עם קישורים מותאמים אישית",
-    color: "from-green-500/20 to-emerald-500/20",
-    iconBg: "bg-green-50",
+    color: "from-primary/10 to-accent/10",
+    iconBg: "bg-primary/10",
   },
   {
     type: "seating" as const,
-    title: "סידורי ישיבה",
+    title: "סידור הושבה",
     description: "נהל שולחנות וסדר את האורחים בקלות עם ממשק גרירה ושחרור",
-    color: "from-purple-500/20 to-violet-500/20",
-    iconBg: "bg-purple-50",
+    color: "from-primary/10 to-accent/10",
+    iconBg: "bg-primary/10",
   },
   {
     type: "gift" as const,
     title: "מעקב מתנות",
     description: "עקוב אחר מתנות שהתקבלו באמצעות Bit ו-Paybox בקלות",
-    color: "from-amber-500/20 to-orange-500/20",
-    iconBg: "bg-purple-100/60 ",
+    color: "from-primary/10 to-accent/10",
+    iconBg: "bg-primary/10",
   },
   {
     type: "stats" as const,
     title: "דוחות וסטטיסטיקות",
     description: "קבל תמונה מלאה של אישורי ההגעה, מספר האורחים והמתנות",
-    color: "from-teal-500/20 to-cyan-500/20",
-    iconBg: "bg-teal-50",
+    color: "from-primary/10 to-accent/10",
+    iconBg: "bg-primary/10",
   },
 ];
 
@@ -446,10 +446,10 @@ export default function AnimatedFeatures() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section ref={ref} className="py-32 overflow-hidden bg-white">
+    <section ref={ref} className="pb-4 md:py-20 overflow-hidden bg-white">
       <div className="container mx-auto px-4">
         <motion.div
-          className="text-center mb-20"
+          className="text-center mb-12"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}

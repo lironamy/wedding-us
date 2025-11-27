@@ -160,7 +160,7 @@ export default function StarryNightTemplate({ wedding, guest, dateParts, isRSVP 
       <Moon />
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-lg mx-auto px-6 py-16">
+      <div className="relative z-10 max-w-lg mx-auto px-6  ">
 
         {/* Hero Image in Glowing Frame */}
         {wedding.mediaUrl && (
@@ -197,6 +197,9 @@ export default function StarryNightTemplate({ wedding, guest, dateParts, isRSVP 
                     src={wedding.mediaUrl}
                     alt={`${wedding.groomName} & ${wedding.brideName}`}
                     className="w-full h-full object-cover"
+                    style={wedding.mediaPosition ? {
+                      objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                    } : undefined}
                   />
                 )}
               </div>

@@ -39,6 +39,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     description: '',
     mediaUrl: '',
     mediaType: 'image' as 'image' | 'video',
+    mediaPosition: { x: 50, y: 50 } as { x: number; y: number },
     bitPhone: '',
     payboxPhone: '',
     enableBitGifts: false,
@@ -119,6 +120,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         description: wedding.description || '',
         mediaUrl: wedding.mediaUrl || '',
         mediaType: wedding.mediaType || 'image',
+        mediaPosition: wedding.mediaPosition || { x: 50, y: 50 },
         bitPhone: wedding.bitPhone || '',
         payboxPhone: wedding.payboxPhone || '',
         enableBitGifts: wedding.enableBitGifts || false,
@@ -543,6 +545,8 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               currentMediaUrl={formData.mediaUrl}
               currentMediaType={formData.mediaType}
               onUpload={handleMediaUpload}
+              mediaPosition={formData.mediaPosition}
+              onPositionChange={(position) => setFormData((prev) => ({ ...prev, mediaPosition: position }))}
               theme={formData.theme}
             />
 
@@ -952,7 +956,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
 
               {/* Loading State */}
               {paymentLoading && (
-                <div className="flex flex-col items-center justify-center py-12 sm:py-16 bg-gray-50 rounded-xl sm:rounded-2xl">
+                <div className="flex flex-col items-center justify-center py-12 sm:  bg-gray-50 rounded-xl sm:rounded-2xl">
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}

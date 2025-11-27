@@ -5,11 +5,14 @@ import toast from 'react-hot-toast';
 import Button from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import Image from 'next/image';
+import ImagePositionEditor from './ImagePositionEditor';
 
 interface MediaUploadProps {
   currentMediaUrl?: string;
   currentMediaType?: 'image' | 'video';
   onUpload: (url: string, type: 'image' | 'video') => void;
+  mediaPosition?: { x: number; y: number };
+  onPositionChange?: (position: { x: number; y: number }) => void;
   theme?: {
     primaryColor: string;
     secondaryColor: string;
@@ -26,6 +29,8 @@ export default function MediaUpload({
   currentMediaUrl,
   currentMediaType,
   onUpload,
+  mediaPosition = { x: 50, y: 50 },
+  onPositionChange,
   theme = { primaryColor: '#7950a5', secondaryColor: '#2C3E50' }
 }: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
@@ -131,15 +136,32 @@ export default function MediaUpload({
 
         {previewUrl ? (
           <div className="space-y-4">
-            {/* Preview */}
-            <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
-              <Image
-                src={previewUrl}
-                alt="תצוגה מקדימה"
-                fill
-                className="object-cover"
+            {/* Image Position Editor - only for images, not videos */}
+            {previewType === 'image' && onPositionChange ? (
+              <ImagePositionEditor
+                imageUrl={previewUrl}
+                position={mediaPosition}
+                onPositionChange={onPositionChange}
               />
-            </div>
+            ) : (
+              /* Simple Preview for videos */
+              <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                {previewType === 'video' ? (
+                  <video
+                    src={previewUrl}
+                    className="w-full h-full object-cover"
+                    controls
+                  />
+                ) : (
+                  <Image
+                    src={previewUrl}
+                    alt="תצוגה מקדימה"
+                    fill
+                    className="object-cover"
+                  />
+                )}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-2">

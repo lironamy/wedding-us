@@ -194,6 +194,9 @@ export default function BeachShellsTemplate({ wedding, guest, dateParts, isRSVP 
                 src={wedding.mediaUrl}
                 alt={`${wedding.groomName} & ${wedding.brideName}`}
                 className="relative w-full aspect-square object-cover rounded-full border-4 border-white shadow-xl"
+                style={wedding.mediaPosition ? {
+                  objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                } : undefined}
               />
             )}
 

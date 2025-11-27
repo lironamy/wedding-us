@@ -139,7 +139,10 @@ export default function VintageLettersTemplate({ wedding, guest, dateParts, isRS
                   src={wedding.mediaUrl}
                   alt={`${wedding.groomName} & ${wedding.brideName}`}
                   className="w-full aspect-square object-cover"
-                  style={{ filter: 'sepia(15%)' }}
+                  style={{
+                    filter: 'sepia(15%)',
+                    ...(wedding.mediaPosition && { objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%` })
+                  }}
                 />
               )}
             </motion.div>

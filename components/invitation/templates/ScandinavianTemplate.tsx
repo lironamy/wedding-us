@@ -84,7 +84,10 @@ export default function ScandinavianTemplate({ wedding, guest, dateParts, isRSVP
                   src={wedding.mediaUrl}
                   alt={`${wedding.groomName} & ${wedding.brideName}`}
                   className="w-full aspect-[4/5] object-cover rounded-sm"
-                  style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.08)' }}
+                  style={wedding.mediaPosition ? {
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.08)',
+                    objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                  } : { boxShadow: '0 20px 50px rgba(0,0,0,0.08)' }}
                 />
               )}
             </motion.div>

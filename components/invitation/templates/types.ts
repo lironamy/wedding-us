@@ -16,6 +16,7 @@ export interface WeddingData {
   description?: string;
   mediaUrl?: string;
   mediaType?: 'image' | 'video';
+  mediaPosition?: { x: number; y: number }; // Position in percentage (0-100) for object-position
   theme: {
     primaryColor: string;
     secondaryColor: string;

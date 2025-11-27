@@ -170,6 +170,9 @@ export default function RomanticGardenTemplate({ wedding, guest, dateParts, isRS
                       src={wedding.mediaUrl}
                       alt={`${wedding.groomName} & ${wedding.brideName}`}
                       className="w-full h-full object-cover"
+                      style={wedding.mediaPosition ? {
+                        objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                      } : undefined}
                     />
                   )}
                 </div>

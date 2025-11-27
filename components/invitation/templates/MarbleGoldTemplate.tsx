@@ -152,6 +152,9 @@ export default function MarbleGoldTemplate({ wedding, guest, dateParts, isRSVP =
                 src={wedding.mediaUrl}
                 alt={`${wedding.groomName} & ${wedding.brideName}`}
                 className="w-full aspect-square object-cover"
+                style={wedding.mediaPosition ? {
+                  objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                } : undefined}
               />
             )}
 

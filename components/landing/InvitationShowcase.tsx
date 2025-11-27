@@ -8,7 +8,7 @@ export default function InvitationShowcase() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-32 overflow-hidden bg-[#FAFAFA]">
+    <section ref={ref} className="pt-16 overflow-hidden bg-[#FAFAFA]">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           {/* Text Content */}

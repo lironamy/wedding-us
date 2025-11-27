@@ -165,6 +165,9 @@ export default function CarnivalTemplate({ wedding, guest, dateParts, isRSVP = f
                   src={wedding.mediaUrl}
                   alt={`${wedding.groomName} & ${wedding.brideName}`}
                   className="relative w-full aspect-square object-cover rounded-xl"
+                  style={wedding.mediaPosition ? {
+                    objectPosition: `${wedding.mediaPosition.x}% ${wedding.mediaPosition.y}%`
+                  } : undefined}
                 />
               )}
 

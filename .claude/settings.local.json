@@ -42,7 +42,9 @@
       "Bash(dir \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\" /b)",
       "WebFetch(domain:reactbits.dev)",
       "Bash(npx shadcn@latest add:*)",
-      "WebFetch(domain:64.media.tumblr.com)"
+      "WebFetch(domain:64.media.tumblr.com)",
+      "mcp__ide__getDiagnostics",
+      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\ui\\IPhone3D.tsx\")"
     ],
     "deny": [],
     "ask": []

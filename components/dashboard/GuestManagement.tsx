@@ -1122,7 +1122,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center py-16"
+          className="flex flex-col items-center justify-center  "
         >
           <LottieAnimation animation="loading" size={120} />
           <motion.p

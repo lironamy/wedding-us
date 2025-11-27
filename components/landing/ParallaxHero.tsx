@@ -34,11 +34,14 @@ export default function ParallaxHero() {
       ScrollTrigger.getAll().forEach(st => st.kill());
 
       ctx = gsap.context(() => {
+        // Check if mobile
+        const isMobile = window.innerWidth < 768;
+
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: containerRef.current,
             start: "top top",
-            end: "+=300%",
+            end: isMobile ? "+=150%" : "+=300%",
             scrub: 1,
             pin: true,
             anticipatePin: 1,
@@ -265,23 +268,20 @@ export default function ParallaxHero() {
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl text-[#6e6262]/70 mb-6 sm:mb-8 max-w-lg sm:max-w-xl mx-auto lg:mx-0 lg:mr-0 px-2 sm:px-0">
-              אישורי הגעה בוואטסאפ, ניהול אורחים, סידורי ישיבה ומעקב מתנות.
-              <br className="hidden sm:block" />
-              <span className="sm:hidden"> </span>
-              הכל במקום אחד - בחינם!
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl text-[#6e6262]/70 mb-6 sm:mb-8 max-w-lg sm:max-w-xl mx-auto lg:mx-0 lg:mr-0 px-2 sm:px-0 leading-relaxed">
+              אישורי הגעה בוואטסאפ, ניהול אורחים, סידור הושבה ומעקב מתנות - <strong className="text-[#6e6262]">הכל במקום אחד בחינם!</strong>
             </p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8 px-4 sm:px-0">
               <Link href="/register" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-xl">
-                  התחילו עכשיו - חינם
+                <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-lg bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-xl">
+                  הרשמו בחינם
                 </Button>
               </Link>
               <Link href="/login" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-2 border-[#6e6262]/30 text-[#6e6262] hover:bg-[#6e6262]/5">
-                  יש לי חשבון
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-lg border-2 border-[#6e6262]/30 text-[#6e6262] hover:bg-[#6e6262]/5">
+                  התחברו
                 </Button>
               </Link>
             </div>
@@ -289,15 +289,15 @@ export default function ParallaxHero() {
             {/* Stats */}
             <div className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 md:gap-8 mt-6 sm:mt-8">
               <div className="text-center min-w-[70px] sm:min-w-[80px]">
-                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-primary">200</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-[#4a4a4a]">200</div>
                 <div className="text-xs sm:text-sm text-[#6e6262]/60">אורחים בחינם</div>
               </div>
               <div className="text-center min-w-[70px] sm:min-w-[80px]">
-                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-primary">100%</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-[#4a4a4a]">100%</div>
                 <div className="text-xs sm:text-sm text-[#6e6262]/60">אוטומטי</div>
               </div>
               <div className="text-center min-w-[70px] sm:min-w-[80px]">
-                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-primary">0₪</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-[#4a4a4a]">0₪</div>
                 <div className="text-xs sm:text-sm text-[#6e6262]/60">להתחלה</div>
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function ParallaxHero() {
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span className="text-xs sm:text-sm text-[#6e6262]/80">ניהול אורחים וסידורי ישיבה</span>
+                <span className="text-xs sm:text-sm text-[#6e6262]/80">ניהול אורחים וסידור הושבה</span>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -350,7 +350,6 @@ export default function ParallaxHero() {
                 }
               }}
             >
-              <span className="text-xs text-[#6e6262]/50 mb-1">click me</span>
               <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#6e6262]/50 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
@@ -361,7 +360,7 @@ export default function ParallaxHero() {
           <div className="hidden lg:flex flex-1 justify-center order-1 lg:order-2 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="relative">
               <Image
-                src="https://64.media.tumblr.com/8dd7d2aac171d60333f77c7b13cda0c8/4c1761c18f9f0786-1e/s1280x1920/0eaa856e3948627555ed6c7782a0ec1c96b78590.pnj"
+                src="https://64.media.tumblr.com/596d509eceb64789ebd730498a379137/94be2bf781ea31b4-32/s2048x3072/1f3cb6bcfcb6417c0fca9059b5754c4be8c5e550.pnj"
                 alt="Wedding couple"
                 width={500}
                 height={600}
@@ -400,7 +399,6 @@ export default function ParallaxHero() {
             }
           }}
         >
-          <span className="text-xs text-[#6e6262]/50 mb-1">click me</span>
           <svg className="w-8 h-8 xl:w-10 xl:h-10 text-[#6e6262]/50 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
