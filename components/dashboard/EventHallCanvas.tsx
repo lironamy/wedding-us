@@ -28,6 +28,7 @@ interface EventHallCanvasProps {
   simulationEnabled?: boolean;
 }
 
+
 const DEFAULT_SPECIAL_ELEMENTS: SpecialElement[] = [
   { id: 'dance-floor', type: 'danceFloor', name: 'רחבת ריקודים', x: 300, y: 50, width: 200, height: 150 },
   { id: 'bar', type: 'bar', name: 'בר', x: 550, y: 50, width: 120, height: 80 },
