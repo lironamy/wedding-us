@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent to-muted px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-accent to-muted px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl mb-2">שכחתי סיסמה</CardTitle>

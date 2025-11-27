@@ -71,7 +71,7 @@ export default function LoginPage() {
         transition={{ duration: 0.6 }}
         className="hidden lg:flex w-1/2 min-h-screen relative overflow-hidden"
       >
-        <Aurora className="absolute inset-0 w-full h-full bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+        <Aurora className="absolute inset-0 w-full h-full bg-linear-to-br from-pink-50 via-purple-50 to-blue-50">
           <div className="flex flex-col items-center justify-center min-h-screen p-12">
             {/* Branding Text - Top */}
             <motion.div

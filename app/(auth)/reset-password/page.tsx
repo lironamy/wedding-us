@@ -71,7 +71,7 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent to-muted px-4">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-accent to-muted px-4">
         <Card className="w-full max-w-md">
           <CardContent className="text-center py-8">
             <Alert type="error" message="קישור לא תקין. אנא בקש קישור חדש לאיפוס סיסמה." />
@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent to-muted px-4">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-accent to-muted px-4">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -117,7 +117,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent to-muted px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-accent to-muted px-4">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

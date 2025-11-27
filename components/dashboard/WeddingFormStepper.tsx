@@ -686,7 +686,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                         style={{ backgroundImage: `url(${effect.url})` }}
                       />
                     ) : (
-                      <div className="h-16 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <div className="h-16 sm:h-20 bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                         <span className="text-gray-400 text-xs">ללא</span>
                       </div>
                     )}
@@ -1020,7 +1020,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
             >
               {/* Success Animation */}
-              <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-6 sm:p-8 text-center">
+              <div className="bg-linear-to-br from-green-400 to-emerald-500 p-6 sm:p-8 text-center">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}

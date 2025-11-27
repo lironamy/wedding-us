@@ -72,8 +72,8 @@ export default function NewHero() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#faf8f5] via-[#f5f0eb] to-[#efe8e0]" />
 
       {/* Decorative shapes */}
-      <div className="absolute top-20 right-10 w-32 h-32 md:w-48 md:h-48 bg-gradient-to-br from-primary/30 to-accent/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-40 left-10 w-40 h-40 md:w-64 md:h-64 bg-gradient-to-br from-accent/20 to-primary/10 rounded-full blur-3xl" />
+      <div className="absolute top-20 right-10 w-32 h-32 md:w-48 md:h-48 bg-linear-to-br from-primary/30 to-accent/20 rounded-full blur-3xl" />
+      <div className="absolute bottom-40 left-10 w-40 h-40 md:w-64 md:h-64 bg-linear-to-br from-accent/20 to-primary/10 rounded-full blur-3xl" />
       <div className="absolute top-1/3 left-1/4 w-20 h-20 bg-green-400/20 rounded-full blur-2xl" />
 
       {/* Scattered Stickers */}
@@ -218,7 +218,7 @@ export default function NewHero() {
                     </div>
 
                     {/* Invitation preview */}
-                    <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-4 mb-4">
+                    <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-2xl p-4 mb-4">
                       <div className="text-center">
                         <div className="text-2xl mb-2">💒</div>
                         <div className="font-bold text-[#6e6262]">הוזמנתם!</div>

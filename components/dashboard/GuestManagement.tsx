@@ -845,42 +845,42 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
           title="סה״כ אורחים"
           value={stats.total}
           iconType="guests"
-          gradient="bg-gradient-to-br from-yellow-300 to-yellow-500"
+          gradient="bg-linear-to-br from-yellow-300 to-yellow-500"
           delay={0}
         />
         <StatCard
           title="אישרו הגעה"
           value={stats.confirmed}
           iconType="confirmed"
-          gradient="bg-gradient-to-br from-emerald-500 to-green-600"
+          gradient="bg-linear-to-br from-emerald-500 to-green-600"
           delay={0.1}
         />
         <StatCard
           title="סירבו"
           value={stats.declined}
           iconType="declined"
-          gradient="bg-gradient-to-br from-rose-500 to-red-600"
+          gradient="bg-linear-to-br from-rose-500 to-red-600"
           delay={0.2}
         />
         <StatCard
           title="ממתינים"
           value={stats.pending}
           iconType="pending"
-          gradient="bg-gradient-to-br from-amber-400 to-orange-500"
+          gradient="bg-linear-to-br from-amber-400 to-orange-500"
           delay={0.3}
         />
         <StatCard
           title="מבוגרים"
           value={stats.totalAdults}
           iconType="adults"
-          gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
+          gradient="bg-linear-to-br from-blue-500 to-indigo-600"
           delay={0.4}
         />
         <StatCard
           title="ילדים"
           value={stats.totalChildren}
           iconType="children"
-          gradient="bg-gradient-to-br from-pink-400 to-purple-500"
+          gradient="bg-linear-to-br from-pink-400 to-purple-500"
           delay={0.5}
         />
       </div>

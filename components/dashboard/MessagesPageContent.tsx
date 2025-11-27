@@ -77,7 +77,7 @@ function FeatureCard({
       transition={{ delay, duration: 0.4 }}
       className="flex items-start gap-3 p-4 rounded-xl bg-white/50 backdrop-blur-sm"
     >
-      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-pink-100 flex items-center justify-center">
+      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-linear-to-br from-primary/20 to-pink-100 flex items-center justify-center">
         {icon}
       </div>
       <div>
@@ -95,7 +95,7 @@ export default function MessagesPageContent({ weddingId }: MessagesPageContentPr
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 p-8 text-white shadow-2xl"
+        className="relative overflow-hidden rounded-3xl bg-linear-to-br from-green-500 via-emerald-500 to-teal-600 p-8 text-white shadow-2xl"
       >
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-32 -translate-y-32" />
@@ -197,7 +197,7 @@ export default function MessagesPageContent({ weddingId }: MessagesPageContentPr
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.5 }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30"
+            className="w-12 h-12 rounded-2xl bg-linear-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30"
           >
             <TabIcons.schedule color="white" />
           </motion.div>
@@ -220,7 +220,7 @@ export default function MessagesPageContent({ weddingId }: MessagesPageContentPr
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.6 }}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30"
+            className="w-12 h-12 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30"
           >
             <TabIcons.send color="white" />
           </motion.div>
