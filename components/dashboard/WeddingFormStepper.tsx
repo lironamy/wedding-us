@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { ModernDatePicker, ModernTimePicker } from '@/components/ui/DateTimePicker';
 import { Card } from '@/components/ui/Card';
 import { Stepper, Step } from '@/components/ui/Stepper';
 import MediaUpload from '@/components/dashboard/MediaUpload';
@@ -48,6 +49,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     backgroundPattern: '',
     invitationTemplate: 'classic',
     maxGuests: 200,
+    seatingMode: 'auto' as 'auto' | 'manual',
     theme: {
       primaryColor: '#7950a5',
       secondaryColor: '#2C3E50',
@@ -99,7 +101,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   ];
 
   // Dynamic steps - add payment step only if paid package
-  const baseStepsLabels = ['פרטי האירוע', 'מדיה', 'מתנות', 'עיצוב', 'תצוגה מקדימה', 'חבילה'];
+  const baseStepsLabels = ['פרטי האירוע', 'מדיה', 'מתנות', 'סידורי ישיבה', 'עיצוב', 'תצוגה מקדימה', 'חבילה'];
   const stepsLabels = formData.maxGuests > 200
     ? [...baseStepsLabels, 'תשלום']
     : baseStepsLabels;
@@ -129,6 +131,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         backgroundPattern: wedding.backgroundPattern || '',
         invitationTemplate: wedding.invitationTemplate || 'classic',
         maxGuests: wedding.maxGuests || 200,
+        seatingMode: wedding.seatingSettings?.mode || 'auto',
         theme: wedding.theme || {
           primaryColor: '#7950a5',
           secondaryColor: '#2C3E50',
@@ -263,8 +266,8 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       }
     }
 
-    // When entering payment step (step 7), save wedding data first, then fetch clearing URL
-    if (newStep === 7 && wedding?._id) {
+    // When entering payment step (step 8), save wedding data first, then fetch clearing URL
+    if (newStep === 8 && wedding?._id) {
       // Save wedding data before payment (without redirect)
       try {
         console.log('=== Saving wedding data before payment step ===');
@@ -364,7 +367,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
       // Save the wedding data
       await onSubmit(formData);
       console.log('onSubmit completed successfully');
-      // Payment is handled in step 7 iframe - user will be redirected after payment
+      // Payment is handled in step 8 iframe - user will be redirected after payment
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -398,9 +401,9 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
             : wedding ? 'עדכן חתונה' : 'צור חתונה'
         }
         disableStepIndicators={false}
-        hideStepIndicators={currentStep === 7}
-        hideFooter={currentStep === 7}
-        fullWidthContent={currentStep === 7}
+        hideStepIndicators={currentStep === 8}
+        hideFooter={currentStep === 8}
+        fullWidthContent={currentStep === 8}
         fullHeightLayout={true}
         onCancel={onCancel}
         cancelButtonText="ביטול"
@@ -481,34 +484,42 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
             <div className="space-y-2 sm:space-y-4">
               <h3 className="text-sm sm:text-lg font-medium text-gray-800">תאריך ומיקום</h3>
 
-              {/* Date */}
-              <Input
-                label="תאריך האירוע"
-                name="eventDate"
-                type="date"
-                value={formData.eventDate}
-                onChange={handleChange}
-                error={errors.eventDate}
-                required
-              />
-
-              {/* Times side by side */}
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                <Input
+              {/* Date and Times - same row on desktop, stacked on mobile */}
+              <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2 sm:gap-4">
+                <ModernDatePicker
+                  label="תאריך האירוע"
+                  name="eventDate"
+                  type="date"
+                  value={formData.eventDate}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, eventDate: value }));
+                    if (errors.eventDate) {
+                      setErrors((prev) => ({ ...prev, eventDate: '' }));
+                    }
+                  }}
+                  error={errors.eventDate}
+                  required
+                />
+                <ModernTimePicker
                   label="שעת קבלת פנים"
                   name="eventTime"
                   type="time"
                   value={formData.eventTime}
-                  onChange={handleChange}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, eventTime: value }));
+                    if (errors.eventTime) {
+                      setErrors((prev) => ({ ...prev, eventTime: '' }));
+                    }
+                  }}
                   error={errors.eventTime}
                   required
                 />
-                <Input
+                <ModernTimePicker
                   label="שעת חופה"
                   name="chuppahTime"
                   type="time"
                   value={formData.chuppahTime}
-                  onChange={handleChange}
+                  onChange={(value) => setFormData((prev) => ({ ...prev, chuppahTime: value }))}
                 />
               </div>
 
@@ -589,7 +600,162 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
           </div>
         </Step>
 
-        {/* Step 4: Design */}
+        {/* Step 4: Seating Mode */}
+        <Step>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="text-center mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">סידורי ישיבה</h2>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">בחרו כיצד תרצו לנהל את סידורי הישיבה באירוע</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Auto Mode */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setFormData((prev) => ({ ...prev, seatingMode: 'auto' }))}
+                className={`relative cursor-pointer rounded-2xl border-2 p-5 sm:p-6 transition-all ${
+                  formData.seatingMode === 'auto'
+                    ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                }`}
+              >
+                {/* Selected Indicator */}
+                {formData.seatingMode === 'auto' && (
+                  <div className="absolute top-3 left-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="text-center">
+                  {/* Icon */}
+                  <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-primary/20 to-pink-500/20 flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                    </svg>
+                  </div>
+
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">אוטומטי</h3>
+                  <p className="text-sm text-gray-600 mb-4">המערכת תסדר את האורחים בשולחנות באופן חכם</p>
+
+                  <ul className="text-right text-sm text-gray-500 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>סידור אוטומטי לפי קבוצות (משפחה, חברים...)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>התחשבות בהעדפות "ליד" ו"רחוק מ-"</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>עדכון אוטומטי כשאורחים מאשרים הגעה</span>
+                    </li>
+                  </ul>
+                </div>
+              </motion.div>
+
+              {/* Manual Mode */}
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setFormData((prev) => ({ ...prev, seatingMode: 'manual' }))}
+                className={`relative cursor-pointer rounded-2xl border-2 p-5 sm:p-6 transition-all ${
+                  formData.seatingMode === 'manual'
+                    ? 'border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                }`}
+              >
+                {/* Selected Indicator */}
+                {formData.seatingMode === 'manual' && (
+                  <div className="absolute top-3 left-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="text-center">
+                  {/* Icon */}
+                  <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                    </svg>
+                  </div>
+
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">ידני</h3>
+                  <p className="text-sm text-gray-600 mb-4">תסדרו את האורחים בעצמכם בגרירה ושחרור</p>
+
+                  <ul className="text-right text-sm text-gray-500 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>שליטה מלאה על מיקום כל אורח</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>גרירה ושחרור אינטואיטיבית</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>מתאים למי שמעדיף לסדר לבד</span>
+                    </li>
+                  </ul>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Info Notes */}
+            <div className="space-y-3">
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-800 font-medium">ניתן לשנות בכל עת</p>
+                    <p className="text-sm text-blue-600 mt-1">
+                      תמיד תוכלו לעבור בין מצב אוטומטי לידני בהגדרות סידורי הישיבה בדשבורד
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-purple-800 font-medium">הדרכה מפורטת מחכה לכם</p>
+                    <p className="text-sm text-purple-600 mt-1">
+                      לאחר סיום הגדרת החתונה, תמצאו פירוט נוסף והדרכה מלאה בעמוד סידורי הישיבה בדשבורד
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Step>
+
+        {/* Step 5: Design */}
         <Step>
           <div className="space-y-4 sm:space-y-6">
             <div className="text-center mb-4 sm:mb-6">

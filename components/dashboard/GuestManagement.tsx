@@ -1043,7 +1043,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">קבוצה משפחתית</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">קבוצה</label>
               <select
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-gold/50 focus:border-gold transition-all"
                 value={familyFilter}

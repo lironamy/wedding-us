@@ -309,3 +309,83 @@ body .mobile-visible {
   animation: fade-in-up 0.6s ease-out forwards;
   opacity: 0;
 }
+
+/* Modern Date & Time Picker Styling */
+input[type="date"],
+input[type="time"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+  background-color: white;
+}
+
+/* Chrome/Safari/Edge - Hide default calendar icon and style the picker */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+  z-index: 2;
+}
+
+/* Firefox date/time styling */
+input[type="date"]::-moz-focus-inner,
+input[type="time"]::-moz-focus-inner {
+  border: 0;
+}
+
+/* Style the date picker popup (Chrome) */
+::-webkit-datetime-edit {
+  padding: 0;
+}
+
+::-webkit-datetime-edit-fields-wrapper {
+  background: transparent;
+}
+
+::-webkit-datetime-edit-text {
+  color: #6b7280;
+  padding: 0 2px;
+}
+
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-year-field,
+::-webkit-datetime-edit-hour-field,
+::-webkit-datetime-edit-minute-field,
+::-webkit-datetime-edit-ampm-field {
+  color: #1f2937;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+::-webkit-datetime-edit-day-field:focus,
+::-webkit-datetime-edit-month-field:focus,
+::-webkit-datetime-edit-year-field:focus,
+::-webkit-datetime-edit-hour-field:focus,
+::-webkit-datetime-edit-minute-field:focus,
+::-webkit-datetime-edit-ampm-field:focus {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+  outline: none;
+}
+
+/* Clear button styling */
+input[type="date"]::-webkit-clear-button,
+input[type="time"]::-webkit-clear-button {
+  display: none;
+}
+
+/* Inner spin button */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button {
+  display: none;
+}

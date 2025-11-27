@@ -119,6 +119,13 @@ export async function POST(request: NextRequest) {
       enableBitGifts: body.enableBitGifts || false,
       bitQrImage: body.bitQrImage || '',
       maxGuests: body.maxGuests || 200,
+      seatingSettings: {
+        mode: body.seatingMode || 'auto',
+        seatsPerTable: 10,
+        autoRecalcPolicy: 'onRsvpChangeGroupOnly',
+        adjacencyPolicy: 'forbidSameTableOnly',
+        simulationEnabled: false
+      },
       uniqueUrl,
       status: 'draft'
     });

@@ -8,6 +8,13 @@ export interface ITable {
   capacity: number;
   tableType: 'adults' | 'kids' | 'mixed';
   assignedGuests: Array<Types.ObjectId | string>;
+  // Auto seating fields
+  mode: 'auto' | 'manual';
+  groupId?: Types.ObjectId | string;
+  clusterIndex?: number;
+  positionX?: number;
+  positionY?: number;
+  locked: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +54,28 @@ const TableSchema = new Schema<ITable>(
         ref: 'Guest',
       },
     ],
+    mode: {
+      type: String,
+      enum: ['auto', 'manual'],
+      default: 'manual',
+    },
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: 'GuestGroup',
+    },
+    clusterIndex: {
+      type: Number,
+    },
+    positionX: {
+      type: Number,
+    },
+    positionY: {
+      type: Number,
+    },
+    locked: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -56,9 +85,15 @@ const TableSchema = new Schema<ITable>(
 // Create indexes
 TableSchema.index({ weddingId: 1 });
 TableSchema.index({ tableNumber: 1 });
+TableSchema.index({ weddingId: 1, groupId: 1, mode: 1 });
 
 // Compound index to ensure unique table numbers per wedding
 TableSchema.index({ weddingId: 1, tableNumber: 1 }, { unique: true });
+
+// Delete cached model in development to pick up schema changes
+if (process.env.NODE_ENV !== 'production' && models.Table) {
+  delete models.Table;
+}
 
 const Table = models.Table || mongoose.model<ITable>('Table', TableSchema);
 
