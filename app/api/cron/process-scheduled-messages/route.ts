@@ -7,6 +7,7 @@ import ScheduledMessage, {
   MESSAGE_SCHEDULE_CONFIG,
   type ScheduledMessageType,
 } from '@/lib/db/models/ScheduledMessage';
+import MessageLog from '@/lib/db/models/MessageLog';
 import { getTwilioService } from '@/lib/services/twilio-whatsapp';
 import { formatHebrewDate } from '@/lib/utils/date';
 import { getGenderText, type PartnerType } from '@/lib/utils/genderText';
@@ -223,6 +224,35 @@ async function processScheduledMessage(scheduledMessage: any) {
     { delayBetweenMessages: 1000 }
   );
 
+  // Save MessageLog for each sent message (for status tracking via webhook)
+  const twilioFromNumber = process.env.TWILIO_WHATSAPP_NUMBER || '';
+  const messageLogsToCreate = result.results
+    .filter(r => r.success && r.messageId)
+    .map(r => {
+      const guest = guests.find(g => g._id.toString() === r.guestId);
+      return {
+        weddingId,
+        guestId: r.guestId,
+        scheduledMessageId: scheduledMessage._id,
+        twilioSid: r.messageId!,
+        deliveryStatus: 'queued',
+        messageType,
+        toPhone: guest?.phone || '',
+        fromPhone: twilioFromNumber,
+        sentAt: new Date(),
+      };
+    });
+
+  if (messageLogsToCreate.length > 0) {
+    try {
+      await MessageLog.insertMany(messageLogsToCreate);
+      console.log(`📝 [CRON] Created ${messageLogsToCreate.length} message logs for tracking`);
+    } catch (logError) {
+      console.error('⚠️ [CRON] Error creating message logs:', logError);
+      // Don't fail the whole process for logging errors
+    }
+  }
+
   return {
     scheduleId: scheduledMessage._id,
     success: true,
@@ -260,14 +290,18 @@ async function notifyCouple(scheduledMessage: any, result: any) {
     const dashboardUrl = `${appUrl}/dashboard/messages/history`;
 
     // Send notification (freeform message - should work if couple has messaged before)
+    // Note: At this point we only know how many were accepted by Twilio,
+    // not how many were actually delivered. Delivery status comes via webhook.
     const message = `שלום ${wedding.groomName} ו${wedding.brideName}! 📬
 
-${config.description} נשלחה בהצלחה!
+${config.description} נשלחה!
 
-📊 סיכום:
-✅ נשלח: ${result.sentCount}
-❌ נכשל: ${result.failedCount}
-📋 סה"כ: ${result.totalGuests}
+📊 סיכום ראשוני:
+📤 נשלח לעיבוד: ${result.sentCount}
+❌ נכשל בשליחה: ${result.failedCount}
+📋 סה"כ אורחים: ${result.totalGuests}
+
+💡 סטטוס המסירה האמיתי יתעדכן בדקות הקרובות
 
 לצפייה בתגובות:
 ${dashboardUrl}`;

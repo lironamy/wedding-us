@@ -9,6 +9,8 @@ export { default as GuestGroup } from './GuestGroup';
 export { default as SeatAssignment } from './SeatAssignment';
 export { default as SeatingPreference } from './SeatingPreference';
 export { default as TableAdjacency } from './TableAdjacency';
+export { default as ScheduledMessage } from './ScheduledMessage';
+export { default as MessageLog } from './MessageLog';
 
 // Export types
 export type { IUser } from './User';
@@ -21,3 +23,5 @@ export type { IGuestGroup } from './GuestGroup';
 export type { ISeatAssignment } from './SeatAssignment';
 export type { ISeatingPreference } from './SeatingPreference';
 export type { ITableAdjacency } from './TableAdjacency';
+export type { IScheduledMessage, ScheduledMessageType, ScheduledMessageStatus } from './ScheduledMessage';
+export type { IMessageLog, MessageDeliveryStatus } from './MessageLog';
