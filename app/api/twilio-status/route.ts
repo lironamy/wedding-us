@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import twilio from 'twilio';
 import dbConnect from '@/lib/db/mongodb';
 import MessageLog from '@/lib/db/models/MessageLog';
 import ScheduledMessage from '@/lib/db/models/ScheduledMessage';
@@ -11,10 +12,61 @@ import ScheduledMessage from '@/lib/db/models/ScheduledMessage';
 //
 // "sent" only means sent to carrier, NOT delivered to recipient!
 // We must wait for "delivered" to confirm actual delivery.
+
+/**
+ * Validate that the request is actually from Twilio
+ * Uses Twilio's signature validation
+ */
+async function validateTwilioRequest(request: NextRequest, body: string): Promise<boolean> {
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+  if (!authToken) {
+    console.warn('⚠️ [Twilio Status] TWILIO_AUTH_TOKEN not set - skipping validation');
+    return true; // Allow in development if not configured
+  }
+
+  const signature = request.headers.get('x-twilio-signature');
+  if (!signature) {
+    console.error('❌ [Twilio Status] Missing X-Twilio-Signature header');
+    return false;
+  }
+
+  // Get the full URL that Twilio called
+  const url = request.url;
+
+  // Parse body as params for validation
+  const params: Record<string, string> = {};
+  const formData = new URLSearchParams(body);
+  formData.forEach((value, key) => {
+    params[key] = value;
+  });
+
+  // Validate using Twilio's helper
+  const isValid = twilio.validateRequest(authToken, signature, url, params);
+
+  if (!isValid) {
+    console.error('❌ [Twilio Status] Invalid signature - request rejected');
+  }
+
+  return isValid;
+}
+
 export async function POST(request: NextRequest) {
+  console.log('🔔 [Twilio Status] Webhook received!');
+
   try {
-    // Parse form data from Twilio (they send as application/x-www-form-urlencoded)
-    const formData = await request.formData();
+    // Clone request to read body twice (once for validation, once for parsing)
+    const body = await request.text();
+
+    // Validate request is from Twilio
+    const isValid = await validateTwilioRequest(request, body);
+    if (!isValid) {
+      console.error('❌ [Twilio Status] Unauthorized request rejected');
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    // Parse form data from the body
+    const formData = new URLSearchParams(body);
 
     const messageSid = formData.get('MessageSid') as string;
     const messageStatus = formData.get('MessageStatus') as string;
@@ -23,7 +75,13 @@ export async function POST(request: NextRequest) {
     const to = formData.get('To') as string;
     const from = formData.get('From') as string;
 
-    console.log(`[Twilio Status] Message ${messageSid}: ${messageStatus}`, {
+    // Log all form data for debugging
+    console.log('📋 [Twilio Status] Full webhook data:');
+    formData.forEach((value, key) => {
+      console.log(`  ${key}: ${value}`);
+    });
+
+    console.log(`🔔 [Twilio Status] Message ${messageSid}: ${messageStatus}`, {
       to,
       from,
       errorCode,

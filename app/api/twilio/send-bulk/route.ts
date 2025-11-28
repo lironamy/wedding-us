@@ -5,6 +5,8 @@ import dbConnect from '@/lib/db/mongodb';
 import Guest from '@/lib/db/models/Guest';
 import Wedding from '@/lib/db/models/Wedding';
 import Message from '@/lib/db/models/Message';
+import Table from '@/lib/db/models/Table';
+import SeatAssignment from '@/lib/db/models/SeatAssignment';
 import { getTwilioService, type TemplateVariables } from '@/lib/services/twilio-whatsapp';
 import { generateMessage, MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
 import { formatHebrewDate } from '@/lib/utils/date';
@@ -90,13 +92,41 @@ export async function POST(request: NextRequest) {
     }
 
     // Get selected guests
-    const guests = await Guest.find({
+    let guests = await Guest.find({
       _id: { $in: guestIds },
       weddingId,
     }).lean() as any[];
 
     if (guests.length === 0) {
       return NextResponse.json({ error: 'No guests found' }, { status: 404 });
+    }
+
+    // For day_before messages, we need table numbers from SeatAssignment
+    if (messageType === 'day_before') {
+      // Get all seat assignments for this wedding
+      const seatAssignments = await SeatAssignment.find({
+        weddingId,
+        assignmentType: 'real',
+      }).lean() as any[];
+
+      // Get all tables to map tableId -> tableNumber
+      const tables = await Table.find({ weddingId }).lean() as any[];
+      const tableMap = new Map(tables.map(t => [t._id.toString(), t.tableNumber]));
+
+      // Create a map of guestId -> tableNumber
+      const guestTableMap = new Map<string, number>();
+      for (const assignment of seatAssignments) {
+        const tableNumber = tableMap.get(assignment.tableId.toString());
+        if (tableNumber) {
+          guestTableMap.set(assignment.guestId.toString(), tableNumber);
+        }
+      }
+
+      // Add tableNumber to each guest
+      guests = guests.map(guest => ({
+        ...guest,
+        tableNumber: guestTableMap.get(guest._id.toString()) || guest.tableNumber,
+      }));
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -154,10 +184,10 @@ export async function POST(request: NextRequest) {
           '3': sanitizedMessage,
         };
       } else {
-        // Text-only template: {{1}}=name, {{2}}=message
+        // Text-only template uses named variables: {{name}}, {{message}}
         variables = {
-          '1': guest.name,
-          '2': sanitizedMessage,
+          'name': guest.name,
+          'message': sanitizedMessage,
         };
       }
 
