@@ -22,11 +22,23 @@ const CRON_SECRET = process.env.CRON_SECRET;
  */
 export async function GET(request: NextRequest) {
   try {
-    // Verify authorization (Vercel Cron sends this header)
+    // Verify authorization
+    // Vercel Cron sends 'x-vercel-cron-signature' header in production
+    // Or we can use our own CRON_SECRET via Authorization header
+    const vercelCronHeader = request.headers.get('x-vercel-cron-signature');
     const authHeader = request.headers.get('authorization');
-    if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+
+    // Allow if: Vercel Cron signature exists, OR valid CRON_SECRET provided, OR no secret configured
+    const isVercelCron = !!vercelCronHeader;
+    const isValidSecret = CRON_SECRET && authHeader === `Bearer ${CRON_SECRET}`;
+    const noSecretConfigured = !CRON_SECRET;
+
+    if (!isVercelCron && !isValidSecret && !noSecretConfigured) {
+      console.log('❌ [CRON] Unauthorized request - no valid auth');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    console.log(`🔑 [CRON] Auth: vercelCron=${isVercelCron}, validSecret=${isValidSecret}`);
 
     await dbConnect();
 

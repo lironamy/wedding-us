@@ -30,6 +30,9 @@ interface DateTimePickerProps {
   error?: string;
   required?: boolean;
   name?: string;
+  timeIntervals?: number; // For time picker - minutes between options (default 15)
+  minDate?: Date; // Minimum selectable date
+  minTime?: Date; // Minimum selectable time
 }
 
 // Custom input component for DatePicker
@@ -44,7 +47,8 @@ const CustomInput = forwardRef<HTMLInputElement, {
   isFocused: boolean;
   hasValue: boolean;
   placeholder?: string;
-}>(({ value, onClick, onChange, onKeyDown, label, type, error, isFocused, hasValue, placeholder }, ref) => {
+  readOnly?: boolean;
+}>(({ value, onClick, onChange, onKeyDown, label, type, error, isFocused, hasValue, placeholder, readOnly }, ref) => {
   const isFloating = isFocused || hasValue;
   const borderColor = error
     ? 'border-red-500'
@@ -68,6 +72,7 @@ const CustomInput = forwardRef<HTMLInputElement, {
         onClick={onClick}
         onChange={onChange}
         onKeyDown={onKeyDown}
+        readOnly={readOnly}
         className={`
           w-full px-4 pl-11 py-3.5
           border-2 rounded-xl
@@ -78,6 +83,7 @@ const CustomInput = forwardRef<HTMLInputElement, {
           disabled:opacity-50 disabled:cursor-not-allowed
           ${borderColor}
           pt-5 pb-2
+          ${readOnly ? 'cursor-pointer' : ''}
         `}
         style={{ fontSize: '16px' }}
         placeholder={placeholder || ' '}
@@ -105,7 +111,7 @@ const CustomInput = forwardRef<HTMLInputElement, {
 
 CustomInput.displayName = 'CustomInput';
 
-export function ModernDatePicker({ label, value, onChange, error, required, name }: DateTimePickerProps) {
+export function ModernDatePicker({ label, value, onChange, error, required, name, minDate }: DateTimePickerProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
@@ -164,6 +170,7 @@ export function ModernDatePicker({ label, value, onChange, error, required, name
         showPopperArrow={false}
         calendarClassName="modern-datepicker"
         popperClassName="modern-datepicker-popper"
+        minDate={minDate}
         customInput={
           <CustomInput
             label={label}
@@ -342,9 +349,8 @@ export function ModernDatePicker({ label, value, onChange, error, required, name
   );
 }
 
-export function ModernTimePicker({ label, value, onChange, error, required, name }: DateTimePickerProps) {
+export function ModernTimePicker({ label, value, onChange, error, required, name, timeIntervals = 15, minTime }: DateTimePickerProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState('');
 
   // Convert HH:MM string to Date object
   const getTimeAsDate = (timeStr: string): Date | null => {
@@ -355,11 +361,6 @@ export function ModernTimePicker({ label, value, onChange, error, required, name
     return date;
   };
 
-  // Update input value when value changes
-  React.useEffect(() => {
-    setInputValue(value || '');
-  }, [value]);
-
   const selectedTime = getTimeAsDate(value);
 
   const handleChange = (date: Date | null) => {
@@ -368,24 +369,6 @@ export function ModernTimePicker({ label, value, onChange, error, required, name
       const hours = date.getHours().toString().padStart(2, '0');
       const minutes = date.getMinutes().toString().padStart(2, '0');
       onChange(`${hours}:${minutes}`);
-    }
-  };
-
-  // Handle manual input
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setInputValue(val);
-
-    // Try to parse the time (support formats: HH:MM, H:MM, HH:M)
-    const match = val.match(/^(\d{1,2}):(\d{1,2})$/);
-    if (match) {
-      const [, hours, minutes] = match;
-      const h = parseInt(hours);
-      const m = parseInt(minutes);
-      if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-        const formatted = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-        onChange(formatted);
-      }
     }
   };
 
@@ -400,23 +383,23 @@ export function ModernTimePicker({ label, value, onChange, error, required, name
         onBlur={() => setIsFocused(false)}
         showTimeSelect
         showTimeSelectOnly
-        timeIntervals={15}
+        timeIntervals={timeIntervals}
         timeCaption="שעה"
         dateFormat="HH:mm"
         locale="he"
         showPopperArrow={false}
         calendarClassName="modern-timepicker"
         popperClassName="modern-timepicker-popper"
+        minTime={minTime}
+        maxTime={new Date(new Date().setHours(23, 59, 0, 0))}
         customInput={
           <CustomInput
             label={label}
             type="time"
             error={error}
             isFocused={isFocused}
-            hasValue={!!value || !!inputValue}
-            placeholder="HH:MM"
-            value={inputValue}
-            onChange={handleInputChange}
+            hasValue={!!value}
+            readOnly={true}
           />
         }
         portalId="datepicker-portal"

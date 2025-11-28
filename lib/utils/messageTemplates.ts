@@ -204,3 +204,33 @@ export function getPreviewMessage(type: MessageType): string {
 
   return generateMessage(type, sampleVariables);
 }
+
+/**
+ * Generate preview message for client-side (no Buffer usage)
+ * This is used for the WhatsApp preview in the UI
+ */
+export function generatePreviewMessage(
+  type: MessageType,
+  variables: MessageVariables
+): string {
+  const template = MESSAGE_TEMPLATES[type];
+  let message = template.template;
+
+  // Replace gender placeholders first
+  const partner1Type = variables.partner1Type || 'groom';
+  const partner2Type = variables.partner2Type || 'bride';
+  message = replaceGenderPlaceholders(message, partner1Type, partner2Type);
+
+  // Replace all variables in the template
+  message = message.replace(/{guestName}/g, variables.guestName);
+  message = message.replace(/{groomName}/g, variables.groomName);
+  message = message.replace(/{brideName}/g, variables.brideName);
+  message = message.replace(/{eventDate}/g, variables.eventDate);
+  message = message.replace(/{eventTime}/g, variables.eventTime);
+  message = message.replace(/{venue}/g, variables.venue);
+  message = message.replace(/{rsvpLink}/g, variables.rsvpLink);
+  message = message.replace(/{tableNumber}/g, variables.tableNumber?.toString() || 'לא הוקצה');
+  message = message.replace(/{appUrl}/g, variables.appUrl);
+
+  return message;
+}

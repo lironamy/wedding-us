@@ -263,10 +263,10 @@ export default function ParallaxHero() {
 
           <div className="flex-1 text-center lg:text-right order-2 lg:order-1 max-w-2xl lg:max-w-none">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-[#4a4a4a] mb-4 sm:mb-6">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-l from-primary to-accent !leading-[1] pb-1">לונסול</span>
-              <span className="block !leading-[1]">ניהול אירועים</span>
+            <span className="block text-transparent bg-clip-text bg-gradient-to-l from-primary to-accent !leading-[1] pb-1"> לונסול</span>
+              <span className="block !leading-[1]">ניהול אירועים </span>
               <span className="block !leading-[1]">
-                בקליק אחד
+                בקליק אחד 
               </span>
             </h1>
 

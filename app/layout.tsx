@@ -14,9 +14,23 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "לונסול | אישורי הגעה וסידור הושבה לחתונה | lunsoul",
+  title: "אישורי הגעה וסידור הושבה לחתונה | לונסול",
   description: "פלטפורמה מקיפה לניהול הזמנות לחתונה, אישורי הגעה, וניהול אורחים",
   keywords: ["חתונה", "הזמנה דיגיטלית", "אישור הגעה", "ניהול אורחים"],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
+      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/android-chrome-192x192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/android-chrome-512x512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' },
+    ],
+    shortcut: '/favicon.ico',
+  },
+  manifest: '/manifest.json',
 };
 
 export default async function RootLayout({

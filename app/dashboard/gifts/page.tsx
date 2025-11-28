@@ -6,7 +6,7 @@ import Wedding from '@/lib/db/models/Wedding';
 import { GiftsDashboard } from '@/components/dashboard/GiftsDashboard';
 
 export const metadata = {
-  title: 'מעקב מתנות | Wedding Platform',
+  title: 'מעקב מתנות | לונסול',
   description: 'עקוב אחר המתנות שקיבלת מהאורחים',
 };
 

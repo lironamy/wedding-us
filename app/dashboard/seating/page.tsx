@@ -6,7 +6,7 @@ import Wedding from '@/lib/db/models/Wedding';
 import { SeatingDashboard } from '@/components/dashboard/SeatingDashboard';
 
 export const metadata = {
-  title: 'ניהול שיבוץ לשולחנות | Wedding Platform',
+  title: 'ניהול שיבוץ לשולחנות | לונסול',
   description: 'שבץ אורחים לשולחנות בחתונה שלך',
 };
 

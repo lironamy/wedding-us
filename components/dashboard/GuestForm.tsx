@@ -226,15 +226,6 @@ export function GuestForm({ weddingId, guest, onSuccess, onCancel }: GuestFormPr
         />
       </div>
 
-      <div>
-        <FloatingTextarea
-          label="הערות (אופציונלי)"
-          value={formData.notes || ''}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          rows={3}
-        />
-      </div>
-
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4">
         <div className="flex-1">

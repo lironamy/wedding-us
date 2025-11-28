@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { LottieAnimation } from '@/components/ui/animated';
+import { ModernDatePicker, ModernTimePicker } from '@/components/ui/DateTimePicker';
 
 interface ScheduledMessage {
   _id: string;
@@ -19,6 +20,8 @@ interface ScheduledMessage {
   completedAt?: string;
   errorMessage?: string;
   coupleNotified: boolean;
+  customTitle?: string;
+  targetFilter?: { rsvpStatus: string };
 }
 
 const MESSAGE_TYPE_CONFIG: Record<string, {
@@ -56,6 +59,12 @@ const MESSAGE_TYPE_CONFIG: Record<string, {
     icon: '🙏',
     gradient: 'from-green-500 to-emerald-600',
     iconBg: 'bg-green-100',
+  },
+  custom: {
+    title: 'הודעה מותאמת אישית',
+    icon: '✨',
+    gradient: 'from-cyan-500 to-teal-600',
+    iconBg: 'bg-cyan-100',
   },
 };
 
@@ -106,6 +115,14 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
+
+  // Manual scheduling state
+  const [showManualForm, setShowManualForm] = useState(false);
+  const [manualDate, setManualDate] = useState('');
+  const [manualTime, setManualTime] = useState('09:00');
+  const [manualTarget, setManualTarget] = useState<'all' | 'pending' | 'confirmed'>('all');
+  const [manualMessageType, setManualMessageType] = useState<'invitation' | 'rsvp_reminder' | 'rsvp_reminder_2' | 'day_before' | 'thank_you'>('invitation');
+  const [creatingManual, setCreatingManual] = useState(false);
 
   const loadScheduledMessages = async () => {
     try {
@@ -166,7 +183,7 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
     const confirmed = await showConfirm({
       title: 'ביטול תזמון',
       message: 'האם לבטל את ההודעה המתוזמנת?',
-      confirmText: 'בטל',
+      confirmText: 'מחק',
       variant: 'danger',
     });
 
@@ -189,9 +206,53 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
     }
   };
 
+  const handleCreateManualSchedule = async () => {
+    if (!manualDate) {
+      toast.error('יש לבחור תאריך');
+      return;
+    }
+
+    try {
+      setCreatingManual(true);
+
+      const response = await fetch('/api/scheduled-messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          weddingId,
+          manual: true,
+          // Send date and time separately so server can interpret as Israel time
+          scheduledDate: manualDate,
+          scheduledTime: manualTime,
+          targetFilter: { rsvpStatus: manualTarget },
+          messageType: manualMessageType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('התזמון נוצר בהצלחה');
+        setShowManualForm(false);
+        setManualDate('');
+        setManualTime('09:00');
+        setManualTarget('all');
+        setManualMessageType('invitation');
+        loadScheduledMessages();
+      } else {
+        toast.error(data.error || 'שגיאה ביצירת התזמון');
+      }
+    } catch (error) {
+      toast.error('שגיאה ביצירת התזמון');
+    } finally {
+      setCreatingManual(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('he-IL', {
+      timeZone: 'Asia/Jerusalem',
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -204,8 +265,13 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
   const getDaysUntil = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diff = date.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    // Compare dates only (ignore time) - use Israel timezone
+    const dateOnly = new Date(date.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' }));
+    const nowOnly = new Date(now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' }));
+
+    const diff = dateOnly.getTime() - nowOnly.getTime();
+    const days = Math.round(diff / (1000 * 60 * 60 * 24));
 
     if (days < 0) return { text: 'עבר', color: 'text-gray-500' };
     if (days === 0) return { text: 'היום', color: 'text-green-600' };
@@ -286,10 +352,167 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
               </div>
               <p className="text-sm text-blue-800">
                 <strong>איך זה עובד:</strong> ברגע שמגדירים תאריך לאירוע, המערכת יוצרת
-                אוטומטית תזמונים לכל ההודעות. ההודעות נשלחות ב-9:00 בבוקר.
+                אוטומטית תזמונים לכל ההודעות. ההודעות נשלחות ב-9:00 בבוקר (שעון ישראל).
               </p>
             </div>
           </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Manual Scheduling Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-2xl shadow-lg overflow-hidden"
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center">
+                <span className="text-xl">✨</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">תזמון ידני</h3>
+                <p className="text-sm text-gray-500">תזמנו הודעה בתאריך ושעה לבחירתכם</p>
+              </div>
+            </div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={() => setShowManualForm(!showManualForm)}
+                variant={showManualForm ? 'outline' : 'primary'}
+                className="flex items-center gap-2"
+              >
+                {showManualForm ? (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                    סגור
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    הוסף תזמון
+                  </>
+                )}
+              </Button>
+            </motion.div>
+          </div>
+
+          <AnimatePresence>
+            {showManualForm && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-4 border-t border-gray-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Message Type */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        סוג ההודעה
+                      </label>
+                      <select
+                        value={manualMessageType}
+                        onChange={(e) => setManualMessageType(e.target.value as typeof manualMessageType)}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
+                      >
+                        <option value="invitation">💌 הזמנה ראשונית</option>
+                        <option value="rsvp_reminder">📬 תזכורת ראשונה</option>
+                        <option value="rsvp_reminder_2">📨 תזכורת שנייה</option>
+                        <option value="day_before">📅 תזכורת יום לפני</option>
+                        <option value="thank_you">🙏 הודעת תודה</option>
+                      </select>
+                    </div>
+
+                    {/* Target */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        קהל יעד
+                      </label>
+                      <select
+                        value={manualTarget}
+                        onChange={(e) => setManualTarget(e.target.value as 'all' | 'pending' | 'confirmed')}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
+                      >
+                        <option value="all">כל האורחים</option>
+                        <option value="pending">ממתינים לאישור</option>
+                        <option value="confirmed">אישרו הגעה</option>
+                      </select>
+                    </div>
+
+                    {/* Date */}
+                    <div>
+                      <ModernDatePicker
+                        label="תאריך"
+                        value={manualDate}
+                        onChange={(date) => {
+                          setManualDate(date);
+                          // If selecting today, check if current time has passed and update time if needed
+                          const today = new Date().toISOString().split('T')[0];
+                          if (date === today) {
+                            const now = new Date();
+                            const currentHour = now.getHours();
+                            const [selectedHour] = manualTime.split(':').map(Number);
+                            if (selectedHour <= currentHour) {
+                              // Set to next available hour
+                              const nextHour = currentHour + 1;
+                              if (nextHour < 24) {
+                                setManualTime(`${nextHour.toString().padStart(2, '0')}:00`);
+                              }
+                            }
+                          }
+                        }}
+                        type="date"
+                        minDate={new Date()}
+                      />
+                    </div>
+
+                    {/* Time */}
+                    <div>
+                      <ModernTimePicker
+                        label="שעה"
+                        value={manualTime}
+                        onChange={setManualTime}
+                        type="time"
+                        timeIntervals={60}
+                        minTime={
+                          manualDate === new Date().toISOString().split('T')[0]
+                            ? new Date(new Date().setHours(new Date().getHours() + 1, 0, 0, 0))
+                            : new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex items-end pt-1">
+                      <Button
+                        onClick={handleCreateManualSchedule}
+                        disabled={creatingManual || !manualDate}
+                        className="w-full"
+                      >
+                        {creatingManual ? (
+                          <motion.span
+                            animate={{ opacity: [1, 0.5, 1] }}
+                            transition={{ repeat: Infinity, duration: 1 }}
+                          >
+                            יוצר...
+                          </motion.span>
+                        ) : (
+                          'צור תזמון'
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
 
@@ -364,7 +587,11 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
                         {/* Content */}
                         <div className="flex-1">
                           <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <h3 className="font-bold text-gray-900">{typeConfig.title}</h3>
+                            <h3 className="font-bold text-gray-900">
+                              {schedule.messageType === 'custom' && schedule.customTitle
+                                ? schedule.customTitle
+                                : typeConfig.title}
+                            </h3>
                             <span
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.bgColor} ${statusConfig.textColor}`}
                             >
@@ -391,6 +618,18 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
                             >
                               {daysInfo.text}
                             </motion.div>
+
+                            {/* Show target for custom messages */}
+                            {schedule.messageType === 'custom' && schedule.targetFilter && (
+                              <div className="text-xs text-gray-500">
+                                קהל יעד: {
+                                  schedule.targetFilter.rsvpStatus === 'all' ? 'כל האורחים' :
+                                  schedule.targetFilter.rsvpStatus === 'pending' ? 'ממתינים לאישור' :
+                                  schedule.targetFilter.rsvpStatus === 'confirmed' ? 'אישרו הגעה' :
+                                  schedule.targetFilter.rsvpStatus
+                                }
+                              </div>
+                            )}
                           </div>
 
                           {/* Stats for completed/failed */}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
-import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
+import { MESSAGE_TEMPLATES, generatePreviewMessage, type MessageType } from '@/lib/utils/messageTemplates';
 import { useConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { LottieAnimation } from '@/components/ui/animated';
 
@@ -51,6 +51,17 @@ const MESSAGE_TYPE_STYLES: Record<string, {
   },
 };
 
+interface WeddingData {
+  groomName: string;
+  brideName: string;
+  partner1Type: 'groom' | 'bride';
+  partner2Type: 'groom' | 'bride';
+  eventDate: string;
+  eventTime: string;
+  venue: string;
+  mediaUrl?: string;
+}
+
 export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProps) {
   const [selectedType, setSelectedType] = useState<MessageType>('invitation');
   const [guests, setGuests] = useState<any[]>([]);
@@ -62,8 +73,40 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   const [results, setResults] = useState<any>(null);
   const [delayBetweenMessages, setDelayBetweenMessages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [weddingData, setWeddingData] = useState<WeddingData | null>(null);
   const GUESTS_PER_PAGE = 25;
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
+
+  // Load wedding data
+  const loadWeddingData = async () => {
+    try {
+      const response = await fetch(`/api/weddings/${weddingId}`);
+      const data = await response.json();
+
+      if (response.ok && data) {
+        const w = data;
+        const eventDate = w.eventDate ? new Date(w.eventDate).toLocaleDateString('he-IL', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        }) : '';
+
+        setWeddingData({
+          groomName: w.groomName || '',
+          brideName: w.brideName || '',
+          partner1Type: w.partner1Type || 'groom',
+          partner2Type: w.partner2Type || 'bride',
+          eventDate,
+          eventTime: w.eventTime || '',
+          venue: w.venue || '',
+          mediaUrl: w.mediaUrl,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading wedding data:', error);
+    }
+  };
 
   // Load guests
   const loadGuests = async () => {
@@ -82,6 +125,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   };
 
   useEffect(() => {
+    loadWeddingData();
     loadGuests();
   }, [weddingId]);
 
@@ -188,6 +232,27 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   };
 
   const template = MESSAGE_TEMPLATES[selectedType];
+
+  // Generate preview message with real wedding data
+  const getPreviewMessageText = () => {
+    if (!weddingData) {
+      return template.template;
+    }
+
+    return generatePreviewMessage(selectedType, {
+      guestName: 'אורח',
+      groomName: weddingData.groomName || 'שם חתן',
+      brideName: weddingData.brideName || 'שם כלה',
+      eventDate: weddingData.eventDate || 'תאריך לא נקבע',
+      eventTime: weddingData.eventTime || 'שעה לא נקבעה',
+      venue: weddingData.venue || 'מיקום לא נקבע',
+      rsvpLink: 'lunsoul.com/rsvp/...',
+      tableNumber: 5,
+      appUrl: 'lunsoul.com',
+      partner1Type: weddingData.partner1Type,
+      partner2Type: weddingData.partner2Type,
+    });
+  };
 
   if (loading) {
     return (
@@ -449,23 +514,142 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
             })}
           </div>
 
-          {/* Preview */}
+          {/* Preview - iPhone with WhatsApp */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="mt-4 p-4 bg-gray-50 rounded-xl"
+            className="mt-6 flex justify-center"
           >
-            <div className="flex items-center gap-2 mb-2 text-gray-700">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-              <span className="font-semibold text-sm">תצוגה מקדימה:</span>
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2 mb-3 text-gray-700">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <span className="font-semibold text-sm">תצוגה מקדימה:</span>
+              </div>
+
+              {/* iPhone Frame */}
+              <div className="relative">
+                {/* iPhone outer frame */}
+                <div className="relative w-[280px] h-[580px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[45px] p-[12px] shadow-2xl">
+                  {/* Side buttons */}
+                  <div className="absolute -left-[3px] top-[100px] w-[3px] h-[30px] bg-gray-700 rounded-l-lg" />
+                  <div className="absolute -left-[3px] top-[150px] w-[3px] h-[60px] bg-gray-700 rounded-l-lg" />
+                  <div className="absolute -left-[3px] top-[220px] w-[3px] h-[60px] bg-gray-700 rounded-l-lg" />
+                  <div className="absolute -right-[3px] top-[140px] w-[3px] h-[80px] bg-gray-700 rounded-r-lg" />
+
+                  {/* Screen */}
+                  <div className="relative w-full h-full bg-black rounded-[35px] overflow-hidden">
+                    {/* Dynamic Island */}
+                    <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[90px] h-[28px] bg-black rounded-full z-20" />
+
+                    {/* WhatsApp Screen */}
+                    <div className="w-full h-full flex flex-col">
+                      {/* WhatsApp Header */}
+                      <div className="bg-[#075E54] pt-[45px] pb-2 px-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                            <img
+                              src="https://64.media.tumblr.com/a6474254d4eb619661f1c72ae79b0b01/e7caecb063553d4b-7f/s1280x1920/806c8f4985b556c98be429a77c693339f1aef082.pnj"
+                              alt="לונסול"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-white font-semibold text-sm">Lunsoul</div>
+                            <div className="text-green-200 text-xs">מקוון</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                              <path d="M15.9 14.3H15l-.3-.3c1-1.1 1.6-2.7 1.6-4.3 0-3.7-3-6.7-6.7-6.7S3 6 3 9.7s3 6.7 6.7 6.7c1.6 0 3.2-.6 4.3-1.6l.3.3v.8l5.1 5.1 1.5-1.5-5-5.2zm-6.2 0c-2.6 0-4.6-2.1-4.6-4.6s2.1-4.6 4.6-4.6 4.6 2.1 4.6 4.6-2 4.6-4.6 4.6z"/>
+                            </svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                              <path d="M12 7a2 2 0 1 0-.001-4.001A2 2 0 0 0 12 7zm0 2a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 9zm0 6a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 15z"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Chat Background */}
+                      <div
+                        className="flex-1 p-3 overflow-y-auto"
+                        style={{
+                          backgroundColor: '#ECE5DD',
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c5beb5' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                        }}
+                      >
+                        {/* Message Bubble */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ delay: 0.5, type: 'spring' }}
+                          className="relative bg-white rounded-lg rounded-tr-none shadow-sm max-w-[95%] mr-auto overflow-hidden"
+                        >
+                          {/* Message tail */}
+                          <div className="absolute -top-0 -right-2 w-0 h-0 border-l-[8px] border-l-white border-t-[8px] border-t-transparent z-10" />
+
+                          {/* Wedding Image - only show if template has image */}
+                          {template.hasImage && weddingData?.mediaUrl && (
+                            <div className="w-full">
+                              <img
+                                src={weddingData.mediaUrl}
+                                alt="הזמנה לחתונה"
+                                className="w-full max-h-[120px] object-cover"
+                              />
+                            </div>
+                          )}
+
+                          {/* Message Text */}
+                          <div className="p-2">
+                            <p className="text-[11px] whitespace-pre-wrap text-gray-800 font-sans leading-relaxed text-right" dir="rtl">
+                              שלום יוסי כהן 👋
+                            </p>
+                            <p className="text-[11px] whitespace-pre-wrap text-gray-800 font-sans leading-relaxed text-right mt-1" dir="rtl">
+                              {getPreviewMessageText()}
+                            </p>
+
+                            {/* Time and status */}
+                            <div className="flex items-center justify-end gap-1 mt-1">
+                              <span className="text-[10px] text-gray-500">09:00</span>
+                              <svg width="16" height="10" viewBox="0 0 16 10" fill="#53bdeb">
+                                <path d="M15.01 1.41L5.41 11l-4.12-4.12 1.41-1.41L5.41 8.17l8.18-8.17 1.42 1.41z" transform="translate(-1, -1)" />
+                                <path d="M12.01 1.41L5.41 8l-.71-.71L11.3.7l.71.71z" transform="translate(2, -1)" />
+                              </svg>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      {/* WhatsApp Input Bar */}
+                      <div className="bg-[#F0F0F0] px-2 py-2 flex items-center gap-2">
+                        <div className="flex-1 bg-white rounded-full px-3 py-2 flex items-center gap-2">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="#9CA3AF">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9c.83 0 1.5-.67 1.5-1.5S7.83 8 7 8s-1.5.67-1.5 1.5S6.17 11 7 11zm10 0c.83 0 1.5-.67 1.5-1.5S17.83 8 17 8s-1.5.67-1.5 1.5.67 1.5 1.5 1.5zm-5 5.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                          </svg>
+                          <span className="text-gray-400 text-sm flex-1">הקלד הודעה</span>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="#9CA3AF">
+                            <path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/>
+                          </svg>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-[#075E54] flex items-center justify-center">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Home indicator */}
+                      <div className="bg-black py-2 flex justify-center">
+                        <div className="w-[100px] h-[4px] bg-white rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <pre className="text-sm whitespace-pre-wrap text-gray-600 font-sans leading-relaxed">
-              {template.template}
-            </pre>
           </motion.div>
         </div>
       </motion.div>
