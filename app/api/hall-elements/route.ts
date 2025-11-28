@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const wedding = await Wedding.findOne({
       _id: weddingId,
       userId: session.user.id,
-    }).select('hallElements').lean();
+    }).select('hallElements').lean() as { hallElements?: any[] } | null;
 
     if (!wedding) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
@@ -65,7 +65,7 @@ export async function PUT(request: NextRequest) {
       },
       { hallElements: elements },
       { new: true }
-    );
+    ) as { hallElements?: any[] } | null;
 
     if (!wedding) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
@@ -73,7 +73,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      elements: wedding.hallElements,
+      elements: wedding.hallElements || [],
       message: 'Hall elements saved successfully'
     });
   } catch (error) {
