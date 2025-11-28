@@ -127,22 +127,10 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
     loadElements();
   }, [weddingId, elementsLoaded]);
 
-  // Save hall elements to server (debounced)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSavedRef = useRef<string>('');
-
+  // Save hall elements to server (called after drag ends)
   const saveElementsToServer = useCallback(async (elements: SpecialElement[]) => {
-    console.log('[HallElements] saveElementsToServer called, weddingId:', weddingId);
     if (!weddingId) return;
 
-    // Create a hash to check if actually changed
-    const elementsHash = JSON.stringify(elements.map(el => ({ id: el.id, x: el.x, y: el.y, inSidebar: el.inSidebar })));
-    if (elementsHash === lastSavedRef.current) {
-      console.log('[HallElements] No changes detected, skipping save');
-      return;
-    }
-
-    console.log('[HallElements] Sending save request...');
     setSavingElements(true);
     try {
       const response = await fetch('/api/hall-elements', {
@@ -164,41 +152,16 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
         }),
       });
 
-      const data = await response.json();
-      console.log('[HallElements] Server response:', response.status, data);
-      if (response.ok) {
-        lastSavedRef.current = elementsHash;
-        console.log('[HallElements] Save successful!');
-      } else {
+      if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || 'Failed to save');
       }
     } catch (error) {
-      console.error('[HallElements] Failed to save:', error);
+      console.error('Failed to save hall elements:', error);
     } finally {
       setSavingElements(false);
     }
   }, [weddingId]);
-
-  // Save elements when they change (debounced)
-  useEffect(() => {
-    console.log('[HallElements] useEffect triggered, elementsLoaded:', elementsLoaded, 'elements count:', specialElements.length);
-    if (!elementsLoaded) return;
-
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = setTimeout(() => {
-      console.log('[HallElements] Saving elements to server...');
-      saveElementsToServer(specialElements);
-    }, 500); // Save after 0.5 second of no changes
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [specialElements, elementsLoaded, saveElementsToServer]);
 
   // Get elements on canvas vs in sidebar
   const canvasElements = specialElements.filter(el => !el.inSidebar);
@@ -221,40 +184,52 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
       inSidebar: false,
     };
 
-    setSpecialElements(prev => [...prev, newElement]);
+    setSpecialElements(prev => {
+      const updated = [...prev, newElement];
+      saveElementsToServer(updated);
+      return updated;
+    });
   };
 
   // Move element to sidebar (remove from canvas)
   const moveElementToSidebar = (elementId: string) => {
-    setSpecialElements(prev =>
-      prev.map(el =>
+    setSpecialElements(prev => {
+      const updated = prev.map(el =>
         el.id === elementId ? { ...el, inSidebar: true, x: 0, y: 0 } : el
-      )
-    );
+      );
+      saveElementsToServer(updated);
+      return updated;
+    });
     setSelectedElement(null);
   };
 
   // Move element back to canvas from sidebar
   const moveElementToCanvas = (elementId: string) => {
-    setSpecialElements(prev =>
-      prev.map(el =>
+    setSpecialElements(prev => {
+      const updated = prev.map(el =>
         el.id === elementId
           ? { ...el, inSidebar: false, x: 100 + Math.random() * 200, y: 400 + Math.random() * 200 }
           : el
-      )
-    );
+      );
+      saveElementsToServer(updated);
+      return updated;
+    });
   };
 
   // Delete element completely
   const deleteElement = (elementId: string) => {
-    setSpecialElements(prev => prev.filter(el => el.id !== elementId));
+    setSpecialElements(prev => {
+      const updated = prev.filter(el => el.id !== elementId);
+      saveElementsToServer(updated);
+      return updated;
+    });
     setSelectedElement(null);
   };
 
   // Resize element
   const resizeElement = (elementId: string, delta: number) => {
-    setSpecialElements(prev =>
-      prev.map(el =>
+    setSpecialElements(prev => {
+      const updated = prev.map(el =>
         el.id === elementId
           ? {
               ...el,
@@ -262,8 +237,10 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
               height: Math.max(40, el.height + delta * (el.height / el.width)),
             }
           : el
-      )
-    );
+      );
+      saveElementsToServer(updated);
+      return updated;
+    });
   };
 
   // Handle mouse down on element
@@ -415,15 +392,26 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
 
   // Handle mouse up
   const handleMouseUp = useCallback(async () => {
+    // Save table position if was dragging table
     if (lastDraggedPosition.current) {
       const { tableId, pos } = lastDraggedPosition.current;
       // Save position via store (updates both DB and local state)
       await tablesStore.updateTablePosition(tableId, pos.x, pos.y);
       lastDraggedPosition.current = null;
     }
+
+    // Save elements if was dragging an element
+    if (draggingElement) {
+      // Use functional setState to get the latest elements and save them
+      setSpecialElements(currentElements => {
+        saveElementsToServer(currentElements);
+        return currentElements;
+      });
+    }
+
     setDraggingTable(null);
     setDraggingElement(null);
-  }, [tablesStore]);
+  }, [tablesStore, draggingElement, saveElementsToServer]);
 
   // Global mouse event listeners for drag outside canvas (tables and elements)
   useEffect(() => {
@@ -520,14 +508,10 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
     });
     setTablePositions(newPositions);
 
-    // Move all canvas elements back to sidebar
-    setSpecialElements(prev =>
-      prev.map(el => ({ ...el, inSidebar: true, x: 0, y: 0 }))
-    );
-
     // Reset default elements (dance floor, bar, stage) to their original positions
     setSpecialElements(DEFAULT_SPECIAL_ELEMENTS);
-  }, [tables, tablesStore, CANVAS_WIDTH]);
+    saveElementsToServer(DEFAULT_SPECIAL_ELEMENTS);
+  }, [tables, tablesStore, CANVAS_WIDTH, saveElementsToServer]);
 
   // Capture screenshot of the canvas using native canvas drawing
   const captureScreenshot = useCallback(async () => {

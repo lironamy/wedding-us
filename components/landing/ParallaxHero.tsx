@@ -260,10 +260,12 @@ export default function ParallaxHero() {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-0 sm:gap-0 lg:gap-0 xl:gap-0 w-full">
 
           {/* Right side - Text Content */}
+
           <div className="flex-1 text-center lg:text-right order-2 lg:order-1 max-w-2xl lg:max-w-none">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-[#4a4a4a] mb-4 sm:mb-6">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-l from-primary to-accent !leading-[1] pb-1">לונסול</span>
               <span className="block !leading-[1]">ניהול אירועים</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-l from-primary to-accent !leading-[1] pb-1">
+              <span className="block !leading-[1]">
                 בקליק אחד
               </span>
             </h1>
@@ -273,7 +275,7 @@ export default function ParallaxHero() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8 px-4 sm:px-0">
+            {/* <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8 px-4 sm:px-0">
               <Link href="/register" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 rounded-lg bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-xl">
                   הרשמו בחינם
@@ -284,10 +286,18 @@ export default function ParallaxHero() {
                   התחברו
                 </Button>
               </Link>
+            </div> */}
+
+            {/* Lunsol Benefits Title */}
+            <div className="">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-[#4a4a4a] text-center lg:text-right">
+                <span className="text-primary">לונסול</span> מעניקה לכם
+              </h3>
+              <div className="w-16 sm:w-16 h-1 bg-gradient-to-r from-primary to-accent mx-auto lg:mx-0 mt-2 rounded-full"></div>
             </div>
 
             {/* Stats */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 md:gap-8 mt-6 sm:mt-8">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 md:gap-8">
               <div className="text-center min-w-[70px] sm:min-w-[80px]">
                 <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl font-bold text-[#4a4a4a]">200</div>
                 <div className="text-xs sm:text-sm text-[#6e6262]/80">אורחים בחינם</div>
