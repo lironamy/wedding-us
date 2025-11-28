@@ -15,6 +15,10 @@ export interface IGuest {
   rsvpStatus: 'pending' | 'confirmed' | 'declined';
   adultsAttending?: number;
   childrenAttending?: number;
+  // Auto-detected guest type based on party composition
+  guestType?: 'single' | 'couple' | 'family' | 'group';
+  // Seating preference for hall zones
+  seatingPreference?: 'stage' | 'dance' | 'quiet' | 'any';
   // Seating lock fields
   lockedSeat?: boolean;
   lockedTableId?: Types.ObjectId | string;
@@ -159,6 +163,15 @@ const GuestSchema = new Schema<IGuest>(
     lockedTableId: {
       type: Schema.Types.ObjectId,
       ref: 'Table',
+    },
+    guestType: {
+      type: String,
+      enum: ['single', 'couple', 'family', 'group'],
+    },
+    seatingPreference: {
+      type: String,
+      enum: ['stage', 'dance', 'quiet', 'any'],
+      default: 'any',
     },
     giftAmount: {
       type: Number,

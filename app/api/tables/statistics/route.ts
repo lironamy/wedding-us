@@ -48,16 +48,23 @@ export async function GET(request: NextRequest) {
     const totalTables = tables.length;
     const totalCapacity = tables.reduce((sum, table: any) => sum + table.capacity, 0);
 
-    // Count assigned people
+    // Count assigned people (only confirmed guests, avoid counting duplicates)
     let assignedAdults = 0;
     let assignedChildren = 0;
     const assignedGuestIds = new Set<string>();
 
     tables.forEach((table: any) => {
       table.assignedGuests.forEach((guest: any) => {
-        assignedGuestIds.add(guest._id.toString());
-        assignedAdults += guest.adultsAttending || 1;
-        assignedChildren += guest.childrenAttending || 0;
+        // Only count confirmed guests, and avoid duplicates
+        if (guest.rsvpStatus === 'confirmed') {
+          const guestId = guest._id.toString();
+          // Only count each guest once (avoid duplicates across tables)
+          if (!assignedGuestIds.has(guestId)) {
+            assignedGuestIds.add(guestId);
+            assignedAdults += guest.adultsAttending || 1;
+            assignedChildren += guest.childrenAttending || 0;
+          }
+        }
       });
     });
 
@@ -90,9 +97,10 @@ export async function GET(request: NextRequest) {
       mixed: tables.filter((t: any) => t.tableType === 'mixed').length,
     };
 
-    // Tables at capacity or over
+    // Tables at capacity or over (only count confirmed guests)
     const tablesOverCapacity = tables.filter((table: any) => {
       const peopleAtTable = table.assignedGuests.reduce((sum: number, guest: any) => {
+        if (guest.rsvpStatus !== 'confirmed') return sum;
         return sum + (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
       }, 0);
       return peopleAtTable > table.capacity;

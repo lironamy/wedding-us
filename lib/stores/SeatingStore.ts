@@ -19,6 +19,11 @@ export class SeatingStore {
     autoRecalcPolicy: 'onRsvpChangeGroupOnly',
     adjacencyPolicy: 'forbidSameTableOnly',
     simulationEnabled: false,
+    enableKidsTable: false,
+    kidsTableMinAge: 6,
+    kidsTableMinCount: 6,
+    avoidSinglesAlone: true,
+    enableZonePlacement: false,
   };
 
   // Groups
@@ -118,7 +123,8 @@ export class SeatingStore {
       }
 
       runInAction(() => {
-        this.settings = data.settings;
+        // Merge settings instead of replacing to maintain MobX reactivity
+        Object.assign(this.settings, data.settings);
       });
 
       return { success: true };
@@ -441,6 +447,11 @@ export class SeatingStore {
       autoRecalcPolicy: 'onRsvpChangeGroupOnly',
       adjacencyPolicy: 'forbidSameTableOnly',
       simulationEnabled: false,
+      enableKidsTable: false,
+      kidsTableMinAge: 6,
+      kidsTableMinCount: 6,
+      avoidSinglesAlone: true,
+      enableZonePlacement: false,
     };
     this.groups = [];
     this.preferences = [];

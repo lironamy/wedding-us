@@ -6,6 +6,14 @@ export interface ISeatingSettings {
   autoRecalcPolicy: 'onRsvpChangeGroupOnly' | 'onRsvpChangeAll' | 'manualOnly';
   adjacencyPolicy: 'forbidSameTableOnly' | 'forbidSameAndAdjacent';
   simulationEnabled: boolean;
+  // Children's table settings
+  enableKidsTable: boolean;
+  kidsTableMinAge?: number; // Minimum age for kids table (younger stay with parents)
+  kidsTableMinCount?: number; // Minimum kids needed to create a kids table
+  // Singles placement
+  avoidSinglesAlone: boolean; // Don't place singles alone at couple-heavy tables
+  // Hall zones
+  enableZonePlacement: boolean; // Use hall zones for placement
 }
 
 export interface IWedding {
@@ -229,6 +237,30 @@ const WeddingSchema = new Schema<IWedding>(
         default: 'forbidSameTableOnly',
       },
       simulationEnabled: {
+        type: Boolean,
+        default: false,
+      },
+      enableKidsTable: {
+        type: Boolean,
+        default: false,
+      },
+      kidsTableMinAge: {
+        type: Number,
+        default: 6,
+        min: 0,
+        max: 18,
+      },
+      kidsTableMinCount: {
+        type: Number,
+        default: 6,
+        min: 2,
+        max: 20,
+      },
+      avoidSinglesAlone: {
+        type: Boolean,
+        default: true,
+      },
+      enableZonePlacement: {
         type: Boolean,
         default: false,
       },

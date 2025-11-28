@@ -14,6 +14,11 @@ export interface Table {
   positionX?: number;
   positionY?: number;
   locked: boolean;
+  // Hall zone placement
+  zone?: 'stage' | 'dance' | 'quiet' | 'general';
+  // Visual settings for hall canvas
+  shape?: 'round' | 'square' | 'rectangle';
+  size?: 'small' | 'medium' | 'large';
 }
 
 export interface Guest {
@@ -63,6 +68,14 @@ export interface SeatingSettings {
   autoRecalcPolicy: 'onRsvpChangeGroupOnly' | 'onRsvpChangeAll' | 'manualOnly';
   adjacencyPolicy: 'forbidSameTableOnly' | 'forbidSameAndAdjacent';
   simulationEnabled: boolean;
+  // Kids table settings
+  enableKidsTable?: boolean;
+  kidsTableMinAge?: number;
+  kidsTableMinCount?: number;
+  // Singles placement
+  avoidSinglesAlone?: boolean;
+  // Hall zones
+  enableZonePlacement?: boolean;
 }
 
 export interface SeatingConflict {

@@ -26,7 +26,6 @@ export async function GET() {
 
     // If no pricing exists, seed with defaults
     if (pricing.length === 0) {
-      console.log('No pricing found, seeding defaults...');
       await PackagePricing.insertMany(defaultPricing);
       pricing = await PackagePricing.find({ isActive: true }).sort({ guests: 1 }).lean();
     }

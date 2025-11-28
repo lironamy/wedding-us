@@ -145,6 +145,63 @@ export class TablesStore {
     }
   }
 
+  // Update table position (for event hall canvas)
+  async updateTablePosition(tableId: string, positionX: number, positionY: number): Promise<boolean> {
+    try {
+      const response = await fetch(`/api/tables/${tableId}/position`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positionX, positionY }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save table position');
+        return false;
+      }
+
+      runInAction(() => {
+        const index = this.tables.findIndex((t) => t._id === tableId);
+        if (index !== -1) {
+          this.tables[index] = { ...this.tables[index], positionX, positionY };
+        }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to save table position:', error);
+      return false;
+    }
+  }
+
+  // Update table visual settings (shape and size)
+  async updateTableVisual(tableId: string, shape?: 'round' | 'square' | 'rectangle', size?: 'small' | 'medium' | 'large'): Promise<boolean> {
+    try {
+      const response = await fetch(`/api/tables/${tableId}/visual`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shape, size }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save table visual settings');
+        return false;
+      }
+
+      runInAction(() => {
+        const index = this.tables.findIndex((t) => t._id === tableId);
+        if (index !== -1) {
+          if (shape) this.tables[index].shape = shape;
+          if (size) this.tables[index].size = size;
+        }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to save table visual settings:', error);
+      return false;
+    }
+  }
+
   // Delete a table
   async deleteTable(tableId: string) {
     try {

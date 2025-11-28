@@ -44,7 +44,8 @@
       "Bash(npx shadcn@latest add:*)",
       "WebFetch(domain:64.media.tumblr.com)",
       "mcp__ide__getDiagnostics",
-      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\ui\\IPhone3D.tsx\")"
+      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\ui\\IPhone3D.tsx\")",
+      "Bash(timeout /t)"
     ],
     "deny": [],
     "ask": []

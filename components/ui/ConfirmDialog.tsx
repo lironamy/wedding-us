@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
-  message: string;
+  message: ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: 'danger' | 'warning' | 'info';
@@ -37,7 +37,7 @@ export function ConfirmDialog({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <Card className="max-w-md w-full p-6">
         <h2 className="text-xl font-bold mb-2">{title}</h2>
-        <p className="text-gray-600 mb-6">{message}</p>
+        <div className="text-gray-600 mb-6">{message}</div>
 
         <div className="flex gap-3">
           <button
@@ -64,22 +64,24 @@ export function useConfirmDialog() {
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean;
     title: string;
-    message: string;
+    message: ReactNode;
     confirmText?: string;
     cancelText?: string;
     variant?: 'danger' | 'warning' | 'info';
     onConfirm: () => void;
+    onCancel: () => void;
   }>({
     isOpen: false,
     title: '',
     message: '',
     onConfirm: () => {},
+    onCancel: () => {},
   });
 
   const showConfirm = useCallback(
     (options: {
       title: string;
-      message: string;
+      message: ReactNode;
       confirmText?: string;
       cancelText?: string;
       variant?: 'danger' | 'warning' | 'info';
@@ -92,15 +94,15 @@ export function useConfirmDialog() {
             setDialogState((prev) => ({ ...prev, isOpen: false }));
             resolve(true);
           },
+          onCancel: () => {
+            setDialogState((prev) => ({ ...prev, isOpen: false }));
+            resolve(false);
+          },
         });
       });
     },
     []
   );
-
-  const handleCancel = useCallback(() => {
-    setDialogState((prev) => ({ ...prev, isOpen: false }));
-  }, []);
 
   const ConfirmDialogComponent = (
     <ConfirmDialog
@@ -111,7 +113,7 @@ export function useConfirmDialog() {
       cancelText={dialogState.cancelText}
       variant={dialogState.variant}
       onConfirm={dialogState.onConfirm}
-      onCancel={handleCancel}
+      onCancel={dialogState.onCancel}
     />
   );
 

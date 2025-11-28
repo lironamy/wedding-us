@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import Guest from '@/lib/db/models/Guest';
+import Wedding from '@/lib/db/models/Wedding';
+import { recalculateGroupSeating, buildAutoSeating } from '@/lib/seating/autoSeatingAlgorithm';
 
 // POST - Submit RSVP (public endpoint, uses uniqueToken)
 export async function POST(request: NextRequest) {
@@ -78,6 +80,23 @@ export async function POST(request: NextRequest) {
       updateData.specialMealRequests = specialMealRequests || '';
       updateData.notes = notes || '';
 
+      // Auto-detect guest type based on party composition
+      // Only for guests without a family group (individual invitations)
+      if (!guest.familyGroup && !guest.groupId) {
+        const adults = adultsAttending || 0;
+        const children = childrenAttending || 0;
+
+        if (adults === 1 && children === 0) {
+          updateData.guestType = 'single';
+        } else if (adults === 2 && children === 0) {
+          updateData.guestType = 'couple';
+        } else if (children > 0) {
+          updateData.guestType = 'family';
+        } else if (adults > 2) {
+          updateData.guestType = 'group';
+        }
+      }
+
       console.log('Saving meal counts:', {
         regularMeals: updateData.regularMeals,
         vegetarianMeals: updateData.vegetarianMeals,
@@ -97,23 +116,75 @@ export async function POST(request: NextRequest) {
       { $set: updateData }
     );
 
-    return NextResponse.json(
+    // Return response immediately - don't wait for seating calculation
+    const response = NextResponse.json(
       {
         message: rsvpStatus === 'confirmed'
           ? 'תודה על אישור ההגעה!'
           : 'תודה על עדכון ההגעה',
         guest: {
           name: guest.name,
-          rsvpStatus: guest.rsvpStatus,
-          adultsAttending: guest.adultsAttending,
-          childrenAttending: guest.childrenAttending,
+          rsvpStatus: updateData.rsvpStatus,
+          adultsAttending: updateData.adultsAttending ?? guest.adultsAttending,
+          childrenAttending: updateData.childrenAttending ?? guest.childrenAttending,
         }
       },
       { status: 200 }
     );
+
+    // Auto-seating trigger: Run in background AFTER sending response
+    // Using setImmediate pattern to ensure response is sent first
+    if (rsvpStatus === 'confirmed') {
+      // Fire and forget - don't await
+      triggerAutoSeatingInBackground(guest.weddingId.toString(), guest.name, guest.groupId?.toString());
+    }
+
+    return response;
   } catch (error) {
     console.error('Error submitting RSVP:', error);
     return NextResponse.json({ error: 'Failed to submit RSVP' }, { status: 500 });
+  }
+}
+
+// Background function for auto-seating calculation
+// This runs without blocking the RSVP response
+async function triggerAutoSeatingInBackground(
+  weddingId: string,
+  guestName: string,
+  groupId?: string
+): Promise<void> {
+  try {
+    // Small delay to ensure response is sent first
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    await dbConnect();
+
+    const wedding = await Wedding.findById(weddingId).lean() as any;
+    const seatingSettings = wedding?.seatingSettings;
+
+    if (seatingSettings?.mode === 'auto') {
+      console.log(`[BACKGROUND] Auto seating triggered for guest ${guestName}`);
+
+      // Determine recalc strategy
+      if (seatingSettings.autoRecalcPolicy === 'onRsvpChangeGroupOnly') {
+        // Recalculate only for this guest's group
+        if (groupId) {
+          await recalculateGroupSeating(weddingId, groupId, 'real');
+        } else {
+          // No group - run full recalc for ungrouped guests
+          await buildAutoSeating(weddingId, 'real');
+        }
+      } else if (seatingSettings.autoRecalcPolicy === 'onRsvpChangeAll') {
+        // Full recalculation
+        await buildAutoSeating(weddingId, 'real');
+      }
+      // If 'manualOnly', do nothing
+
+      console.log(`[BACKGROUND] Auto seating completed for guest ${guestName}`);
+    }
+  } catch (seatingError) {
+    // Log error but don't throw - this is background processing
+    console.error('[BACKGROUND] Auto seating error:', seatingError);
   }
 }
 

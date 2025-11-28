@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import toast from 'react-hot-toast';
 import XLSX from 'xlsx-js-style';
@@ -56,7 +57,13 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
   const [deletingTable, setDeletingTable] = useState<Table | null>(null);
   const [moveGuestsToTableId, setMoveGuestsToTableId] = useState<string>('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCanvasFullscreen, setIsCanvasFullscreen] = useState(false);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
+
+  // Group priorities state
+  const [groupPriorities, setGroupPriorities] = useState<Map<string, number>>(new Map());
+  const [loadingPriorities, setLoadingPriorities] = useState(false);
 
   // Form state for creating/editing table
   const [tableForm, setTableForm] = useState({
@@ -84,6 +91,54 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
   useEffect(() => {
     rootStore.setWeddingId(weddingId);
   }, [weddingId]);
+
+  // Load group priorities
+  useEffect(() => {
+    loadGroupPriorities();
+  }, [weddingId]);
+
+  const loadGroupPriorities = async () => {
+    try {
+      setLoadingPriorities(true);
+      const response = await fetch(`/api/seating/group-priorities?weddingId=${weddingId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const priorityMap = new Map<string, number>();
+        data.priorities.forEach((p: { groupName: string; priority: number }) => {
+          priorityMap.set(p.groupName, p.priority);
+        });
+        setGroupPriorities(priorityMap);
+      }
+    } catch (error) {
+      console.error('Failed to load group priorities:', error);
+    } finally {
+      setLoadingPriorities(false);
+    }
+  };
+
+  const handleSetGroupPriority = async (groupName: string, priority: number) => {
+    try {
+      const response = await fetch('/api/seating/group-priorities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weddingId, groupName, priority }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const priorityMap = new Map<string, number>();
+        data.priorities.forEach((p: { groupName: string; priority: number }) => {
+          priorityMap.set(p.groupName, p.priority);
+        });
+        setGroupPriorities(priorityMap);
+        toast.success(priority > 0 ? `${groupName} הוגדרה כעדיפות ${priority}` : 'העדיפות הוסרה');
+      } else {
+        throw new Error('Failed to set priority');
+      }
+    } catch (error) {
+      toast.error('שגיאה בהגדרת עדיפות');
+    }
+  };
 
   // Calculate guest groups from familyGroup field
   const guestGroups = useMemo(() => {
@@ -395,7 +450,26 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
       toast.success(`שיבוץ אוטומטי בוצע! נוצרו ${result.assignmentsCreated} שיבוצים ו-${result.tablesCreated} שולחנות חדשים.`);
 
       if (result.conflicts.length > 0) {
-        toast(`יש ${result.conflicts.length} קונפליקטים שדורשים טיפול ידני`, { icon: '⚠️' });
+        // Show detailed conflicts dialog
+        await showConfirm({
+          title: `⚠️ ${result.conflicts.length} קונפליקטים בסידור`,
+          message: (
+            <div className="text-right space-y-3 max-h-64 overflow-y-auto">
+              <p className="text-sm text-gray-600">הקונפליקטים הבאים דורשים טיפול ידני:</p>
+              <ul className="space-y-2">
+                {result.conflicts.map((conflict, i) => (
+                  <li key={i} className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
+                    <div className="font-medium text-amber-800">{conflict.message}</div>
+                    <div className="text-amber-600 text-xs mt-1">💡 {conflict.suggestedAction}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ),
+          confirmText: 'הבנתי',
+          cancelText: 'סגור',
+          variant: 'warning',
+        });
       }
     } else {
       toast.error(result.error || 'שגיאה בשיבוץ אוטומטי');
@@ -404,12 +478,109 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
 
   // Update settings
   const handleUpdateSettings = async (key: string, value: any) => {
+    const previousMode = seatingStore.settings.mode;
     const result = await seatingStore.updateSettings({ [key]: value });
 
     if (result.success) {
-      toast.success('ההגדרות עודכנו בהצלחה');
+      // If mode changed from auto to manual, reload tables (auto tables were deleted)
+      if (key === 'mode' && previousMode === 'auto' && value === 'manual') {
+        await tablesStore.loadTables(true);
+        toast.success('המצב שונה לידני והשיבוצים האוטומטיים נמחקו');
+      } else {
+        toast.success('ההגדרות עודכנו בהצלחה');
+      }
     } else {
       toast.error(result.error || 'שגיאה בעדכון הגדרות');
+    }
+  };
+
+  // Handle mode change with confirmation
+  const handleModeChange = async (newMode: 'auto' | 'manual') => {
+    const currentMode = seatingStore.settings.mode;
+
+    // If no change, do nothing
+    if (currentMode === newMode) return;
+
+    // Show confirmation dialog
+    const confirmed = await showConfirm({
+      title: newMode === 'auto' ? 'מעבר למצב אוטומטי' : 'מעבר למצב ידני',
+      message: newMode === 'auto'
+        ? 'שים לב! המעבר למצב אוטומטי ימחק את כל השיבוצים הידניים שביצעת ויחליף אותם בשיבוץ אוטומטי חדש. האם להמשיך?'
+        : 'שים לב! המעבר למצב ידני ימחק את כל השולחנות והשיבוצים האוטומטיים. תצטרך ליצור שולחנות ולשבץ אורחים מחדש. האם להמשיך?',
+      confirmText: 'המשך',
+      variant: 'danger',
+    });
+
+    if (confirmed) {
+      await handleUpdateSettings('mode', newMode);
+    }
+  };
+
+  // Toggle table lock
+  const handleToggleTableLock = async (tableId: string, currentLocked: boolean) => {
+    // If trying to lock (not unlock), show warning first
+    if (!currentLocked) {
+      const confirmed = await showConfirm({
+        title: '⚠️ אזהרה - נעילת שולחן',
+        message: (
+          <div className="text-right space-y-3">
+            <p>נעילת שולחן יכולה לגרום לבעיות בסידור האוטומטי:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 mr-2">
+              <li>האורחים בשולחן הזה לא יועברו גם אם יש מקום טוב יותר</li>
+              <li>אם יש יותר מדי אורחים נעולים, האלגוריתם עלול להיכשל</li>
+              <li>שינויים ב-RSVP של אורחים נעולים לא ישפיעו על השיבוץ</li>
+              <li>ילדים של אורחים נעולים לא יועברו לשולחן ילדים</li>
+            </ul>
+            <p className="text-sm font-medium text-amber-600">מומלץ לנעול שולחנות רק אחרי שהסידור הסופי מוכן.</p>
+          </div>
+        ),
+        confirmText: 'נעל בכל זאת',
+        cancelText: 'ביטול',
+        variant: 'warning',
+      });
+
+      if (!confirmed) return;
+    }
+
+    try {
+      const response = await fetch(`/api/tables/${tableId}/lock`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locked: !currentLocked }),
+      });
+
+      if (response.ok) {
+        await tablesStore.loadTables(true);
+        toast.success(currentLocked ? 'השולחן שוחרר מנעילה' : 'השולחן ננעל');
+      } else {
+        throw new Error('Failed to toggle lock');
+      }
+    } catch (error) {
+      toast.error('שגיאה בשינוי נעילת השולחן');
+    }
+  };
+
+  // Toggle guest seat lock
+  const handleToggleGuestLock = async (guestId: string, currentLocked: boolean, tableId?: string) => {
+    try {
+      const response = await fetch(`/api/guests/${guestId}/lock`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lockedSeat: !currentLocked,
+          lockedTableId: !currentLocked ? tableId : undefined,
+        }),
+      });
+
+      if (response.ok) {
+        await guestsStore.loadGuests(true);
+        await tablesStore.loadTables(true);
+        toast.success(currentLocked ? 'האורח שוחרר מנעילה' : 'האורח ננעל לשולחן');
+      } else {
+        throw new Error('Failed to toggle lock');
+      }
+    } catch (error) {
+      toast.error('שגיאה בשינוי נעילת האורח');
     }
   };
 
@@ -550,31 +721,35 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
   }
 
   const { tables: allTables, statistics, unassignedGuests } = tablesStore;
-  const { settings, groups, preferences, isAutoMode, viewMode, runningAutoSeating, conflicts } = seatingStore;
+  const { groups, preferences, isAutoMode, viewMode, runningAutoSeating, conflicts } = seatingStore;
+  // Access settings directly to ensure MobX reactivity works properly
+  const settings = seatingStore.settings;
 
   // Filter tables based on view mode
-  // In 'real' mode: only show tables with at least one confirmed guest
+  // In 'real' mode: show only tables with at least one confirmed guest
   // In 'simulation' mode: show all tables
-  const tables = viewMode === 'real' && settings.simulationEnabled
+  const tables = viewMode === 'real'
     ? allTables.filter(table => {
-        // Show table if it has at least one confirmed guest
+        // Show table only if it has at least one confirmed guest
         return table.assignedGuests.some(guest => guest.rsvpStatus === 'confirmed');
       })
     : allTables;
 
   // Helper to get filtered guests for a table based on view mode
   const getFilteredGuests = (table: Table) => {
-    if (viewMode === 'real' && settings.simulationEnabled) {
+    if (viewMode === 'real') {
       return table.assignedGuests.filter(guest => guest.rsvpStatus === 'confirmed');
     }
     return table.assignedGuests;
   };
 
   // Helper to get people count based on view mode
+  // Server sends seatsInTable and simulationSeatsInTable - frontend just displays
   const getPeopleAtTableFiltered = (table: Table) => {
     const guests = getFilteredGuests(table);
-    return guests.reduce((sum, guest) => {
-      return sum + (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
+    return guests.reduce((sum, guest: any) => {
+      const seats = viewMode === 'simulation' ? guest.simulationSeatsInTable : guest.seatsInTable;
+      return sum + (seats || 0);
     }, 0);
   };
 
@@ -808,13 +983,15 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
             </div>
           ) : tableViewMode === 'hall' ? (
             /* Event Hall Canvas View - Desktop Only */
-            <div className="hidden lg:block h-[600px] rounded-xl overflow-hidden shadow-sm border border-gray-100">
+            <div ref={canvasContainerRef} className="hidden lg:block h-[600px] rounded-xl overflow-hidden shadow-sm border border-gray-100">
               <EventHallCanvas
                 onTableClick={openTableAssignModal}
                 onTableEdit={openEditModal}
                 groups={groups}
                 viewMode={viewMode}
                 simulationEnabled={settings.simulationEnabled}
+                weddingId={weddingId}
+                onFullscreenChange={setIsCanvasFullscreen}
               />
             </div>
           ) : (
@@ -838,10 +1015,14 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
                         {table.tableNumber}
                       </div>
 
-                      {/* Group Name Badge */}
+                      {/* Group Name Badge - show on multiple lines if name has multiple words */}
                       {tableGroup && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-xs px-2 py-0.5 rounded-full z-10 whitespace-nowrap max-w-[120px] truncate shadow-sm" title={tableGroup.name}>
-                          {tableGroup.name}
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-xs px-2 py-1 rounded-lg z-10 max-w-[140px] text-center shadow-sm leading-tight" title={tableGroup.name}>
+                          {tableGroup.name.split(' ').length > 1 ? (
+                            <span className="block">{tableGroup.name}</span>
+                          ) : (
+                            tableGroup.name
+                          )}
                         </div>
                       )}
 
@@ -863,7 +1044,7 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
 
                       {/* Visual Table */}
                       <div
-                        className="relative w-44 h-44 mx-auto cursor-pointer transition-transform hover:scale-105"
+                        className="relative w-52 h-52 mx-auto cursor-pointer transition-transform hover:scale-105"
                         onClick={() => openTableAssignModal(table)}
                       >
                         {/* Seats around table */}
@@ -892,10 +1073,10 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
 
                         {/* Table Info (centered) */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <div className="text-lg font-bold text-gray-900">
+                          <div className="text-xl font-bold text-gray-900">
                             {peopleAtTable}/{table.capacity}
                           </div>
-                          <div className="text-xs text-gray-700 text-center px-2 truncate max-w-[70px]">
+                          <div className="text-xs text-gray-700 text-center px-2 max-w-[90px] leading-tight">
                             {table.tableName}
                           </div>
                         </div>
@@ -903,15 +1084,21 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
 
                       {/* Guest Badges */}
                       <div className="flex flex-wrap gap-1 justify-center mt-3 px-1">
-                        {filteredGuests.slice(0, 4).map((guest, i) => (
-                          <span
-                            key={guest._id}
-                            className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full truncate max-w-[70px]"
-                            title={guest.name}
-                          >
-                            {guest.name.split(' ')[0]}
-                          </span>
-                        ))}
+                        {filteredGuests.slice(0, 4).map((guest: any, i) => {
+                          // Server provides seatsInTable and simulationSeatsInTable - just display
+                          const seatsCount = viewMode === 'simulation'
+                            ? guest.simulationSeatsInTable
+                            : guest.seatsInTable;
+                          return (
+                            <span
+                              key={guest._id}
+                              className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full truncate max-w-[80px]"
+                              title={`${guest.name} (${seatsCount} מושבים)`}
+                            >
+                              {guest.name.split(' ')[0]} ({seatsCount})
+                            </span>
+                          );
+                        })}
                         {filteredGuests.length > 4 && (
                           <span className="bg-gray-200 text-gray-500 text-xs px-2 py-0.5 rounded-full">
                             +{filteredGuests.length - 4}
@@ -921,6 +1108,20 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
 
                       {/* Actions - always visible on mobile, hover on desktop */}
                       <div className="flex gap-2 justify-center mt-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleTableLock(table._id, table.locked);
+                          }}
+                          className={`text-xs px-3 py-1 rounded-full transition ${
+                            table.locked
+                              ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          title={table.locked ? 'שחרר נעילה' : 'נעל שולחן'}
+                        >
+                          {table.locked ? '🔓' : '🔒'}
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -955,9 +1156,47 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-medium">קבוצות אורחים</h3>
-              <p className="text-sm text-gray-500">הקבוצות נוצרות אוטומטית מניהול האורחים</p>
+              <p className="text-sm text-gray-500">הקבוצות נוצרות אוטומטית מניהול האורחים. הגדר עדיפות לקבוע איזו קבוצה תהיה שולחן 1, 2, וכו'</p>
             </div>
           </div>
+
+          {/* Priority Groups Display */}
+          {(() => {
+            const prioritizedGroups = guestGroups
+              .filter(g => (groupPriorities.get(g.name) || 0) > 0)
+              .sort((a, b) => (groupPriorities.get(a.name) || 0) - (groupPriorities.get(b.name) || 0));
+
+            if (prioritizedGroups.length > 0) {
+              return (
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4 mb-4">
+                  <h4 className="font-medium text-amber-800 mb-3 flex items-center gap-2">
+                    <span>⭐</span> סדר עדיפות שולחנות
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {prioritizedGroups.map((group) => (
+                      <div
+                        key={group.name}
+                        className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 shadow-sm border border-amber-200"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-sm font-bold flex items-center justify-center">
+                          {groupPriorities.get(group.name)}
+                        </span>
+                        <span className="font-medium text-gray-800">{group.name}</span>
+                        <button
+                          onClick={() => handleSetGroupPriority(group.name, 0)}
+                          className="text-gray-400 hover:text-red-500 transition"
+                          title="הסר עדיפות"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {guestGroups.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
@@ -977,44 +1216,104 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
           ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {guestGroups.map((group) => (
-                  <div key={group.name} className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{group.name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {group.guests.length} אורחים • {group.confirmedCount} אישרו
-                        </p>
-                      </div>
-                      <div className="text-2xl font-bold text-gold">
-                        {group.totalPeople}
-                      </div>
-                    </div>
+                {guestGroups.map((group) => {
+                  const currentPriority = groupPriorities.get(group.name) || 0;
+                  const maxPriority = Math.max(...Array.from(groupPriorities.values()), 0);
+                  const nextAvailablePriority = maxPriority + 1;
 
-                    {/* Guest list preview */}
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {group.guests.slice(0, 4).map((guest) => (
-                        <span
-                          key={guest._id}
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            guest.rsvpStatus === 'confirmed'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : guest.rsvpStatus === 'declined'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          {guest.name.split(' ')[0]}
-                        </span>
-                      ))}
-                      {group.guests.length > 4 && (
-                        <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full">
-                          +{group.guests.length - 4}
-                        </span>
-                      )}
+                  return (
+                    <div
+                      key={group.name}
+                      className={`p-4 rounded-xl border ${
+                        currentPriority > 0
+                          ? 'bg-amber-50 border-amber-200'
+                          : 'bg-gray-50 border-gray-100'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-start gap-2">
+                          {currentPriority > 0 && (
+                            <span className="w-7 h-7 rounded-full bg-amber-500 text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
+                              {currentPriority}
+                            </span>
+                          )}
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{group.name}</h4>
+                            <p className="text-sm text-gray-500">
+                              {group.guests.length} אורחים • {group.confirmedCount} אישרו
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-gold">
+                          {group.totalPeople}
+                        </div>
+                      </div>
+
+                      {/* Priority Selection */}
+                      <div className="mb-3">
+                        <label className="text-xs text-gray-500 mb-1 block">עדיפות שולחן:</label>
+                        <div className="flex gap-1 flex-wrap">
+                          {[1, 2, 3, 4, 5].map((num) => {
+                            const isSelected = currentPriority === num;
+                            const isTakenByOther = !isSelected && Array.from(groupPriorities.entries()).some(
+                              ([name, priority]) => priority === num && name !== group.name
+                            );
+
+                            return (
+                              <button
+                                key={num}
+                                onClick={() => handleSetGroupPriority(group.name, isSelected ? 0 : num)}
+                                disabled={isTakenByOther}
+                                className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                                  isSelected
+                                    ? 'bg-amber-500 text-white'
+                                    : isTakenByOther
+                                      ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                                      : 'bg-white border border-gray-200 text-gray-600 hover:border-amber-300 hover:bg-amber-50'
+                                }`}
+                                title={isTakenByOther ? 'כבר תפוס על ידי קבוצה אחרת' : isSelected ? 'לחץ להסרת עדיפות' : `הגדר כעדיפות ${num}`}
+                              >
+                                {num}
+                              </button>
+                            );
+                          })}
+                          {currentPriority > 0 && (
+                            <button
+                              onClick={() => handleSetGroupPriority(group.name, 0)}
+                              className="px-2 h-8 rounded-lg text-xs bg-red-50 text-red-500 hover:bg-red-100 transition"
+                              title="הסר עדיפות"
+                            >
+                              הסר
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Guest list preview */}
+                      <div className="flex flex-wrap gap-1">
+                        {group.guests.slice(0, 4).map((guest) => (
+                          <span
+                            key={guest._id}
+                            className={`text-xs px-2 py-0.5 rounded-full ${
+                              guest.rsvpStatus === 'confirmed'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : guest.rsvpStatus === 'declined'
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-gray-200 text-gray-600'
+                            }`}
+                          >
+                            {guest.name.split(' ')[0]}
+                          </span>
+                        ))}
+                        {group.guests.length > 4 && (
+                          <span className="text-xs px-2 py-0.5 bg-gray-200 text-gray-500 rounded-full">
+                            +{group.guests.length - 4}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1106,7 +1405,7 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
                     <input
                       type="radio"
                       checked={settings.mode === 'manual'}
-                      onChange={() => handleUpdateSettings('mode', 'manual')}
+                      onChange={() => handleModeChange('manual')}
                       className="text-gold"
                     />
                     <span>ידני</span>
@@ -1115,7 +1414,7 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
                     <input
                       type="radio"
                       checked={settings.mode === 'auto'}
-                      onChange={() => handleUpdateSettings('mode', 'auto')}
+                      onChange={() => handleModeChange('auto')}
                       className="text-gold"
                     />
                     <span>אוטומטי</span>
@@ -1189,278 +1488,409 @@ export const SeatingDashboard = observer(function SeatingDashboard({ weddingId }
               </div>
             </div>
           </Card>
-        </div>
-      )}
 
-      {/* Create/Edit Table Modal */}
-      {(showCreateModal || editingTable) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">
-              {editingTable ? 'ערוך שולחן' : 'צור שולחן חדש'}
-            </h2>
-
-            {/* Conflict Alert */}
-            {tableConflict && (
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <div className="text-amber-500 text-xl">⚠️</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-amber-800 mb-1">שולחן קיים</h3>
-                    <p className="text-sm text-amber-700 mb-3">
-                      שולחן מספר {tableConflict.tableNumber} כבר קיים ושמור לקבוצה <strong>"{tableConflict.tableName}"</strong>
-                      {tableConflict.guestsCount > 0 && (
-                        <span> ({tableConflict.guestsCount} אורחים משובצים)</span>
-                      )}
-                    </p>
-                    <p className="text-sm text-amber-700 mb-3">האם ברצונך להחליף ביניהם?</p>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleSwapTables}
-                        disabled={isSwapping}
-                        className="bg-amber-600 hover:bg-amber-700 text-white text-sm px-3 py-1.5"
-                      >
-                        {isSwapping ? 'מחליף...' : '🔄 החלף שולחנות'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setTableConflict(null)}
-                        className="text-sm px-3 py-1.5"
-                      >
-                        ביטול
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* Advanced Seating Settings */}
+          <Card className="p-6">
+            <h3 className="text-lg font-medium mb-4">הגדרות שיבוץ מתקדמות</h3>
 
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">שם השולחן</label>
-                <input
-                  type="text"
-                  value={tableForm.tableName}
-                  onChange={(e) => {
-                    setTableForm({ ...tableForm, tableName: e.target.value });
-                    setTableConflict(null);
-                  }}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="לדוגמה: משפחה, צבא, חברים"
-                />
+              {/* Kids Table */}
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <label className="flex items-center gap-2 cursor-pointer mb-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.enableKidsTable === true}
+                    onChange={(e) => handleUpdateSettings('enableKidsTable', e.target.checked)}
+                    className="text-blue-600 w-5 h-5"
+                  />
+                  <span className="font-medium text-blue-900">שולחן ילדים נפרד</span>
+                </label>
+                <p className="text-sm text-blue-700 mb-3">
+                  ילדים ישובצו אוטומטית לשולחן ילדים נפרד (אם יש מספיק ילדים)
+                </p>
+
+                {settings.enableKidsTable && (
+                  <div className="space-y-3 pr-6">
+                    <div>
+                      <label className="block text-sm font-medium text-blue-800 mb-1">מינימום ילדים לפתיחת שולחן</label>
+                      <input
+                        type="number"
+                        value={settings.kidsTableMinCount || 6}
+                        onChange={(e) => handleUpdateSettings('kidsTableMinCount', parseInt(e.target.value))}
+                        min="2"
+                        max="20"
+                        className="w-20 px-3 py-1.5 border border-blue-200 rounded-lg text-sm"
+                      />
+                      <span className="text-sm text-blue-600 mr-2">ילדים</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">מספר שולחן</label>
-                <input
-                  type="number"
-                  value={tableForm.tableNumber}
-                  onChange={(e) => {
-                    setTableForm({ ...tableForm, tableNumber: Number(e.target.value) });
-                    setTableConflict(null);
-                  }}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  min="1"
-                />
+              {/* Singles placement */}
+              <div className="p-4 bg-pink-50 rounded-lg border border-pink-100">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.avoidSinglesAlone ?? true}
+                    onChange={(e) => handleUpdateSettings('avoidSinglesAlone', e.target.checked)}
+                    className="text-pink-600"
+                  />
+                  <span className="font-medium text-pink-900">מנע סינגלים בודדים בשולחן זוגות</span>
+                </label>
+                <p className="text-sm text-pink-700 mt-2">
+                  המערכת תמנע מצב שבו סינגל יושב לבד בשולחן עם הרבה זוגות
+                </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">קיבולת (מספר מקומות)</label>
-                <input
-                  type="number"
-                  value={tableForm.capacity}
-                  onChange={(e) =>
-                    setTableForm({ ...tableForm, capacity: Number(e.target.value) })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg"
-                  min="1"
-                />
-              </div>
+              {/* Zone placement */}
+              <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                <label className="flex items-center gap-2 cursor-pointer mb-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.enableZonePlacement || false}
+                    onChange={(e) => handleUpdateSettings('enableZonePlacement', e.target.checked)}
+                    className="text-purple-600"
+                  />
+                  <span className="font-medium text-purple-900">שיבוץ לפי אזורים באולם</span>
+                </label>
+                <p className="text-sm text-purple-700 mb-3">
+                  אורחים ישובצו לשולחנות באזור המועדף שלהם (במה, רחבת ריקודים, אזור שקט)
+                </p>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">סוג שולחן</label>
-                <select
-                  value={tableForm.tableType}
-                  onChange={(e) =>
-                    setTableForm({
-                      ...tableForm,
-                      tableType: e.target.value as 'adults' | 'kids' | 'mixed',
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="mixed">משולב</option>
-                  <option value="adults">מבוגרים</option>
-                  <option value="kids">ילדים</option>
-                </select>
+                {settings.enableZonePlacement && (
+                  <div className="grid grid-cols-2 gap-2 pr-6">
+                    <div className="flex items-center gap-2 text-sm text-purple-800">
+                      <span className="w-3 h-3 bg-amber-400 rounded-full"></span>
+                      <span>במה / חופה</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-purple-800">
+                      <span className="w-3 h-3 bg-pink-400 rounded-full"></span>
+                      <span>רחבת ריקודים</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-purple-800">
+                      <span className="w-3 h-3 bg-teal-400 rounded-full"></span>
+                      <span>אזור שקט</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-purple-800">
+                      <span className="w-3 h-3 bg-gray-400 rounded-full"></span>
+                      <span>כללי</span>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <Button
-                onClick={editingTable ? handleUpdateTable : handleCreateTable}
-                className="flex-1"
-                disabled={!!tableConflict}
-              >
-                {editingTable ? 'עדכן' : 'צור'}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setEditingTable(null);
-                  setTableConflict(null);
-                  setTableForm({ tableName: '', tableNumber: tables.length + 1, capacity: 10, tableType: 'mixed' });
-                }}
-                className="flex-1"
-              >
-                ביטול
-              </Button>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Assign Modal for specific table */}
-      {showAssignModal && selectedTable && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-bold">
-                שולחן {selectedTable.tableNumber} - {selectedTable.tableName}
+      {/* Create/Edit Table Modal */}
+      {(showCreateModal || editingTable) && (() => {
+        const modalContent = (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="max-w-md w-full p-6">
+              <h2 className="text-xl font-bold mb-4">
+                {editingTable ? 'ערוך שולחן' : 'צור שולחן חדש'}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                {getPeopleAtTableFiltered(selectedTable)}/{selectedTable.capacity} מקומות תפוסים
-              </p>
-            </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
-              {/* Current guests */}
-              {getFilteredGuests(selectedTable).length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-medium mb-3">אורחים בשולחן:</h3>
-                  <div className="space-y-2">
-                    {getFilteredGuests(selectedTable).map((guest, i) => (
-                      <div
-                        key={guest._id}
-                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${guestColors[i % guestColors.length]}`}></span>
-                          <span>{guest.name}</span>
-                          <span className="text-xs text-gray-500">
-                            ({(guest.adultsAttending || 1) + (guest.childrenAttending || 0)})
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleRemoveGuest(guest._id, selectedTable._id)}
-                          className="text-red-500 text-sm hover:underline"
+              {/* Conflict Alert */}
+              {tableConflict && (
+                <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="text-amber-500 text-xl">⚠️</div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-amber-800 mb-1">שולחן קיים</h3>
+                      <p className="text-sm text-amber-700 mb-3">
+                        שולחן מספר {tableConflict.tableNumber} כבר קיים ושמור לקבוצה <strong>"{tableConflict.tableName}"</strong>
+                        {tableConflict.guestsCount > 0 && (
+                          <span> ({tableConflict.guestsCount} אורחים משובצים)</span>
+                        )}
+                      </p>
+                      <p className="text-sm text-amber-700 mb-3">האם ברצונך להחליף ביניהם?</p>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleSwapTables}
+                          disabled={isSwapping}
+                          className="bg-amber-600 hover:bg-amber-700 text-white text-sm px-3 py-1.5"
                         >
-                          הסר
-                        </button>
+                          {isSwapping ? 'מחליף...' : '🔄 החלף שולחנות'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setTableConflict(null)}
+                          className="text-sm px-3 py-1.5"
+                        >
+                          ביטול
+                        </Button>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Add unassigned guests */}
-              {unassignedGuests.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-medium mb-3 text-emerald-700">אורחים לא משובצים:</h3>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {unassignedGuests.map((guest) => (
-                      <div
-                        key={guest._id}
-                        className="flex justify-between items-center p-2 border border-emerald-200 bg-emerald-50 rounded hover:bg-emerald-100"
-                      >
-                        <div>
-                          <span>{guest.name}</span>
-                          <span className="text-xs text-gray-500 mr-2">
-                            ({(guest.adultsAttending || 1) + (guest.childrenAttending || 0)} אנשים)
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleAssignGuest(guest._id, selectedTable._id)}
-                          className="px-3 py-1 bg-emerald-500 text-white text-sm rounded hover:bg-emerald-600"
-                        >
-                          הוסף
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">שם השולחן</label>
+                  <input
+                    type="text"
+                    value={tableForm.tableName}
+                    onChange={(e) => {
+                      setTableForm({ ...tableForm, tableName: e.target.value });
+                      setTableConflict(null);
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="לדוגמה: משפחה, צבא, חברים"
+                  />
                 </div>
-              )}
 
-              {/* Move guests from other tables */}
-              {(() => {
-                // Get guests from other tables
-                const guestsInOtherTables = allTables
-                  .filter(t => t._id !== selectedTable._id)
-                  .flatMap(t => getFilteredGuests(t).map(guest => ({
-                    ...guest,
-                    currentTableId: t._id,
-                    currentTableNumber: t.tableNumber,
-                    currentTableName: t.tableName,
-                  })));
+                <div>
+                  <label className="block text-sm font-medium mb-1">מספר שולחן</label>
+                  <input
+                    type="number"
+                    value={tableForm.tableNumber}
+                    onChange={(e) => {
+                      setTableForm({ ...tableForm, tableNumber: Number(e.target.value) });
+                      setTableConflict(null);
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    min="1"
+                  />
+                </div>
 
-                if (guestsInOtherTables.length === 0) return null;
+                <div>
+                  <label className="block text-sm font-medium mb-1">קיבולת (מספר מקומות)</label>
+                  <input
+                    type="number"
+                    value={tableForm.capacity}
+                    onChange={(e) =>
+                      setTableForm({ ...tableForm, capacity: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg"
+                    min="1"
+                  />
+                </div>
 
-                return (
-                  <div>
-                    <h3 className="font-medium mb-3 text-blue-700">העבר משולחן אחר:</h3>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {guestsInOtherTables.map((guest) => (
+                <div>
+                  <label className="block text-sm font-medium mb-1">סוג שולחן</label>
+                  <select
+                    value={tableForm.tableType}
+                    onChange={(e) =>
+                      setTableForm({
+                        ...tableForm,
+                        tableType: e.target.value as 'adults' | 'kids' | 'mixed',
+                      })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="mixed">משולב</option>
+                    <option value="adults">מבוגרים</option>
+                    <option value="kids">ילדים</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <Button
+                  onClick={editingTable ? handleUpdateTable : handleCreateTable}
+                  className="flex-1"
+                  disabled={!!tableConflict}
+                >
+                  {editingTable ? 'עדכן' : 'צור'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setEditingTable(null);
+                    setTableConflict(null);
+                    setTableForm({ tableName: '', tableNumber: tables.length + 1, capacity: 10, tableType: 'mixed' });
+                  }}
+                  className="flex-1"
+                >
+                  ביטול
+                </Button>
+              </div>
+            </Card>
+          </div>
+        );
+
+        // When in fullscreen, portal the modal to the fullscreen element
+        if (isCanvasFullscreen && document.fullscreenElement) {
+          return createPortal(modalContent, document.fullscreenElement);
+        }
+        return modalContent;
+      })()}
+
+      {/* Assign Modal for specific table */}
+      {showAssignModal && selectedTable && (() => {
+        const assignModalContent = (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-bold">
+                  שולחן {selectedTable.tableNumber} - {selectedTable.tableName}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {getPeopleAtTableFiltered(selectedTable)}/{selectedTable.capacity} מקומות תפוסים
+                </p>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Current guests */}
+                {getFilteredGuests(selectedTable).length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-medium mb-3">אורחים בשולחן:</h3>
+                    <div className="space-y-2">
+                      {getFilteredGuests(selectedTable).map((guest, i) => (
                         <div
                           key={guest._id}
-                          className="flex justify-between items-center p-2 border border-blue-200 bg-blue-50 rounded hover:bg-blue-100"
+                          className={`flex justify-between items-center p-2 rounded ${
+                            guest.lockedSeat ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`w-3 h-3 rounded-full ${guestColors[i % guestColors.length]}`}></span>
+                            <span>{guest.name}</span>
+                            <span className="text-xs text-gray-500">
+                              ({(guest.adultsAttending || 1) + (guest.childrenAttending || 0)})
+                            </span>
+                            {guest.lockedSeat && (
+                              <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                                🔒 נעול
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleToggleGuestLock(guest._id, !!guest.lockedSeat, selectedTable._id)}
+                              className={`text-xs px-2 py-1 rounded ${
+                                guest.lockedSeat
+                                  ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                              title={guest.lockedSeat ? 'שחרר נעילה' : 'נעל לשולחן זה'}
+                            >
+                              {guest.lockedSeat ? '🔓' : '🔒'}
+                            </button>
+                            <button
+                              onClick={() => handleRemoveGuest(guest._id, selectedTable._id)}
+                              className="text-red-500 text-sm hover:underline"
+                              disabled={guest.lockedSeat}
+                              title={guest.lockedSeat ? 'שחרר נעילה כדי להסיר' : 'הסר מהשולחן'}
+                            >
+                              הסר
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Add unassigned guests */}
+                {unassignedGuests.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-medium mb-3 text-emerald-700">אורחים לא משובצים:</h3>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {unassignedGuests.map((guest) => (
+                        <div
+                          key={guest._id}
+                          className="flex justify-between items-center p-2 border border-emerald-200 bg-emerald-50 rounded hover:bg-emerald-100"
                         >
                           <div>
                             <span>{guest.name}</span>
                             <span className="text-xs text-gray-500 mr-2">
                               ({(guest.adultsAttending || 1) + (guest.childrenAttending || 0)} אנשים)
                             </span>
-                            <span className="text-xs bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded mr-1">
-                              שולחן {guest.currentTableNumber}
-                            </span>
                           </div>
                           <button
-                            onClick={async () => {
-                              // Remove from current table, then add to selected table
-                              await tablesStore.removeGuest(guest._id, guest.currentTableId);
-                              await handleAssignGuest(guest._id, selectedTable._id);
-                            }}
-                            className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                            onClick={() => handleAssignGuest(guest._id, selectedTable._id)}
+                            className="px-3 py-1 bg-emerald-500 text-white text-sm rounded hover:bg-emerald-600"
                           >
-                            העבר לכאן
+                            הוסף
                           </button>
                         </div>
                       ))}
                     </div>
                   </div>
-                );
-              })()}
+                )}
 
-              {unassignedGuests.length === 0 && getFilteredGuests(selectedTable).length === 0 && allTables.filter(t => t._id !== selectedTable._id).every(t => getFilteredGuests(t).length === 0) && (
-                <p className="text-center text-gray-500">אין אורחים זמינים לשיבוץ</p>
-              )}
-            </div>
+                {/* Move guests from other tables */}
+                {(() => {
+                  // Get guests from other tables
+                  const guestsInOtherTables = allTables
+                    .filter(t => t._id !== selectedTable._id)
+                    .flatMap(t => getFilteredGuests(t).map(guest => ({
+                      ...guest,
+                      currentTableId: t._id,
+                      currentTableNumber: t.tableNumber,
+                      currentTableName: t.tableName,
+                    })));
 
-            <div className="p-6 border-t">
-              <Button
-                onClick={() => {
-                  setShowAssignModal(false);
-                  setSelectedTable(null);
-                }}
-                variant="outline"
-                className="w-full"
-              >
-                סגור
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+                  if (guestsInOtherTables.length === 0) return null;
+
+                  return (
+                    <div>
+                      <h3 className="font-medium mb-3 text-blue-700">העבר משולחן אחר:</h3>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {guestsInOtherTables.map((guest) => (
+                          <div
+                            key={guest._id}
+                            className="flex justify-between items-center p-2 border border-blue-200 bg-blue-50 rounded hover:bg-blue-100"
+                          >
+                            <div>
+                              <span>{guest.name}</span>
+                              <span className="text-xs text-gray-500 mr-2">
+                                ({(guest.adultsAttending || 1) + (guest.childrenAttending || 0)} אנשים)
+                              </span>
+                              <span className="text-xs bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded mr-1">
+                                שולחן {guest.currentTableNumber}
+                              </span>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                // Remove from current table, then add to selected table
+                                await tablesStore.removeGuest(guest._id, guest.currentTableId);
+                                await handleAssignGuest(guest._id, selectedTable._id);
+                              }}
+                              className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                            >
+                              העבר לכאן
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {unassignedGuests.length === 0 && getFilteredGuests(selectedTable).length === 0 && allTables.filter(t => t._id !== selectedTable._id).every(t => getFilteredGuests(t).length === 0) && (
+                  <p className="text-center text-gray-500">אין אורחים זמינים לשיבוץ</p>
+                )}
+              </div>
+
+              <div className="p-6 border-t">
+                <Button
+                  onClick={() => {
+                    setShowAssignModal(false);
+                    setSelectedTable(null);
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  סגור
+                </Button>
+              </div>
+            </Card>
+          </div>
+        );
+
+        // When in fullscreen, portal the modal to the fullscreen element
+        if (isCanvasFullscreen && document.fullscreenElement) {
+          return createPortal(assignModalContent, document.fullscreenElement);
+        }
+        return assignModalContent;
+      })()}
 
       {/* Group Modal */}
       {(showGroupModal || editingGroup) && (

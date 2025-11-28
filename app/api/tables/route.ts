@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Table from '@/lib/db/models/Table';
 import Wedding from '@/lib/db/models/Wedding';
+import SeatAssignment from '@/lib/db/models/SeatAssignment';
 
 // GET - Get all tables for a wedding
 export async function GET(request: NextRequest) {
@@ -34,11 +35,53 @@ export async function GET(request: NextRequest) {
 
     // Get all tables with populated guests
     const tables = await Table.find({ weddingId })
-      .populate('assignedGuests', 'name phone rsvpStatus adultsAttending childrenAttending')
+      .populate('assignedGuests', 'name phone rsvpStatus adultsAttending childrenAttending familyGroup groupId')
       .sort({ tableNumber: 1 })
       .lean();
 
-    return NextResponse.json({ tables });
+    // Get all seat assignments for this wedding (both real and simulation)
+    const [realAssignments, simulationAssignments] = await Promise.all([
+      SeatAssignment.find({ weddingId, assignmentType: 'real' }).lean(),
+      SeatAssignment.find({ weddingId, assignmentType: 'simulation' }).lean(),
+    ]);
+
+    // Create maps of tableId+guestId -> seatsCount for each type
+    const realAssignmentMap = new Map<string, number>();
+    for (const assignment of realAssignments) {
+      const key = `${assignment.tableId.toString()}_${assignment.guestId.toString()}`;
+      realAssignmentMap.set(key, assignment.seatsCount);
+    }
+
+    const simulationAssignmentMap = new Map<string, number>();
+    for (const assignment of simulationAssignments) {
+      const key = `${assignment.tableId.toString()}_${assignment.guestId.toString()}`;
+      simulationAssignmentMap.set(key, assignment.seatsCount);
+    }
+
+    // Add seatsInTable and simulationSeatsInTable to each guest in each table
+    // All calculations done server-side - frontend just displays
+    const tablesWithSeats = tables.map((table: any) => ({
+      ...table,
+      assignedGuests: table.assignedGuests.map((guest: any) => {
+        const key = `${table._id.toString()}_${guest._id.toString()}`;
+        const realSeats = realAssignmentMap.get(key);
+        const simSeats = simulationAssignmentMap.get(key);
+
+        // Calculate fallback values (when no SeatAssignment exists)
+        const confirmedSeats = (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
+        const pendingSeats = 1; // Pending guests count as 1 in simulation
+
+        return {
+          ...guest,
+          // seatsInTable: for real mode - from SeatAssignment or fallback to actual attendance
+          seatsInTable: realSeats ?? confirmedSeats,
+          // simulationSeatsInTable: for simulation mode - from SeatAssignment or fallback based on rsvp status
+          simulationSeatsInTable: simSeats ?? (guest.rsvpStatus === 'confirmed' ? confirmedSeats : pendingSeats),
+        };
+      }),
+    }));
+
+    return NextResponse.json({ tables: tablesWithSeats });
   } catch (error) {
     console.error('Error fetching tables:', error);
     return NextResponse.json({ error: 'Failed to fetch tables' }, { status: 500 });
