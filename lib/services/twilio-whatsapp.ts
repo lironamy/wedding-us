@@ -9,6 +9,7 @@ export interface TwilioConfig {
   accountSid: string;
   authToken: string;
   whatsappNumber: string; // Your Twilio WhatsApp number (format: whatsapp:+14155238886)
+  statusCallbackUrl?: string; // URL for Twilio to send delivery status updates
 }
 
 export interface SendMessageResult {
@@ -39,10 +40,12 @@ export interface TemplateVariables {
 export class TwilioWhatsAppService {
   private client: ReturnType<typeof twilio>;
   private fromNumber: string;
+  private statusCallbackUrl?: string;
 
   constructor(config: TwilioConfig) {
     this.client = twilio(config.accountSid, config.authToken);
     this.fromNumber = config.whatsappNumber;
+    this.statusCallbackUrl = config.statusCallbackUrl;
   }
 
   /**
@@ -81,12 +84,14 @@ export class TwilioWhatsAppService {
       console.log('📱 [Twilio] Sending WhatsApp template message to:', formattedTo);
       console.log('📝 [Twilio] Content SID:', contentSid);
       console.log('📝 [Twilio] Variables:', JSON.stringify(variables, null, 2));
+      console.log('📞 [Twilio] Status Callback URL:', this.statusCallbackUrl || 'NOT SET');
 
       const result = await this.client.messages.create({
         from: this.fromNumber,
         to: formattedTo,
         contentSid: contentSid,
         contentVariables: JSON.stringify(variables),
+        ...(this.statusCallbackUrl && { statusCallback: this.statusCallbackUrl }),
       });
 
       console.log('✅ [Twilio] Template message sent successfully:', result.sid);
@@ -122,6 +127,7 @@ export class TwilioWhatsAppService {
         from: this.fromNumber,
         to: formattedTo,
         body: message,
+        ...(this.statusCallbackUrl && { statusCallback: this.statusCallbackUrl }),
       });
 
       console.log('✅ [Twilio] Message sent successfully:', result.sid);
@@ -353,6 +359,7 @@ export function createTwilioService(): TwilioWhatsAppService | null {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL;
 
   if (!accountSid || !authToken || !whatsappNumber) {
     console.warn(
@@ -361,10 +368,19 @@ export function createTwilioService(): TwilioWhatsAppService | null {
     return null;
   }
 
+  // Build status callback URL
+  let statusCallbackUrl: string | undefined;
+  if (baseUrl) {
+    const cleanBaseUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+    statusCallbackUrl = `${cleanBaseUrl}/api/twilio-status`;
+    console.log('📞 [Twilio] Status callback URL:', statusCallbackUrl);
+  }
+
   return new TwilioWhatsAppService({
     accountSid,
     authToken,
     whatsappNumber,
+    statusCallbackUrl,
   });
 }
 

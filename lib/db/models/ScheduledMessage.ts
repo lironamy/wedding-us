@@ -24,8 +24,9 @@ export interface IScheduledMessage {
   status: ScheduledMessageStatus;
   // Stats
   totalGuests: number;
-  sentCount: number;
-  failedCount: number;
+  sentCount: number;      // Messages accepted by Twilio (queued/sent)
+  deliveredCount: number; // Messages actually delivered to recipient
+  failedCount: number;    // Messages that failed (undelivered/failed)
   // Execution details
   startedAt?: Date;
   completedAt?: Date;
@@ -73,6 +74,10 @@ const ScheduledMessageSchema = new Schema<IScheduledMessage>(
       default: 0,
     },
     sentCount: {
+      type: Number,
+      default: 0,
+    },
+    deliveredCount: {
       type: Number,
       default: 0,
     },

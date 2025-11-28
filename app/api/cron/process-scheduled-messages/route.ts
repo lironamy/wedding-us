@@ -3,14 +3,17 @@ import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
 import Guest from '@/lib/db/models/Guest';
 import User from '@/lib/db/models/User';
+import Table from '@/lib/db/models/Table';
+import SeatAssignment from '@/lib/db/models/SeatAssignment';
 import ScheduledMessage, {
   MESSAGE_SCHEDULE_CONFIG,
   type ScheduledMessageType,
 } from '@/lib/db/models/ScheduledMessage';
+import MessageLog from '@/lib/db/models/MessageLog';
 import { getTwilioService } from '@/lib/services/twilio-whatsapp';
 import { formatHebrewDate } from '@/lib/utils/date';
 import { getGenderText, type PartnerType } from '@/lib/utils/genderText';
-import { MESSAGE_TEMPLATES, type MessageType } from '@/lib/utils/messageTemplates';
+import { MESSAGE_TEMPLATES, generateMessage, type MessageType } from '@/lib/utils/messageTemplates';
 
 // Verify cron secret to prevent unauthorized access
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -146,7 +149,7 @@ async function processScheduledMessage(scheduledMessage: any) {
   }
 
   // Get guests to send to
-  const guests = await Guest.find(guestFilter).lean() as any[];
+  let guests = await Guest.find(guestFilter).lean() as any[];
 
   if (guests.length === 0) {
     return {
@@ -157,6 +160,34 @@ async function processScheduledMessage(scheduledMessage: any) {
       totalGuests: 0,
       message: 'No guests to send to',
     };
+  }
+
+  // For day_before messages, we need table numbers from SeatAssignment
+  if (messageType === 'day_before') {
+    // Get all seat assignments for this wedding
+    const seatAssignments = await SeatAssignment.find({
+      weddingId,
+      assignmentType: 'real',
+    }).lean() as any[];
+
+    // Get all tables to map tableId -> tableNumber
+    const tables = await Table.find({ weddingId }).lean() as any[];
+    const tableMap = new Map(tables.map(t => [t._id.toString(), t.tableNumber]));
+
+    // Create a map of guestId -> tableNumber
+    const guestTableMap = new Map<string, number>();
+    for (const assignment of seatAssignments) {
+      const tableNumber = tableMap.get(assignment.tableId.toString());
+      if (tableNumber) {
+        guestTableMap.set(assignment.guestId.toString(), tableNumber);
+      }
+    }
+
+    // Add tableNumber to each guest
+    guests = guests.map(guest => ({
+      ...guest,
+      tableNumber: guestTableMap.get(guest._id.toString()) || guest.tableNumber,
+    }));
   }
 
   // Get Twilio service
@@ -185,33 +216,60 @@ async function processScheduledMessage(scheduledMessage: any) {
     throw new Error(`${missingVar} not configured for message type: ${messageType}`);
   }
 
-  // Prepare variables
+  // Prepare variables - use same logic as manual send (/api/twilio/send-bulk)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const partner1Type: PartnerType = wedding.partner1Type || 'groom';
   const partner2Type: PartnerType = wedding.partner2Type || 'bride';
   const happyText = getGenderText('happy', partner1Type, partner2Type);
   const excitedText = getGenderText('excited', partner1Type, partner2Type);
 
-  // Prepare messages
+  // Prepare messages using generateMessage() like manual send does
   const messagesToSend = guests.map((guest) => {
     const rsvpLink = `${appUrl}/rsvp/${guest.uniqueToken}`;
 
+    // Generate the full message body based on message type (same as manual send)
+    const messageBody = generateMessage(messageType as MessageType, {
+      guestName: '',
+      groomName: wedding.groomName,
+      brideName: wedding.brideName,
+      eventDate: formatHebrewDate(new Date(wedding.eventDate)),
+      eventTime: wedding.eventTime,
+      venue: wedding.venue,
+      rsvpLink,
+      tableNumber: guest.tableNumber,
+      appUrl,
+      happyText,
+      excitedText,
+      partner1Type,
+      partner2Type,
+    });
+
+    // Clean up whitespace - message is already in Format B (with | separators)
+    const sanitizedMessage = messageBody
+      .replace(/\s+/g, ' ')  // Single spaces only
+      .trim();
+
+    // Set variables based on template type
+    let variables: Record<string, string>;
+
+    if (templateInfo.hasImage) {
+      // Template with image: {{1}}=media, {{2}}=name, {{3}}=message
+      variables = {
+        '1': wedding.mediaUrl || '',  // Media URL (invitation image)
+        '2': guest.name,
+        '3': sanitizedMessage,
+      };
+    } else {
+      // Text-only template uses named variables: {{name}}, {{message}}
+      variables = {
+        'name': guest.name,
+        'message': sanitizedMessage,
+      };
+    }
+
     return {
       phone: guest.phone,
-      variables: {
-        '1': wedding.mediaUrl || '',
-        '2': guest.name,
-        '3': happyText,
-        '4': formatHebrewDate(new Date(wedding.eventDate)),
-        '5': wedding.venue,
-        '6': wedding.eventTime,
-        '7': excitedText,
-        '8': `${wedding.groomName} ו${wedding.brideName}`,
-        '9': rsvpLink,
-        ...(messageType === 'day_before' && guest.tableNumber
-          ? { '10': guest.tableNumber.toString() }
-          : {}),
-      },
+      variables,
       guestId: guest._id.toString(),
     };
   });
@@ -222,6 +280,35 @@ async function processScheduledMessage(scheduledMessage: any) {
     contentSid,
     { delayBetweenMessages: 1000 }
   );
+
+  // Save MessageLog for each sent message (for status tracking via webhook)
+  const twilioFromNumber = process.env.TWILIO_WHATSAPP_NUMBER || '';
+  const messageLogsToCreate = result.results
+    .filter(r => r.success && r.messageId)
+    .map(r => {
+      const guest = guests.find(g => g._id.toString() === r.guestId);
+      return {
+        weddingId,
+        guestId: r.guestId,
+        scheduledMessageId: scheduledMessage._id,
+        twilioSid: r.messageId!,
+        deliveryStatus: 'queued',
+        messageType,
+        toPhone: guest?.phone || '',
+        fromPhone: twilioFromNumber,
+        sentAt: new Date(),
+      };
+    });
+
+  if (messageLogsToCreate.length > 0) {
+    try {
+      await MessageLog.insertMany(messageLogsToCreate);
+      console.log(`📝 [CRON] Created ${messageLogsToCreate.length} message logs for tracking`);
+    } catch (logError) {
+      console.error('⚠️ [CRON] Error creating message logs:', logError);
+      // Don't fail the whole process for logging errors
+    }
+  }
 
   return {
     scheduleId: scheduledMessage._id,
@@ -260,14 +347,18 @@ async function notifyCouple(scheduledMessage: any, result: any) {
     const dashboardUrl = `${appUrl}/dashboard/messages/history`;
 
     // Send notification (freeform message - should work if couple has messaged before)
+    // Note: At this point we only know how many were accepted by Twilio,
+    // not how many were actually delivered. Delivery status comes via webhook.
     const message = `שלום ${wedding.groomName} ו${wedding.brideName}! 📬
 
-${config.description} נשלחה בהצלחה!
+${config.description} נשלחה!
 
-📊 סיכום:
-✅ נשלח: ${result.sentCount}
-❌ נכשל: ${result.failedCount}
-📋 סה"כ: ${result.totalGuests}
+📊 סיכום ראשוני:
+📤 נשלח לעיבוד: ${result.sentCount}
+❌ נכשל בשליחה: ${result.failedCount}
+📋 סה"כ אורחים: ${result.totalGuests}
+
+💡 סטטוס המסירה האמיתי יתעדכן בדקות הקרובות
 
 לצפייה בתגובות:
 ${dashboardUrl}`;
