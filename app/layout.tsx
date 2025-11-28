@@ -14,7 +14,7 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "פלטפורמת הזמנות לחתונה | Wedding Platform",
+  title: "לונסול | אישורי הגעה וסידור הושבה לחתונה | lunsoul",
   description: "פלטפורמה מקיפה לניהול הזמנות לחתונה, אישורי הגעה, וניהול אורחים",
   keywords: ["חתונה", "הזמנה דיגיטלית", "אישור הגעה", "ניהול אורחים"],
 };

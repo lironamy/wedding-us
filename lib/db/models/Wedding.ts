@@ -279,17 +279,20 @@ const WeddingSchema = new Schema<IWedding>(
         default: false,
       },
     },
-    hallElements: [{
-      id: String,
-      type: String,
-      name: String,
-      x: Number,
-      y: Number,
-      width: Number,
-      height: Number,
-      color: String,
-      inSidebar: { type: Boolean, default: false },
-    }],
+    hallElements: {
+      type: [{
+        id: { type: String },
+        type: { type: String },
+        name: { type: String },
+        x: { type: Number },
+        y: { type: Number },
+        width: { type: Number },
+        height: { type: Number },
+        color: { type: String },
+        inSidebar: { type: Boolean, default: false },
+      }],
+      default: [],
+    },
     maxGuests: {
       type: Number,
       default: 200,
@@ -350,6 +353,11 @@ const WeddingSchema = new Schema<IWedding>(
 WeddingSchema.index({ userId: 1 });
 WeddingSchema.index({ eventDate: 1 });
 WeddingSchema.index({ status: 1 });
+
+// Delete cached model in development to pick up schema changes
+if (process.env.NODE_ENV !== 'production' && models.Wedding) {
+  delete models.Wedding;
+}
 
 const Wedding = models.Wedding || mongoose.model<IWedding>('Wedding', WeddingSchema);
 
