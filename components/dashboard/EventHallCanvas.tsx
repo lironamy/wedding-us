@@ -426,6 +426,209 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
     setSpecialElements(DEFAULT_SPECIAL_ELEMENTS);
   }, [tables, tablesStore, CANVAS_WIDTH]);
 
+  // Capture screenshot of the canvas using native canvas drawing
+  const captureScreenshot = useCallback(async () => {
+    // Deselect any selected items before screenshot
+    setSelectedTableId(null);
+    setSelectedElement(null);
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Helper functions defined inside to avoid dependency issues
+    const getTableDims = (shape: string, size: string) => {
+      const baseSize = size === 'small' ? 72 : size === 'large' ? 120 : 96;
+      if (shape === 'rectangle') {
+        return { width: baseSize * 1.8, height: baseSize * 0.7 };
+      }
+      return { width: baseSize, height: baseSize };
+    };
+
+    const getGrpName = (table: Table) => {
+      if (table.groupId) {
+        const group = groups.find(g => g._id === table.groupId);
+        return group?.name;
+      }
+      return table.tableName;
+    };
+
+    const getPeopleCount = (table: Table) => {
+      const guestList = viewMode === 'real' && simulationEnabled
+        ? table.assignedGuests.filter(guest => guest.rsvpStatus === 'confirmed')
+        : table.assignedGuests;
+      return guestList.reduce((sum, guest: any) => {
+        const seats = viewMode === 'simulation' ? guest.simulationSeatsInTable : guest.seatsInTable;
+        return sum + (seats || 0);
+      }, 0);
+    };
+
+    try {
+      toast.loading('מכין צילום מסך...', { id: 'screenshot' });
+
+      const imgScale = 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = CANVAS_WIDTH * imgScale;
+      canvas.height = CANVAS_HEIGHT * imgScale;
+      const ctx = canvas.getContext('2d')!;
+      ctx.scale(imgScale, imgScale);
+
+      // Background
+      ctx.fillStyle = '#f3f4f6';
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      // Draw grid if enabled
+      if (showGrid) {
+        ctx.fillStyle = '#ccc';
+        for (let x = 0; x < CANVAS_WIDTH; x += 20) {
+          for (let y = 0; y < CANVAS_HEIGHT; y += 20) {
+            ctx.beginPath();
+            ctx.arc(x, y, 1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // Draw special elements
+      canvasElements.forEach(element => {
+        const gradients: Record<string, [string, string]> = {
+          danceFloor: ['#ec4899', '#9333ea'],
+          bar: ['#f59e0b', '#ea580c'],
+          stage: ['#6366f1', '#2563eb'],
+          chuppah: ['#fb7185', '#ec4899'],
+          dj: ['#8b5cf6', '#9333ea'],
+          restrooms: ['#94a3b8', '#6b7280'],
+          photo: ['#22d3ee', '#14b8a6'],
+          gifts: ['#34d399', '#22c55e'],
+          entrance: ['#6b7280', '#4b5563'],
+        };
+
+        const [color1, color2] = gradients[element.type] || ['#9ca3af', '#6b7280'];
+        const gradient = ctx.createLinearGradient(element.x, element.y, element.x + element.width, element.y + element.height);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.roundRect(element.x, element.y, element.width, element.height, 8);
+        ctx.fill();
+
+        // Border
+        ctx.strokeStyle = color1;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(element.icon || '', element.x + element.width / 2, element.y + element.height / 2 - 5);
+        ctx.font = '12px Arial';
+        ctx.fillText(element.name, element.x + element.width / 2, element.y + element.height / 2 + 15);
+      });
+
+      // Draw tables
+      tables.forEach(table => {
+        const pos = tablePositions.get(table._id) || { x: 0, y: 0 };
+        const peopleAtTable = getPeopleCount(table);
+        const shape = table.shape || 'round';
+        const size = table.size || 'medium';
+        const { width: tableWidth, height: tableHeight } = getTableDims(shape, size);
+
+        // Table color based on occupancy
+        const occupancyRate = peopleAtTable / table.capacity;
+        let tableColor = '#22d3ee'; // cyan - empty
+        if (peopleAtTable > 0 && occupancyRate < 1) tableColor = '#14b8a6'; // teal - partial
+        if (occupancyRate >= 1) tableColor = '#10b981'; // emerald - full
+
+        ctx.fillStyle = tableColor;
+        ctx.strokeStyle = tableColor;
+        ctx.lineWidth = 4;
+
+        const centerX = pos.x + tableWidth / 2;
+        const centerY = pos.y + tableHeight / 2;
+
+        // Draw table shape
+        ctx.beginPath();
+        if (shape === 'round') {
+          ctx.arc(centerX, centerY, tableWidth / 2, 0, Math.PI * 2);
+        } else if (shape === 'rectangle') {
+          ctx.roundRect(pos.x, pos.y, tableWidth, tableHeight, 12);
+        } else {
+          ctx.roundRect(pos.x, pos.y, tableWidth, tableHeight, 8);
+        }
+        ctx.fill();
+        ctx.stroke();
+
+        // Draw seat dots
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        if (shape === 'rectangle') {
+          for (let i = 0; i < 8; i++) {
+            const dotX = pos.x + 15 + i * (tableWidth - 30) / 7;
+            ctx.beginPath();
+            ctx.arc(dotX, pos.y + 8, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(dotX, pos.y + tableHeight - 8, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else {
+          for (let i = 0; i < 12; i++) {
+            const angle = (i * 30) * Math.PI / 180;
+            const radius = (tableWidth / 2) * 0.9;
+            const dotX = centerX + radius * Math.cos(angle);
+            const dotY = centerY + radius * Math.sin(angle);
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, tableWidth > 90 ? 6 : 5, 0, Math.PI * 2);
+            ctx.fillStyle = peopleAtTable > i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)';
+            ctx.fill();
+          }
+        }
+
+        // Table number
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${tableWidth > 90 ? 20 : 18}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(table.tableNumber), centerX, centerY - 10);
+
+        // Capacity
+        ctx.font = `${tableWidth > 90 ? 12 : 10}px Arial`;
+        ctx.fillText(`${peopleAtTable} / ${table.capacity}`, centerX, centerY + 8);
+
+        // Group name
+        const groupName = getGrpName(table);
+        if (groupName && !(shape === 'rectangle' && size === 'small')) {
+          ctx.font = '10px Arial';
+          ctx.fillStyle = 'rgba(255,255,255,0.8)';
+          const maxWidth = shape === 'rectangle' ? 120 : tableWidth - 20;
+          ctx.fillText(groupName.substring(0, 15), centerX, centerY + 22, maxWidth);
+        }
+      });
+
+      // Convert to blob and download
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          toast.error('שגיאה ביצירת התמונה', { id: 'screenshot' });
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const date = new Date().toLocaleDateString('he-IL').replace(/\//g, '-');
+        link.download = `סידור-אולם-${date}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast.success('התמונה הורדה בהצלחה!', { id: 'screenshot' });
+      }, 'image/png', 0.95);
+    } catch (error: any) {
+      console.error('Screenshot error:', error);
+      toast.error(`שגיאה בצילום המסך: ${error.message || 'Unknown error'}`, { id: 'screenshot' });
+    }
+  }, [tables, tablePositions, canvasElements, showGrid, CANVAS_WIDTH, CANVAS_HEIGHT, groups, viewMode, simulationEnabled]);
+
   // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -773,6 +976,13 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
             title="איפוס פריסה"
           >
             🔄 איפוס
+          </button>
+          <button
+            onClick={captureScreenshot}
+            className="px-3 py-1.5 bg-white shadow rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+            title="צילום מסך להדפסה"
+          >
+            📸 צילום
           </button>
           <span className="px-3 py-1.5 bg-white shadow rounded-lg text-sm text-gray-500">
             {Math.round(scale * 100)}%
