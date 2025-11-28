@@ -64,9 +64,9 @@ export default async function GiftsPage() {
         {/* Setup Warning */}
         {!wedding.bitPhone && !wedding.payboxPhone && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h3 className="font-bold text-yellow-800 mb-2">הגדר מספרי טלפון לתשלום</h3>
+            <h3 className="font-bold text-yellow-800 mb-2">הגדר מספרי טלפון נייד לתשלום</h3>
             <p className="text-sm text-yellow-700 mb-3">
-              כדי שאורחים יוכלו לשלוח מתנות, הגדר את מספרי הטלפון שלך לביט ו/או פייבוקס בהגדרות.
+              כדי שאורחים יוכלו לשלוח מתנות, הגדר את מספרי הטלפון נייד שלך לביט ו/או פייבוקס בהגדרות.
             </p>
             <a
               href="/dashboard/settings"
@@ -90,7 +90,7 @@ export default async function GiftsPage() {
           <ul className="space-y-2 text-sm text-blue-800">
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>
-              <span>הגדר את מספרי הטלפון שלך לביט ופייבוקס בהגדרות</span>
+              <span>הגדר את מספרי הטלפון נייד שלך לביט ופייבוקס בהגדרות</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600">•</span>

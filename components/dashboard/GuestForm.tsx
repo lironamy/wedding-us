@@ -138,7 +138,7 @@ export function GuestForm({ weddingId, guest, onSuccess, onCancel }: GuestFormPr
       {/* Header */}
       <div className="text-center mb-6">
         <div
-          className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center"
+          className="w-16 h-16 mx-auto mb-3 rounded-full bg-linear-to-br from-gold to-gold-dark flex items-center justify-center"
         >
           <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isEdit ? (
@@ -176,7 +176,7 @@ export function GuestForm({ weddingId, guest, onSuccess, onCancel }: GuestFormPr
 
         <div>
           <Input
-            label="מספר טלפון *"
+            label="מספר טלפון נייד *"
             name="phone"
             type="tel"
             dir="ltr"
@@ -204,7 +204,6 @@ export function GuestForm({ weddingId, guest, onSuccess, onCancel }: GuestFormPr
             label="קבוצה (אופציונלי)"
             name="familyGroup"
             type="text"
-            placeholder="לדוגמה: משפחת כהן, חברים מהעבודה"
             value={formData.familyGroup || ''}
             onChange={(e) => setFormData({ ...formData, familyGroup: e.target.value })}
             disabled={loading}

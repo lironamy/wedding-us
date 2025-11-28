@@ -6,6 +6,26 @@ export interface ISeatingSettings {
   autoRecalcPolicy: 'onRsvpChangeGroupOnly' | 'onRsvpChangeAll' | 'manualOnly';
   adjacencyPolicy: 'forbidSameTableOnly' | 'forbidSameAndAdjacent';
   simulationEnabled: boolean;
+  // Children's table settings
+  enableKidsTable: boolean;
+  kidsTableMinAge?: number; // Minimum age for kids table (younger stay with parents)
+  kidsTableMinCount?: number; // Minimum kids needed to create a kids table
+  // Singles placement
+  avoidSinglesAlone: boolean; // Don't place singles alone at couple-heavy tables
+  // Hall zones
+  enableZonePlacement: boolean; // Use hall zones for placement
+}
+
+export interface IHallElement {
+  id: string;
+  type: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  inSidebar: boolean;
 }
 
 export interface IWedding {
@@ -48,6 +68,8 @@ export interface IWedding {
   status: 'draft' | 'active' | 'completed' | 'archived';
   // Seating settings
   seatingSettings?: ISeatingSettings;
+  // Hall elements (dance floor, bar, stage, etc.)
+  hallElements?: IHallElement[];
   // Payment fields
   paymentStatus?: 'free' | 'pending' | 'paid' | 'failed';
   paymentDetails?: {
@@ -232,7 +254,42 @@ const WeddingSchema = new Schema<IWedding>(
         type: Boolean,
         default: false,
       },
+      enableKidsTable: {
+        type: Boolean,
+        default: false,
+      },
+      kidsTableMinAge: {
+        type: Number,
+        default: 6,
+        min: 0,
+        max: 18,
+      },
+      kidsTableMinCount: {
+        type: Number,
+        default: 6,
+        min: 2,
+        max: 20,
+      },
+      avoidSinglesAlone: {
+        type: Boolean,
+        default: true,
+      },
+      enableZonePlacement: {
+        type: Boolean,
+        default: false,
+      },
     },
+    hallElements: [{
+      id: String,
+      type: String,
+      name: String,
+      x: Number,
+      y: Number,
+      width: Number,
+      height: Number,
+      color: String,
+      inSidebar: { type: Boolean, default: false },
+    }],
     maxGuests: {
       type: Number,
       default: 200,

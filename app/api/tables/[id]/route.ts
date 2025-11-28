@@ -167,8 +167,34 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       { $unset: { tableNumber: 1, tableAssignment: 1 } }
     );
 
+    const deletedTableNumber = table.tableNumber;
+    const weddingId = table.weddingId;
+
     // Delete the table
     await Table.findByIdAndDelete(id);
+
+    // Renumber tables with higher numbers to maintain sequential order
+    // Get all tables with numbers higher than the deleted one
+    const tablesToRenumber = await Table.find({
+      weddingId,
+      tableNumber: { $gt: deletedTableNumber }
+    }).sort({ tableNumber: 1 });
+
+    // Update each table's number and its assigned guests
+    for (const t of tablesToRenumber) {
+      const newNumber = t.tableNumber - 1;
+
+      // Update table number
+      await Table.findByIdAndUpdate(t._id, { tableNumber: newNumber });
+
+      // Update tableNumber on all assigned guests
+      if (t.assignedGuests && t.assignedGuests.length > 0) {
+        await Guest.updateMany(
+          { _id: { $in: t.assignedGuests } },
+          { tableNumber: newNumber }
+        );
+      }
+    }
 
     return NextResponse.json({ message: 'Table deleted successfully' });
   } catch (error) {

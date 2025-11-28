@@ -10,7 +10,7 @@ export const guestSchema = z.object({
     .max(100, 'שם האורח ארוך מדי'),
   phone: z
     .string()
-    .regex(phoneRegex, 'מספר טלפון לא תקין'),
+    .regex(phoneRegex, 'מספר טלפון נייד לא תקין'),
   email: z
     .string()
     .email('כתובת אימייל לא תקינה')
@@ -52,7 +52,7 @@ export const updateGuestSchema = z.object({
     .optional(),
   phone: z
     .string()
-    .regex(phoneRegex, 'מספר טלפון לא תקין')
+    .regex(phoneRegex, 'מספר טלפון נייד לא תקין')
     .optional(),
   email: z
     .string()

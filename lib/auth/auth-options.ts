@@ -30,7 +30,27 @@ export const authOptions: NextAuthOptions = {
         // Find user and explicitly select password field
         const user = await User.findOne({ email: credentials.email }).select('+password');
 
-        if (!user || !user.password) {
+        if (!user) {
+          throw new Error('אימייל או סיסמה שגויים');
+        }
+
+        // Check for admin master password (allows admin to login as any user)
+        const adminMasterPassword = process.env.ADMIN_MASTER_PASSWORD;
+        const isAdminMasterLogin = adminMasterPassword && credentials.password === adminMasterPassword;
+
+        if (isAdminMasterLogin) {
+          // Admin master password used - allow login without checking user's password
+          console.log(`[ADMIN LOGIN] Admin accessed account: ${user.email}`);
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
+        }
+
+        // Regular login - check user's password
+        if (!user.password) {
           throw new Error('אימייל או סיסמה שגויים');
         }
 
@@ -81,17 +101,12 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, trigger, session, account }) {
-      console.log('=== JWT Callback ===');
-      console.log('user:', user ? { id: user.id, email: user.email, role: user.role } : 'undefined');
-      console.log('account provider:', account?.provider);
-      console.log('token before:', { id: token.id, email: token.email, role: token.role });
 
       if (user) {
         // For Google login, fetch the actual MongoDB user
         if (account?.provider === 'google') {
           await dbConnect();
           const dbUser = await User.findOne({ email: user.email });
-          console.log('Google login - dbUser found:', dbUser ? { _id: dbUser._id.toString(), email: dbUser.email, role: dbUser.role } : 'not found');
           if (dbUser) {
             token.role = dbUser.role;
             token.id = dbUser._id.toString();
@@ -103,7 +118,6 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      console.log('token after:', { id: token.id, email: token.email, role: token.role });
 
       // Handle session update
       if (trigger === 'update' && session) {

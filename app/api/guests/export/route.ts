@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     // Prepare data for Excel
     const excelData = guests.map((guest) => ({
       'שם': guest.name,
-      'טלפון': guest.phone,
+      'טלפון נייד': guest.phone,
       'אימייל': guest.email || '',
       'קבוצה משפחתית': guest.familyGroup || '',
       'מספר מוזמנים': guest.invitedCount,
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
     // Set column widths
     const columnWidths = [
       { wch: 20 }, // שם
-      { wch: 15 }, // טלפון
+      { wch: 15 }, // טלפון נייד
       { wch: 25 }, // אימייל
       { wch: 15 }, // קבוצה משפחתית
       { wch: 12 }, // מספר מוזמנים

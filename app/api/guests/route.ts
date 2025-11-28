@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     if (existingGuest) {
       return NextResponse.json(
-        { error: `אורח עם מספר הטלפון ${phone} כבר קיים (${existingGuest.name})` },
+        { error: `אורח עם מספר הטלפון נייד ${phone} כבר קיים (${existingGuest.name})` },
         { status: 400 }
       );
     }

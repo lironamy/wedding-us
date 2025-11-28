@@ -37,15 +37,8 @@ export async function POST(request: NextRequest) {
     user.resetTokenExpiry = resetTokenExpiry;
     await user.save();
 
-    console.log('Saved reset token for user:', user.email);
-    console.log('Token:', resetToken);
-    console.log('Expiry:', resetTokenExpiry);
-
     // Verify it was saved
     const verifyUser = await User.findById(user._id);
-    console.log('Verified saved token:', verifyUser?.resetToken);
-    console.log('Verified saved expiry:', verifyUser?.resetTokenExpiry);
-
     return NextResponse.json(
       {
         message: 'אם האימייל קיים במערכת, נשלח אליו קישור לאיפוס סיסמה',

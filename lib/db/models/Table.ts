@@ -15,6 +15,11 @@ export interface ITable {
   positionX?: number;
   positionY?: number;
   locked: boolean;
+  // Hall zone placement
+  zone?: 'stage' | 'dance' | 'quiet' | 'general';
+  // Visual settings for hall canvas
+  shape?: 'round' | 'square' | 'rectangle';
+  size?: 'small' | 'medium' | 'large';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -75,6 +80,21 @@ const TableSchema = new Schema<ITable>(
     locked: {
       type: Boolean,
       default: false,
+    },
+    zone: {
+      type: String,
+      enum: ['stage', 'dance', 'quiet', 'general'],
+      default: 'general',
+    },
+    shape: {
+      type: String,
+      enum: ['round', 'square', 'rectangle'],
+      default: 'round',
+    },
+    size: {
+      type: String,
+      enum: ['small', 'medium', 'large'],
+      default: 'medium',
     },
   },
   {

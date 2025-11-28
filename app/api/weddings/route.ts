@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         seatsPerTable: 10,
         autoRecalcPolicy: 'onRsvpChangeGroupOnly',
         adjacencyPolicy: 'forbidSameTableOnly',
-        simulationEnabled: false
+        simulationEnabled: true
       },
       uniqueUrl,
       status: 'draft'

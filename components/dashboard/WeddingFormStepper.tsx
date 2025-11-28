@@ -223,9 +223,9 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         newErrors.brideName = `שם ה${partnerTypeLabels[formData.partner2Type]} חובה`;
       }
       if (!formData.contactPhone.trim()) {
-        newErrors.contactPhone = 'מספר טלפון חובה';
+        newErrors.contactPhone = 'מספר טלפון נייד חובה';
       } else if (!validateIsraeliPhone(formData.contactPhone)) {
-        newErrors.contactPhone = 'מספר טלפון לא תקין (לדוגמה: 050-1234567)';
+        newErrors.contactPhone = 'מספר טלפון נייד לא תקין (לדוגמה: 050-1234567)';
       }
       if (!formData.eventDate) newErrors.eventDate = 'תאריך האירוע חובה';
       if (!formData.eventTime) newErrors.eventTime = 'שעת האירוע חובה';
@@ -467,7 +467,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
 
                 {/* Contact Phone */}
                 <Input
-                  label="טלפון ליצירת קשר"
+                  label="טלפון נייד ליצירת קשר"
                   name="contactPhone"
                   type="tel"
                   value={formData.contactPhone}
@@ -852,7 +852,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                         style={{ backgroundImage: `url(${effect.url})` }}
                       />
                     ) : (
-                      <div className="h-16 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <div className="h-16 sm:h-20 bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                         <span className="text-gray-400 text-xs">ללא</span>
                       </div>
                     )}
@@ -1186,7 +1186,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
             >
               {/* Success Animation */}
-              <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-6 sm:p-8 text-center">
+              <div className="bg-linear-to-br from-green-400 to-emerald-500 p-6 sm:p-8 text-center">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}

@@ -254,7 +254,7 @@ function QuickAction({
       <motion.div
         animate={isHovered ? { rotate: [0, -10, 10, 0], scale: 1.1 } : { rotate: 0, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-pink-100 flex items-center justify-center text-2xl"
+        className="w-12 h-12 rounded-xl bg-linear-to-br from-primary/10 to-pink-100 flex items-center justify-center text-2xl"
       >
         {icon}
       </motion.div>
@@ -338,7 +338,7 @@ export default function DashboardContent({ wedding, stats }: DashboardContentPro
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-pink-500 to-purple-600 p-8 text-white shadow-2xl"
+        className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary via-pink-500 to-purple-600 p-8 text-white shadow-2xl"
       >
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-32 -translate-y-32" />
@@ -418,7 +418,7 @@ export default function DashboardContent({ wedding, stats }: DashboardContentPro
           value={stats.totalGuests}
           icon="guests"
           color="#3b82f6"
-          gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+          gradient="bg-linear-to-br from-blue-500 to-blue-600"
           delay={0}
         />
         <StatsCard
@@ -427,7 +427,7 @@ export default function DashboardContent({ wedding, stats }: DashboardContentPro
           subtitle={`${stats.totalAdults} מבוגרים, ${stats.totalChildren} ילדים`}
           icon="confirmed"
           color="#22c55e"
-          gradient="bg-gradient-to-br from-green-500 to-emerald-600"
+          gradient="bg-linear-to-br from-green-500 to-emerald-600"
           delay={0.1}
         />
         <StatsCard
@@ -435,7 +435,7 @@ export default function DashboardContent({ wedding, stats }: DashboardContentPro
           value={stats.pending}
           icon="pending"
           color="#eab308"
-          gradient="bg-gradient-to-br from-yellow-500 to-amber-600"
+          gradient="bg-linear-to-br from-yellow-500 to-amber-600"
           delay={0.2}
         />
         <StatsCard
@@ -443,7 +443,7 @@ export default function DashboardContent({ wedding, stats }: DashboardContentPro
           value={stats.totalGifts}
           icon="gifts"
           color="#a855f7"
-          gradient="bg-gradient-to-br from-purple-500 to-violet-600"
+          gradient="bg-linear-to-br from-purple-500 to-violet-600"
           delay={0.3}
         />
       </div>

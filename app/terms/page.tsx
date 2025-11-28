@@ -261,7 +261,7 @@ export default function TermsPage() {
                 <p className="font-semibold mb-3">פרטי יצירת קשר:</p>
                 <p>שם העסק: לונסול ח.פ. 313559460</p>
                 <p>כתובת: רחוב הגפן 7, קרית ביאליק</p>
-                <p>טלפון נייד: <span dir="ltr">054-283-6921</span></p>
+                <p>טלפון נייד נייד: <span dir="ltr">054-283-6921</span></p>
                 <p>
                   דואר אלקטרוני:{' '}
                   <a href="mailto:lironamy@gmail.com" className="text-primary hover:underline">

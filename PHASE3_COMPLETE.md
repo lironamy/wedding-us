@@ -60,7 +60,7 @@ Location: `/lib/utils/excel.ts`
 
 **Supported Columns:**
 - שם מלא (Full Name) - Required
-- טלפון (Phone) - Required
+- טלפון נייד (Phone) - Required
 - אימייל (Email) - Optional
 - קבוצה משפחתית (Family Group) - Optional
 - מספר מוזמנים (Invited Count) - Optional (default: 1)

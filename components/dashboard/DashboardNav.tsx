@@ -365,7 +365,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
   };
 
   return (
-    <nav className="bg-white border-b border-border sticky top-0 z-50">
+    <nav className="bg-white sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -517,7 +517,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                   initial={{ opacity: 0, y: 20, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
-                  className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary via-pink-500 to-purple-600 p-3 mb-3 shadow-lg shadow-primary/30"
+                  className="relative overflow-hidden rounded-xl bg-linear-to-br from-primary via-pink-500 to-purple-600 p-3 mb-3 shadow-lg shadow-primary/30"
                 >
                   {/* Decorative circles */}
                   <div className="absolute -top-10 -right-10 w-24 h-24 bg-white/10 rounded-full" />
@@ -569,7 +569,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
                           >
                             <motion.span
                               className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                active ? 'bg-white/20' : 'bg-gradient-to-br from-gray-100 to-gray-50'
+                                active ? 'bg-white/20' : 'bg-linear-to-br from-gray-100 to-gray-50'
                               }`}
                               whileHover={{ rotate: [0, -5, 5, 0] }}
                             >

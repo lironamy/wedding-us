@@ -127,18 +127,18 @@ function HowItWorks() {
                 {/* Card */}
                 <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/20 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden">
                   {/* Gradient overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                   {/* Content */}
                   <div className="relative z-10">
                     {/* Number Badge */}
                     <div className="flex justify-center mb-4">
                       <div className="relative">
-                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                           {step.number}
                         </div>
                         {/* Pulse effect - only on hover */}
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-30 group-hover:animate-ping" style={{ animationDuration: '2s' }} />
+                        <div className="absolute inset-0 rounded-xl bg-linear-to-br from-primary to-accent opacity-0 group-hover:opacity-30 group-hover:animate-ping" style={{ animationDuration: '2s' }} />
                       </div>
                     </div>
 

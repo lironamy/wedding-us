@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { Modal } from '@/components/ui/Modal';
 import MediaUpload from '@/components/dashboard/MediaUpload';
 import BitQrUpload from '@/components/dashboard/BitQrUpload';
 import { getGenderText } from '@/lib/utils/genderText';
@@ -500,220 +501,209 @@ export default function WeddingForm({ wedding, onSubmit, onCancel }: WeddingForm
       </div>
 
       {/* Mobile Preview Modal */}
-      {showPreview && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold">תצוגה מקדימה - מובייל</h3>
-              <button
-                type="button"
-                onClick={() => setShowPreview(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
-              >
-                &times;
-              </button>
-            </div>
+      <Modal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        title="תצוגה מקדימה - מובייל"
+        size="md"
+      >
+        {/* Google Fonts for Preview */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Allura&family=Heebo:wght@300;400;500;700&family=Suez+One&display=swap"
+          rel="stylesheet"
+        />
 
-            {/* Google Fonts for Preview */}
-            <link
-              href="https://fonts.googleapis.com/css2?family=Allura&family=Heebo:wght@300;400;500;700&family=Suez+One&display=swap"
-              rel="stylesheet"
-            />
+        {/* Phone Frame */}
+        <div className="flex justify-center bg-gray-100 rounded-xl p-4">
+          <div className="w-[280px] sm:w-[320px] h-[500px] sm:h-[568px] bg-[#fffff6] rounded-[2rem] shadow-xl border-4 border-gray-800 overflow-hidden relative">
+            {/* Phone Notch */}
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 sm:w-32 h-5 sm:h-6 bg-gray-800 rounded-b-xl z-20"></div>
 
-            {/* Phone Frame */}
-            <div className="p-4 bg-gray-100">
-              <div className="mx-auto w-[320px] h-[568px] bg-[#fffff6] rounded-4xl shadow-xl border-4 border-gray-800 overflow-hidden relative">
-                {/* Phone Notch */}
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-gray-800 rounded-b-xl z-20"></div>
+            {/* Phone Screen Content */}
+            <div
+              className="relative h-full overflow-y-auto"
+              style={{ fontFamily: 'Heebo, Assistant, sans-serif' }}
+            >
+              {/* Hero Image - Full display like actual invitation */}
+              {formData.mediaUrl && (
+                <div className="relative w-full">
+                  {formData.mediaType === 'video' ? (
+                    <video
+                      src={formData.mediaUrl}
+                      className="w-full h-auto object-contain"
+                      muted
+                      autoPlay
+                      loop
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={formData.mediaUrl}
+                      alt="Wedding"
+                      className="w-full h-auto object-contain"
+                    />
+                  )}
+                </div>
+              )}
 
-                {/* Phone Screen Content */}
+              {/* Torn Paper Effect */}
+              {formData.mediaUrl && formData.backgroundPattern && (
                 <div
-                  className="relative h-full overflow-y-auto"
-                  style={{ fontFamily: 'Heebo, Assistant, sans-serif' }}
-                >
-                  {/* Hero Image - Full display like actual invitation */}
-                  {formData.mediaUrl && (
-                    <div className="relative w-full">
-                      {formData.mediaType === 'video' ? (
-                        <video
-                          src={formData.mediaUrl}
-                          className="w-full h-auto object-contain"
-                          muted
-                          autoPlay
-                          loop
-                          playsInline
-                        />
-                      ) : (
-                        <img
-                          src={formData.mediaUrl}
-                          alt="Wedding"
-                          className="w-full h-auto object-contain"
-                        />
-                      )}
-                    </div>
-                  )}
+                  className="relative h-12 w-full pointer-events-none -mt-1"
+                  style={{
+                    backgroundImage: `url("${formData.backgroundPattern}")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'top center',
+                    backgroundSize: 'cover',
+                  }}
+                />
+              )}
 
-                  {/* Torn Paper Effect */}
-                  {formData.mediaUrl && formData.backgroundPattern && (
-                    <div
-                      className="relative h-12 w-full pointer-events-none -mt-1"
-                      style={{
-                        backgroundImage: `url("${formData.backgroundPattern}")`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'top center',
-                        backgroundSize: 'cover',
-                      }}
-                    />
-                  )}
+              {/* Content */}
+              <div className="relative bg-[#fffff6] px-3 pt-2">
+                {/* Names - Decorative Font */}
+                <div className="mb-2 flex flex-wrap items-center justify-center gap-1 text-center">
+                  <h1
+                    className="text-xl sm:text-2xl"
+                    style={{
+                      letterSpacing: '0.05em',
+                      color: '#555050',
+                      fontFamily: '"Suez One", "Heebo", serif',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {formData.groomName || partnerTypeLabels[formData.partner1Type]}
+                  </h1>
+                  <span
+                    className="text-xl sm:text-2xl pt-1"
+                    style={{
+                      color: '#c2b57f',
+                      fontFamily: '"Allura", cursive',
+                    }}
+                  >
+                    &
+                  </span>
+                  <h1
+                    className="text-xl sm:text-2xl"
+                    style={{
+                      letterSpacing: '0.05em',
+                      color: '#555050',
+                      fontFamily: '"Suez One", "Heebo", serif',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {formData.brideName || partnerTypeLabels[formData.partner2Type]}
+                  </h1>
+                </div>
 
-                  {/* Content */}
-                  <div className="relative bg-[#fffff6] px-3 pt-2">
-                    {/* Names - Decorative Font */}
-                    <div className="mb-2 flex flex-wrap items-center justify-center gap-1 text-center">
-                      <h1
-                        className="text-2xl"
-                        style={{
-                          letterSpacing: '0.05em',
-                          color: '#555050',
-                          fontFamily: '"Suez One", "Heebo", serif',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {formData.groomName || partnerTypeLabels[formData.partner1Type]}
-                      </h1>
-                      <span
-                        className="text-2xl pt-1"
-                        style={{
-                          color: '#c2b57f',
-                          fontFamily: '"Allura", cursive',
-                        }}
-                      >
-                        &
-                      </span>
-                      <h1
-                        className="text-2xl"
-                        style={{
-                          letterSpacing: '0.05em',
-                          color: '#555050',
-                          fontFamily: '"Suez One", "Heebo", serif',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {formData.brideName || partnerTypeLabels[formData.partner2Type]}
-                      </h1>
-                    </div>
+                {/* Quote */}
+                <p className="text-center text-[8px] text-gray-400 px-2 mb-2">
+                  מים רבים לא יוכלו לכבות את האהבה ונהרות לא ישטפוה
+                </p>
 
-                    {/* Quote */}
-                    <p className="text-center text-[8px] text-gray-400 px-2 mb-2">
-                      מים רבים לא יוכלו לכבות את האהבה ונהרות לא ישטפוה
-                    </p>
+                {/* Invitation Text */}
+                <p className="text-center text-xs text-gray-700 mb-2">
+                  {getGenderText('happy', formData.partner1Type, formData.partner2Type)} ו{getGenderText('thrilled', formData.partner1Type, formData.partner2Type)} להזמינכם ליום המאושר בחיינו
+                </p>
 
-                    {/* Invitation Text */}
-                    <p className="text-center text-xs text-gray-700 mb-2">
-                      {getGenderText('happy', formData.partner1Type, formData.partner2Type)} ו{getGenderText('thrilled', formData.partner1Type, formData.partner2Type)} להזמינכם ליום המאושר בחיינו
-                    </p>
+                {/* Event Times */}
+                <div className="text-center text-[10px] text-gray-700 space-y-0.5 mb-2">
+                  <p>קבלת פנים {formData.eventTime || '--:--'}</p>
+                  <p>חופה וקידושין {formData.eventTime || '--:--'}</p>
+                </div>
 
-                    {/* Event Times */}
-                    <div className="text-center text-[10px] text-gray-700 space-y-0.5 mb-2">
-                      <p>קבלת פנים {formData.eventTime || '--:--'}</p>
-                      <p>חופה וקידושין {formData.eventTime || '--:--'}</p>
-                    </div>
-
-                    {/* Date Display Box */}
-                    <div className="flex justify-center mb-2">
-                      <div className="rounded px-3 py-2 inline-flex items-center gap-3">
-                        <span className="text-[10px] font-medium w-12 text-center text-gray-600 border-b border-t border-zinc-400 py-1">
-                          {formData.eventDate
-                            ? new Date(formData.eventDate).toLocaleDateString('he-IL', { weekday: 'long' })
-                            : 'יום'}
-                        </span>
-                        <div className="text-center">
-                          <p className="text-[8px] text-gray-500">
-                            {formData.eventDate
-                              ? new Date(formData.eventDate).toLocaleDateString('he-IL', { month: 'long' })
-                              : 'חודש'}
-                          </p>
-                          <p className="text-2xl font-bold text-gray-800">
-                            {formData.eventDate ? new Date(formData.eventDate).getDate() : '--'}
-                          </p>
-                          <p className="text-[8px] text-gray-500">
-                            {formData.eventDate ? new Date(formData.eventDate).getFullYear() : '----'}
-                          </p>
-                        </div>
-                        <span className="text-[10px] font-medium w-12 text-center text-gray-600 border-b border-t border-zinc-400 py-1">
-                          {formData.eventTime || '--:--'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Venue */}
-                    <div className="mb-3 flex flex-col items-center text-center space-y-0.5">
-                      <p className="text-xs font-medium text-gray-800">
-                        בגן אירועים "{formData.venue || 'שם האולם'}"
+                {/* Date Display Box */}
+                <div className="flex justify-center mb-2">
+                  <div className="rounded px-3 py-2 inline-flex items-center gap-3">
+                    <span className="text-[10px] font-medium w-12 text-center text-gray-600 border-b border-t border-zinc-400 py-1">
+                      {formData.eventDate
+                        ? new Date(formData.eventDate).toLocaleDateString('he-IL', { weekday: 'long' })
+                        : 'יום'}
+                    </span>
+                    <div className="text-center">
+                      <p className="text-[8px] text-gray-500">
+                        {formData.eventDate
+                          ? new Date(formData.eventDate).toLocaleDateString('he-IL', { month: 'long' })
+                          : 'חודש'}
                       </p>
-                      <p className="text-[10px] text-gray-600">{formData.venueAddress || 'כתובת האולם'}</p>
-                    </div>
-
-                    {/* RSVP Placeholder */}
-                    <div className="mb-3 p-2 border border-dashed border-gray-300 rounded-lg text-center">
-                      <p className="text-[10px] text-gray-500">טופס אישור הגעה</p>
-                    </div>
-
-                    {/* Divider */}
-                    <div
-                      className="w-10 h-0.5 mx-auto mb-3"
-                      style={{ backgroundColor: formData.theme.primaryColor, opacity: 0.5 }}
-                    />
-
-                    {/* Map Links */}
-                    <div className="mb-3">
-                      <h3 className="text-center text-xs font-medium text-gray-700 mb-2">
-                        ניווט לאירוע
-                      </h3>
-                      <div className="flex gap-2 justify-center">
-                        <div className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-[10px] flex items-center gap-1">
-                          <span>📍</span>
-                          <span>Google Maps</span>
-                        </div>
-                        <div className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-[10px] flex items-center gap-1">
-                          <span>🚗</span>
-                          <span>Waze</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Gift Links */}
-                    {formData.enableBitGifts && formData.bitPhone && (
-                      <div className="mb-3">
-                        <h3 className="text-center text-xs font-medium text-gray-700 mb-1">
-                          רוצים לשלוח מתנה?
-                        </h3>
-                        <p className="text-center text-[9px] text-gray-500 mb-2">
-                          תודה מראש על המחשבה
-                        </p>
-                        <div className="flex gap-2 justify-center">
-                          <div className="px-3 py-1.5 bg-blue-500 text-white rounded text-[10px] flex items-center gap-1">
-                            <span>💳</span>
-                            <span>שליחת מתנה ב-Bit</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Footer */}
-                    <div className="py-3 border-t border-gray-200">
-                      <p className="text-gray-400 text-[10px] text-center">
-                        נשמח לראותכם בחגיגה שלנו
+                      <p className="text-2xl font-bold text-gray-800">
+                        {formData.eventDate ? new Date(formData.eventDate).getDate() : '--'}
                       </p>
+                      <p className="text-[8px] text-gray-500">
+                        {formData.eventDate ? new Date(formData.eventDate).getFullYear() : '----'}
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-medium w-12 text-center text-gray-600 border-b border-t border-zinc-400 py-1">
+                      {formData.eventTime || '--:--'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Venue */}
+                <div className="mb-3 flex flex-col items-center text-center space-y-0.5">
+                  <p className="text-xs font-medium text-gray-800">
+                    בגן אירועים "{formData.venue || 'שם האולם'}"
+                  </p>
+                  <p className="text-[10px] text-gray-600">{formData.venueAddress || 'כתובת האולם'}</p>
+                </div>
+
+                {/* RSVP Placeholder */}
+                <div className="mb-3 p-2 border border-dashed border-gray-300 rounded-lg text-center">
+                  <p className="text-[10px] text-gray-500">טופס אישור הגעה</p>
+                </div>
+
+                {/* Divider */}
+                <div
+                  className="w-10 h-0.5 mx-auto mb-3"
+                  style={{ backgroundColor: formData.theme.primaryColor, opacity: 0.5 }}
+                />
+
+                {/* Map Links */}
+                <div className="mb-3">
+                  <h3 className="text-center text-xs font-medium text-gray-700 mb-2">
+                    ניווט לאירוע
+                  </h3>
+                  <div className="flex gap-2 justify-center">
+                    <div className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-[10px] flex items-center gap-1">
+                      <span>📍</span>
+                      <span>Google Maps</span>
+                    </div>
+                    <div className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-[10px] flex items-center gap-1">
+                      <span>🚗</span>
+                      <span>Waze</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Gift Links */}
+                {formData.enableBitGifts && formData.bitPhone && (
+                  <div className="mb-3">
+                    <h3 className="text-center text-xs font-medium text-gray-700 mb-1">
+                      רוצים לשלוח מתנה?
+                    </h3>
+                    <p className="text-center text-[9px] text-gray-500 mb-2">
+                      תודה מראש על המחשבה
+                    </p>
+                    <div className="flex gap-2 justify-center">
+                      <div className="px-3 py-1.5 bg-blue-500 text-white rounded text-[10px] flex items-center gap-1">
+                        <span>💳</span>
+                        <span>שליחת מתנה ב-Bit</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="py-3 border-t border-gray-200">
+                  <p className="text-gray-400 text-[10px] text-center">
+                    נשמח לראותכם בחגיגה שלנו
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      )}
+      </Modal>
     </form>
   );
 }

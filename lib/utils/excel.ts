@@ -56,8 +56,8 @@ export function parseGuestExcel(buffer: Buffer): {
         '';
 
       const phone =
-        row['טלפון'] ||
-        row['מספר טלפון'] ||
+        row['טלפון נייד'] ||
+        row['מספר טלפון נייד'] ||
         row['Phone'] ||
         row['Phone Number'] ||
         row['phone'] ||
@@ -91,7 +91,7 @@ export function parseGuestExcel(buffer: Buffer): {
       }
 
       if (!phone || phone.toString().trim() === '') {
-        errors.push(`שורה ${rowNumber}: מספר טלפון חובה`);
+        errors.push(`שורה ${rowNumber}: מספר טלפון נייד חובה`);
         return;
       }
 
@@ -102,7 +102,7 @@ export function parseGuestExcel(buffer: Buffer): {
 
       // Validate phone format (basic validation for Israeli numbers)
       if (!/^(\+972|0)?[1-9]\d{7,9}$/.test(normalizedPhone)) {
-        errors.push(`שורה ${rowNumber}: מספר טלפון לא תקין`);
+        errors.push(`שורה ${rowNumber}: מספר טלפון נייד לא תקין`);
         return;
       }
 
@@ -143,14 +143,14 @@ export function generateGuestTemplate(): Buffer {
   const templateData = [
     {
       'שם מלא': 'יוסי כהן',
-      'טלפון': '0501234567',
+      'טלפון נייד': '0501234567',
       'אימייל': 'yossi@example.com',
       'קבוצה משפחתית': 'משפחת כהן',
-      'מספר מוזמנים': 2,
+      'מספר מוזמנים': '',
     },
     {
       'שם מלא': 'שרה לוי',
-      'טלפון': '0527654321',
+      'טלפון נייד': '0527654321',
       'אימייל': '',
       'קבוצה משפחתית': 'משפחת לוי',
       'מספר מוזמנים': 4,
@@ -162,7 +162,7 @@ export function generateGuestTemplate(): Buffer {
   // Set column widths
   worksheet['!cols'] = [
     { wch: 20 }, // שם מלא
-    { wch: 15 }, // טלפון
+    { wch: 15 }, // טלפון נייד
     { wch: 25 }, // אימייל
     { wch: 20 }, // קבוצה משפחתית
     { wch: 15 }, // מספר מוזמנים

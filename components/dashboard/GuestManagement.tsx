@@ -845,42 +845,42 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
           title="סה״כ אורחים"
           value={stats.total}
           iconType="guests"
-          gradient="bg-gradient-to-br from-yellow-300 to-yellow-500"
+          gradient="bg-linear-to-br from-yellow-300 to-yellow-500"
           delay={0}
         />
         <StatCard
           title="אישרו הגעה"
           value={stats.confirmed}
           iconType="confirmed"
-          gradient="bg-gradient-to-br from-emerald-500 to-green-600"
+          gradient="bg-linear-to-br from-emerald-500 to-green-600"
           delay={0.1}
         />
         <StatCard
           title="סירבו"
           value={stats.declined}
           iconType="declined"
-          gradient="bg-gradient-to-br from-rose-500 to-red-600"
+          gradient="bg-linear-to-br from-rose-500 to-red-600"
           delay={0.2}
         />
         <StatCard
           title="ממתינים"
           value={stats.pending}
           iconType="pending"
-          gradient="bg-gradient-to-br from-amber-400 to-orange-500"
+          gradient="bg-linear-to-br from-amber-400 to-orange-500"
           delay={0.3}
         />
         <StatCard
           title="מבוגרים"
           value={stats.totalAdults}
           iconType="adults"
-          gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
+          gradient="bg-linear-to-br from-blue-500 to-indigo-600"
           delay={0.4}
         />
         <StatCard
           title="ילדים"
           value={stats.totalChildren}
           iconType="children"
-          gradient="bg-gradient-to-br from-pink-400 to-purple-500"
+          gradient="bg-linear-to-br from-pink-400 to-purple-500"
           delay={0.5}
         />
       </div>
@@ -1022,7 +1022,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
                 </svg>
                 <Input
                   type="text"
-                  placeholder="שם, טלפון, אימייל..."
+                  placeholder="שם, טלפון נייד, אימייל..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pr-10 focus:ring-2 focus:ring-gold/50 focus:border-gold"
@@ -1186,7 +1186,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">אורח</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון נייד</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">מוזמנים</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">סטטוס</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">מגיעים</th>

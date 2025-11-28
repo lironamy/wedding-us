@@ -482,7 +482,7 @@ export default function AnimatedFeatures() {
                 className={`relative bg-white rounded-3xl p-8 shadow-lg border border-gray-100 overflow-hidden group`}
               >
                 {/* Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-linear-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
                 {/* Content */}
                 <div className="relative z-10">
