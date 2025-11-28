@@ -9,6 +9,7 @@ import ScheduledMessage, {
   MESSAGE_SCHEDULE_CONFIG,
   type ScheduledMessageType,
 } from '@/lib/db/models/ScheduledMessage';
+import { fromZonedTime } from 'date-fns-tz';
 
 /**
  * GET /api/scheduled-messages
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/scheduled-messages
  * Create scheduled messages for a wedding (auto-schedule based on event date)
+ * Or create a custom manual schedule with specific date/time
  */
 export async function POST(request: NextRequest) {
   try {
@@ -77,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { weddingId, regenerate = false } = body;
+    const { weddingId, regenerate = false, manual = false, scheduledDate, scheduledTime, targetFilter, messageType: manualMessageType } = body;
 
     if (!weddingId) {
       return NextResponse.json(
@@ -98,10 +100,68 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
     }
 
+    // Handle manual scheduling
+    if (manual) {
+      if (!scheduledDate || !scheduledTime) {
+        return NextResponse.json(
+          { error: 'scheduledDate and scheduledTime are required for manual scheduling' },
+          { status: 400 }
+        );
+      }
+
+      // Build date string and convert from Israel time to UTC
+      // scheduledDate is "YYYY-MM-DD", scheduledTime is "HH:MM"
+      const israelDateTimeStr = `${scheduledDate}T${scheduledTime}:00`;
+      const scheduleDate = fromZonedTime(israelDateTimeStr, 'Asia/Jerusalem');
+
+      const now = new Date();
+
+      if (scheduleDate <= now) {
+        return NextResponse.json(
+          { error: 'Scheduled date must be in the future' },
+          { status: 400 }
+        );
+      }
+
+      // Get total guest count based on target filter
+      let guestQuery: any = { weddingId };
+      if (targetFilter?.rsvpStatus && targetFilter.rsvpStatus !== 'all') {
+        guestQuery.rsvpStatus = targetFilter.rsvpStatus;
+      }
+      const guestCount = await Guest.countDocuments(guestQuery);
+
+      // Validate message type
+      const validMessageTypes = ['invitation', 'rsvp_reminder', 'rsvp_reminder_2', 'day_before', 'thank_you'];
+      const selectedMessageType = manualMessageType && validMessageTypes.includes(manualMessageType)
+        ? manualMessageType
+        : 'invitation';
+
+      // Create manual schedule
+      const customSchedule = await ScheduledMessage.create({
+        weddingId,
+        messageType: selectedMessageType,
+        scheduledFor: scheduleDate,
+        status: 'pending',
+        totalGuests: guestCount,
+        sentCount: 0,
+        failedCount: 0,
+        targetFilter: targetFilter || { rsvpStatus: 'all' },
+        coupleNotified: false,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Manual schedule created',
+        scheduledMessage: customSchedule,
+      });
+    }
+
+    // Auto-scheduling logic below
     // Check if schedules already exist
     const existingSchedules = await ScheduledMessage.find({
       weddingId,
       status: 'pending',
+      messageType: { $ne: 'custom' }, // Don't count custom schedules
     });
 
     if (existingSchedules.length > 0 && !regenerate) {
@@ -113,19 +173,20 @@ export async function POST(request: NextRequest) {
     }
 
     // If regenerating, handle existing schedules:
-    // - Delete pending schedules that haven't sent any messages
+    // - Delete pending schedules that haven't sent any messages (except custom)
     // - Cancel pending schedules that have sent messages (keep for history)
     if (regenerate) {
-      // Delete schedules with no messages sent
+      // Delete schedules with no messages sent (except custom)
       await ScheduledMessage.deleteMany({
         weddingId,
         status: 'pending',
         sentCount: 0,
+        messageType: { $ne: 'custom' },
       });
 
       // Cancel schedules that have sent some messages (keep for history)
       await ScheduledMessage.updateMany(
-        { weddingId, status: 'pending', sentCount: { $gt: 0 } },
+        { weddingId, status: 'pending', sentCount: { $gt: 0 }, messageType: { $ne: 'custom' } },
         { status: 'cancelled' }
       );
     }
@@ -140,15 +201,15 @@ export async function POST(request: NextRequest) {
     // Create scheduled messages
     const schedulesToCreate: any[] = [];
 
-    for (const [messageType, scheduledFor] of Object.entries(scheduledDates)) {
+    for (const [messageType, scheduledForDate] of Object.entries(scheduledDates)) {
       // Only schedule if the date is in the future
-      if (scheduledFor > now) {
+      if (scheduledForDate > now) {
         const config = MESSAGE_SCHEDULE_CONFIG[messageType as ScheduledMessageType];
 
         schedulesToCreate.push({
           weddingId,
           messageType,
-          scheduledFor,
+          scheduledFor: scheduledForDate,
           status: 'pending',
           totalGuests: guestCount,
           sentCount: 0,
@@ -211,12 +272,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 });
     }
 
-    // Cancel the scheduled message
-    const result = await ScheduledMessage.findOneAndUpdate(
-      { _id: scheduleId, weddingId, status: 'pending' },
-      { status: 'cancelled' },
-      { new: true }
-    );
+    // Delete the scheduled message from database
+    const result = await ScheduledMessage.findOneAndDelete({
+      _id: scheduleId,
+      weddingId,
+      status: 'pending',
+    });
 
     if (!result) {
       return NextResponse.json(
@@ -227,7 +288,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Scheduled message cancelled',
+      message: 'Scheduled message deleted',
     });
   } catch (error) {
     console.error('Error cancelling scheduled message:', error);

@@ -6,7 +6,7 @@ import Wedding from '@/lib/db/models/Wedding';
 import MessagesPageContent from '@/components/dashboard/MessagesPageContent';
 
 export const metadata = {
-  title: 'שליחת הודעות | Wedding Platform',
+  title: 'שליחת הודעות | לונסול',
   description: 'שלח הודעות אוטומטיות לאורחים',
 };
 

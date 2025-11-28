@@ -1,11 +1,13 @@
 import mongoose, { Schema, models, Types } from 'mongoose';
+import { setIsraelTime } from '@/lib/utils/israelTime';
 
 export type ScheduledMessageType =
   | 'invitation'      // 8 weeks before
   | 'rsvp_reminder'   // 3 weeks before
   | 'rsvp_reminder_2' // 7 days before
   | 'day_before'      // 1 day before
-  | 'thank_you';      // 1 day after
+  | 'thank_you'       // 1 day after
+  | 'custom';         // Manual scheduling
 
 export type ScheduledMessageStatus =
   | 'pending'    // Waiting to be sent
@@ -32,6 +34,9 @@ export interface IScheduledMessage {
   targetFilter?: {
     rsvpStatus?: 'pending' | 'confirmed' | 'declined' | 'all';
   };
+  // Custom message fields (for manual scheduling)
+  customTitle?: string;
+  customMessage?: string;
   // Notification sent to couple
   coupleNotified: boolean;
   coupleNotifiedAt?: Date;
@@ -49,7 +54,7 @@ const ScheduledMessageSchema = new Schema<IScheduledMessage>(
     },
     messageType: {
       type: String,
-      enum: ['invitation', 'rsvp_reminder', 'rsvp_reminder_2', 'day_before', 'thank_you'],
+      enum: ['invitation', 'rsvp_reminder', 'rsvp_reminder_2', 'day_before', 'thank_you', 'custom'],
       required: true,
     },
     scheduledFor: {
@@ -89,6 +94,12 @@ const ScheduledMessageSchema = new Schema<IScheduledMessage>(
         type: String,
         enum: ['pending', 'confirmed', 'declined', 'all'],
       },
+    },
+    customTitle: {
+      type: String,
+    },
+    customMessage: {
+      type: String,
     },
     coupleNotified: {
       type: Boolean,
@@ -145,22 +156,33 @@ export const MESSAGE_SCHEDULE_CONFIG: Record<ScheduledMessageType, {
     targetFilter: { rsvpStatus: 'confirmed' },
     description: 'הודעת תודה',
   },
+  custom: {
+    daysBeforeEvent: 0, // Not used for custom - user sets the date
+    targetFilter: { rsvpStatus: 'all' },
+    description: 'הודעה מותאמת אישית',
+  },
 };
 
 /**
  * Calculate scheduled dates based on event date
+ * Note: 'custom' type is excluded as it uses user-specified dates
+ * Times are set to 9:00 AM Israel time (Asia/Jerusalem)
  */
-export function calculateScheduledDates(eventDate: Date): Record<ScheduledMessageType, Date> {
-  const event = new Date(eventDate);
-  event.setHours(9, 0, 0, 0); // Set to 9 AM
-
+export function calculateScheduledDates(eventDate: Date): Partial<Record<ScheduledMessageType, Date>> {
   const result: Record<string, Date> = {};
 
   for (const [type, config] of Object.entries(MESSAGE_SCHEDULE_CONFIG)) {
-    const scheduledDate = new Date(event);
+    // Skip custom type - it uses user-specified dates
+    if (type === 'custom') continue;
+
+    // Calculate the date (days before/after event)
+    const scheduledDate = new Date(eventDate);
     scheduledDate.setDate(scheduledDate.getDate() - config.daysBeforeEvent);
-    result[type] = scheduledDate;
+
+    // Set to 9:00 AM Israel time (handles DST automatically)
+    const finalDate = setIsraelTime(scheduledDate, 9, 0);
+    result[type] = finalDate;
   }
 
-  return result as Record<ScheduledMessageType, Date>;
+  return result as Partial<Record<ScheduledMessageType, Date>>;
 }
