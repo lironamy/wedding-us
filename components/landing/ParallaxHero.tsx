@@ -173,13 +173,7 @@ export default function ParallaxHero() {
           className="absolute inset-0 w-full h-full"
           style={{ zIndex: 1 }}
         >
-          <Image
-            src="https://64.media.tumblr.com/e14c61f984665c563726e50ba74bb0e9/8b9c4c2b95d9bd79-ee/s2048x3072/dbb91d0b249c92477b4def4cc73acb53fa1710f4.jpg"
-            alt="Sky background"
-            fill
-            className="object-cover"
-            priority
-          />
+         
         </div>
 
         {/* Distant Mountains Layer - behind the main mountains */}
