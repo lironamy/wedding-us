@@ -499,6 +499,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
                   }}
                   error={errors.eventDate}
                   required
+                  minDate={new Date()}
                 />
                 <ModernTimePicker
                   label="שעת קבלת פנים"

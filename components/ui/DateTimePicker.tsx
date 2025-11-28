@@ -390,8 +390,7 @@ export function ModernTimePicker({ label, value, onChange, error, required, name
         showPopperArrow={false}
         calendarClassName="modern-timepicker"
         popperClassName="modern-timepicker-popper"
-        minTime={minTime}
-        maxTime={new Date(new Date().setHours(23, 59, 0, 0))}
+        {...(minTime ? { minTime, maxTime: new Date(new Date().setHours(23, 59, 0, 0)) } : {})}
         customInput={
           <CustomInput
             label={label}
