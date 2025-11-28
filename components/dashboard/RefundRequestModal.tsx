@@ -145,7 +145,7 @@ export default function RefundRequestModal({
 ━━━━━━━━━━━━━━━━━━━━━━━━
 שם מלא: ${formData.fullName}
 אימייל: ${formData.email}
-טלפון: ${formData.phone}
+טלפון נייד: ${formData.phone}
 
 פרטי התשלום:
 ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -318,7 +318,7 @@ ${formData.reason || 'לא צוינה סיבה'}
                     />
 
                     <Input
-                      label="טלפון"
+                      label="טלפון נייד"
                       name="phone"
                       type="tel"
                       value={formData.phone}

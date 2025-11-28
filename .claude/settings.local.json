@@ -45,7 +45,8 @@
       "WebFetch(domain:64.media.tumblr.com)",
       "mcp__ide__getDiagnostics",
       "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\ui\\IPhone3D.tsx\")",
-      "Bash(timeout /t)"
+      "Bash(timeout /t)",
+      "Bash(copy \"C:\\Users\\liron\\Downloads\\googleaf8a2ddbe9c3630c.html\" \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\public\\googleaf8a2ddbe9c3630c.html\")"
     ],
     "deny": [],
     "ask": []

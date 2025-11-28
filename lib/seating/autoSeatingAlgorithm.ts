@@ -956,7 +956,7 @@ export async function buildAutoSeating(
       seatsPerTable: 12,
       autoRecalcPolicy: 'onRsvpChangeGroupOnly',
       adjacencyPolicy: 'forbidSameTableOnly',
-      simulationEnabled: false,
+      simulationEnabled: true,
       enableKidsTable: false,
       kidsTableMinAge: 6,
       kidsTableMinCount: 6,
@@ -1024,13 +1024,12 @@ export async function buildAutoSeating(
       }
     }
 
-    // Delete existing assignments from ALL unlocked tables
-    // This includes assignments for locked guests that somehow ended up in unlocked tables
-    console.log(`[CLEANUP] Deleting ${type} assignments from ${unlockedTableIds.length} unlocked tables`);
+    // Delete ALL existing assignments for this type to prevent database bloat
+    // This ensures a clean slate for each auto-seating run
+    console.log(`[CLEANUP] Deleting ALL ${type} assignments for wedding ${weddingId}`);
     const deleteResult = await SeatAssignment.deleteMany({
       weddingId,
       assignmentType: type,
-      tableId: { $in: unlockedTableIds },
     });
     console.log(`[CLEANUP] Deleted ${deleteResult.deletedCount} assignments`);
 
@@ -1807,7 +1806,7 @@ export async function recalculateGroupSeating(
       seatsPerTable: 12,
       autoRecalcPolicy: 'onRsvpChangeGroupOnly',
       adjacencyPolicy: 'forbidSameTableOnly',
-      simulationEnabled: false,
+      simulationEnabled: true,
     };
 
     // Initialize cache

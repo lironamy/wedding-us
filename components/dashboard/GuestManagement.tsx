@@ -1022,7 +1022,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
                 </svg>
                 <Input
                   type="text"
-                  placeholder="שם, טלפון, אימייל..."
+                  placeholder="שם, טלפון נייד, אימייל..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pr-10 focus:ring-2 focus:ring-gold/50 focus:border-gold"
@@ -1186,7 +1186,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">אורח</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון</th>
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון נייד</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">מוזמנים</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">סטטוס</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">מגיעים</th>

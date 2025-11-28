@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Alert } from '@/components/ui/Alert';
+import { Modal } from '@/components/ui/Modal';
 import * as XLSX from 'xlsx-js-style';
 
 interface GiftsDashboardProps {
@@ -121,7 +122,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
   // Export gifts to Excel
   const handleExport = () => {
     // Prepare data with headers
-    const headers = ['שם', 'טלפון', 'סכום (₪)', 'אמצעי תשלום', 'תאריך'];
+    const headers = ['שם', 'טלפון נייד', 'סכום (₪)', 'אמצעי תשלום', 'תאריך'];
     const rows = gifts.map((gift) => [
       gift.name,
       gift.phone,
@@ -142,7 +143,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
     // Set column widths
     ws['!cols'] = [
       { wch: 20 }, // שם
-      { wch: 15 }, // טלפון
+      { wch: 15 }, // טלפון נייד
       { wch: 12 }, // סכום
       { wch: 15 }, // אמצעי תשלום
       { wch: 12 }, // תאריך
@@ -283,7 +284,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
                     אורח
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">
-                    טלפון
+                    טלפון נייד
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">
                     סכום
@@ -357,85 +358,87 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
       )}
 
       {/* Add Gift Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">הוסף מתנה</h2>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => {
+          setShowAddModal(false);
+          setGiftForm({ guestId: '', amount: 0, method: 'bit' });
+        }}
+        title="הוסף מתנה"
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddModal(false);
+                setGiftForm({ guestId: '', amount: 0, method: 'bit' });
+              }}
+            >
+              ביטול
+            </Button>
+            <Button onClick={handleAddGift}>
+              הוסף
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">אורח</label>
+            <select
+              value={giftForm.guestId}
+              onChange={(e) =>
+                setGiftForm({ ...giftForm, guestId: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+            >
+              <option value="">בחר אורח</option>
+              {allGuests
+                .filter((g) => g.rsvpStatus === 'confirmed')
+                .map((guest) => (
+                  <option key={guest._id} value={guest._id}>
+                    {guest.name}
+                  </option>
+                ))}
+            </select>
+          </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">אורח</label>
-                <select
-                  value={giftForm.guestId}
-                  onChange={(e) =>
-                    setGiftForm({ ...giftForm, guestId: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="">בחר אורח</option>
-                  {allGuests
-                    .filter((g) => g.rsvpStatus === 'confirmed')
-                    .map((guest) => (
-                      <option key={guest._id} value={guest._id}>
-                        {guest.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">סכום (₪)</label>
+            <input
+              type="number"
+              value={giftForm.amount}
+              onChange={(e) =>
+                setGiftForm({ ...giftForm, amount: Number(e.target.value) })
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+              min="0"
+              step="50"
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">סכום (₪)</label>
-                <input
-                  type="number"
-                  value={giftForm.amount}
-                  onChange={(e) =>
-                    setGiftForm({ ...giftForm, amount: Number(e.target.value) })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg"
-                  min="0"
-                  step="50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">אמצעי תשלום</label>
-                <select
-                  value={giftForm.method}
-                  onChange={(e) =>
-                    setGiftForm({
-                      ...giftForm,
-                      method: e.target.value as 'bit' | 'paybox' | 'cash' | 'check' | 'none',
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="bit">ביט</option>
-                  <option value="paybox">פייבוקס</option>
-                  <option value="cash">מזומן</option>
-                  <option value="check">צ'ק</option>
-                  <option value="none">לא צוין</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <Button onClick={handleAddGift} className="flex-1">
-                הוסף
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowAddModal(false);
-                  setGiftForm({ guestId: '', amount: 0, method: 'bit' });
-                }}
-                className="flex-1"
-              >
-                ביטול
-              </Button>
-            </div>
-          </Card>
+          <div>
+            <label className="block text-sm font-medium mb-1">אמצעי תשלום</label>
+            <select
+              value={giftForm.method}
+              onChange={(e) =>
+                setGiftForm({
+                  ...giftForm,
+                  method: e.target.value as 'bit' | 'paybox' | 'cash' | 'check' | 'none',
+                })
+              }
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+            >
+              <option value="bit">ביט</option>
+              <option value="paybox">פייבוקס</option>
+              <option value="cash">מזומן</option>
+              <option value="check">צ'ק</option>
+              <option value="none">לא צוין</option>
+            </select>
+          </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

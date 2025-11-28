@@ -96,6 +96,109 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
   const [showGrid, setShowGrid] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [elementsLoaded, setElementsLoaded] = useState(false);
+  const [savingElements, setSavingElements] = useState(false);
+
+  // Load hall elements from server
+  useEffect(() => {
+    if (!weddingId || elementsLoaded) return;
+
+    const loadElements = async () => {
+      try {
+        const response = await fetch(`/api/hall-elements?weddingId=${weddingId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.elements && data.elements.length > 0) {
+            // Map color back to icon
+            const loadedElements = data.elements.map((el: any) => ({
+              ...el,
+              icon: el.color || el.icon,
+            }));
+            setSpecialElements(loadedElements);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load hall elements:', error);
+      } finally {
+        setElementsLoaded(true);
+      }
+    };
+
+    loadElements();
+  }, [weddingId, elementsLoaded]);
+
+  // Save hall elements to server (debounced)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedRef = useRef<string>('');
+
+  const saveElementsToServer = useCallback(async (elements: SpecialElement[]) => {
+    console.log('[HallElements] saveElementsToServer called, weddingId:', weddingId);
+    if (!weddingId) return;
+
+    // Create a hash to check if actually changed
+    const elementsHash = JSON.stringify(elements.map(el => ({ id: el.id, x: el.x, y: el.y, inSidebar: el.inSidebar })));
+    if (elementsHash === lastSavedRef.current) {
+      console.log('[HallElements] No changes detected, skipping save');
+      return;
+    }
+
+    console.log('[HallElements] Sending save request...');
+    setSavingElements(true);
+    try {
+      const response = await fetch('/api/hall-elements', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          weddingId,
+          elements: elements.map(el => ({
+            id: el.id,
+            type: el.type,
+            name: el.name,
+            x: el.x,
+            y: el.y,
+            width: el.width,
+            height: el.height,
+            color: el.icon || '',
+            inSidebar: el.inSidebar || false,
+          })),
+        }),
+      });
+
+      const data = await response.json();
+      console.log('[HallElements] Server response:', response.status, data);
+      if (response.ok) {
+        lastSavedRef.current = elementsHash;
+        console.log('[HallElements] Save successful!');
+      } else {
+        throw new Error(data.error || 'Failed to save');
+      }
+    } catch (error) {
+      console.error('[HallElements] Failed to save:', error);
+    } finally {
+      setSavingElements(false);
+    }
+  }, [weddingId]);
+
+  // Save elements when they change (debounced)
+  useEffect(() => {
+    console.log('[HallElements] useEffect triggered, elementsLoaded:', elementsLoaded, 'elements count:', specialElements.length);
+    if (!elementsLoaded) return;
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      console.log('[HallElements] Saving elements to server...');
+      saveElementsToServer(specialElements);
+    }, 500); // Save after 0.5 second of no changes
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [specialElements, elementsLoaded, saveElementsToServer]);
 
   // Get elements on canvas vs in sidebar
   const canvasElements = specialElements.filter(el => !el.inSidebar);
@@ -533,6 +636,34 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
         const size = table.size || 'medium';
         const { width: tableWidth, height: tableHeight } = getTableDims(shape, size);
 
+        // Calculate confirmed vs simulation seats for coloring dots
+        const guestList = viewMode === 'real' && simulationEnabled
+          ? table.assignedGuests.filter(guest => guest.rsvpStatus === 'confirmed')
+          : table.assignedGuests;
+        let confirmedSeats = 0;
+        let simSeats = 0;
+        guestList.forEach((guest: any) => {
+          const seats = viewMode === 'simulation' ? guest.simulationSeatsInTable : guest.seatsInTable;
+          if (guest.rsvpStatus === 'confirmed') {
+            confirmedSeats += seats || 0;
+          } else {
+            simSeats += seats || 0;
+          }
+        });
+
+        // Get dot color for screenshot
+        const getScreenshotDotColor = (seatIndex: number) => {
+          if (viewMode !== 'simulation') {
+            return seatIndex < peopleAtTable ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)';
+          }
+          if (seatIndex < confirmedSeats) {
+            return '#34d399'; // emerald-400 - Confirmed guest
+          } else if (seatIndex < confirmedSeats + simSeats) {
+            return '#fb923c'; // orange-400 - Simulation guest
+          }
+          return 'rgba(255,255,255,0.3)'; // Empty seat
+        };
+
         // Table color based on occupancy
         const occupancyRate = peopleAtTable / table.capacity;
         let tableColor = '#22d3ee'; // cyan - empty
@@ -559,13 +690,14 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
         ctx.stroke();
 
         // Draw seat dots
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
         if (shape === 'rectangle') {
           for (let i = 0; i < 8; i++) {
             const dotX = pos.x + 15 + i * (tableWidth - 30) / 7;
+            ctx.fillStyle = getScreenshotDotColor(i);
             ctx.beginPath();
             ctx.arc(dotX, pos.y + 8, 4, 0, Math.PI * 2);
             ctx.fill();
+            ctx.fillStyle = getScreenshotDotColor(i + 8);
             ctx.beginPath();
             ctx.arc(dotX, pos.y + tableHeight - 8, 4, 0, Math.PI * 2);
             ctx.fill();
@@ -578,7 +710,7 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
             const dotY = centerY + radius * Math.sin(angle);
             ctx.beginPath();
             ctx.arc(dotX, dotY, tableWidth > 90 ? 6 : 5, 0, Math.PI * 2);
-            ctx.fillStyle = peopleAtTable > i ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.3)';
+            ctx.fillStyle = getScreenshotDotColor(i);
             ctx.fill();
           }
         }
@@ -707,6 +839,33 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
     const isRectangle = shape === 'rectangle';
     const isSquare = shape === 'square';
 
+    // Calculate confirmed vs simulation seats for coloring dots
+    const guests = getFilteredGuests(table);
+    let confirmedSeats = 0;
+    let simulationSeats = 0;
+    guests.forEach((guest: any) => {
+      const seats = viewMode === 'simulation' ? guest.simulationSeatsInTable : guest.seatsInTable;
+      if (guest.rsvpStatus === 'confirmed') {
+        confirmedSeats += seats || 0;
+      } else {
+        simulationSeats += seats || 0;
+      }
+    });
+
+    // Get dot color based on seat index
+    const getDotColor = (seatIndex: number) => {
+      if (viewMode !== 'simulation') {
+        return seatIndex < peopleAtTable ? 'fill-white/80' : 'fill-white/30';
+      }
+      // In simulation mode: green for confirmed, orange for simulation, gray for empty
+      if (seatIndex < confirmedSeats) {
+        return 'fill-emerald-400'; // Confirmed guest
+      } else if (seatIndex < confirmedSeats + simulationSeats) {
+        return 'fill-orange-400'; // Simulation guest
+      }
+      return 'fill-white/30'; // Empty seat
+    };
+
     // Get border radius based on shape
     const getBorderRadius = () => {
       if (shape === 'round') return '9999px';
@@ -750,8 +909,8 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
                   const xPos = 8 + (i * 12);
                   return (
                     <React.Fragment key={i}>
-                      <circle cx={xPos} cy={12} r="4" className={peopleAtTable > i ? 'fill-white/80' : 'fill-white/30'} />
-                      <circle cx={xPos} cy={88} r="4" className={peopleAtTable > i + 8 ? 'fill-white/80' : 'fill-white/30'} />
+                      <circle cx={xPos} cy={12} r="4" className={getDotColor(i)} />
+                      <circle cx={xPos} cy={88} r="4" className={getDotColor(i + 8)} />
                     </React.Fragment>
                   );
                 })}
@@ -769,7 +928,7 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
                     cx={cx}
                     cy={cy}
                     r={tableWidth > 90 ? 6 : 5}
-                    className={peopleAtTable > i ? 'fill-white/80' : 'fill-white/30'}
+                    className={getDotColor(i)}
                   />
                 );
               })
@@ -991,7 +1150,7 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
 
         {/* Legend */}
         <div className="absolute top-3 right-3 z-30 bg-white shadow rounded-lg p-3">
-          <div className="text-xs font-medium text-gray-600 mb-2">מקרא:</div>
+          <div className="text-xs font-medium text-gray-600 mb-2">מקרא שולחנות:</div>
           <div className="flex flex-col gap-1 text-xs">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-cyan-400"></div>
@@ -1006,6 +1165,22 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
               <span>מלא</span>
             </div>
           </div>
+          {viewMode === 'simulation' && (
+            <>
+              <div className="border-t border-gray-200 my-2"></div>
+              <div className="text-xs font-medium text-gray-600 mb-2">מקרא אורחים:</div>
+              <div className="flex flex-col gap-1 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                  <span>אישר הגעה</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-orange-400"></div>
+                  <span>הדמיה</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Canvas */}
@@ -1105,8 +1280,22 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
         </div>
 
         {/* Instructions */}
-        <div className="absolute bottom-3 left-3 z-30 bg-white/90 shadow rounded-lg px-3 py-2 text-xs text-gray-600">
-          <span className="font-medium">טיפ:</span> גרור שולחנות למיקום הרצוי | לחץ על אלמנט לעריכה
+        <div className="absolute bottom-3 left-3 z-30 bg-white/90 shadow rounded-lg px-3 py-2 text-xs text-gray-600 space-y-1">
+          <div>
+            <span className="font-medium text-amber-600">שים לב:</span> אם מחליפים מיקום של שולחן, יש לעדכן גם את מספר השולחן בהתאם
+          </div>
+          <div>
+            <span className="font-medium">טיפ:</span> גרור שולחנות למיקום הרצוי | לחץ על אלמנט לעריכה
+          </div>
+          {savingElements && (
+            <div className="flex items-center gap-1 text-purple-600">
+              <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>שומר שינויים...</span>
+            </div>
+          )}
         </div>
       </div>
 

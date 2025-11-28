@@ -85,7 +85,7 @@ export async function PUT(
 
       if (existingGuest) {
         return NextResponse.json(
-          { error: `אורח עם מספר הטלפון ${body.phone} כבר קיים (${existingGuest.name})` },
+          { error: `אורח עם מספר הטלפון נייד ${body.phone} כבר קיים (${existingGuest.name})` },
           { status: 400 }
         );
       }

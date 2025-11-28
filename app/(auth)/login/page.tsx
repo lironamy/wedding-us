@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -20,12 +20,12 @@ export default function LoginPage() {
   const [animationData, setAnimationData] = useState<object | null>(null);
 
   // Load Lottie animation
-  useState(() => {
+  useEffect(() => {
     fetch(WEDDING_ANIMATION)
       .then(res => res.json())
       .then(data => setAnimationData(data))
       .catch(() => {});
-  });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

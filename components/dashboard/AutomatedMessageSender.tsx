@@ -541,7 +541,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
                     <tr>
                       <th className="px-4 py-3 text-right w-12"></th>
                       <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">שם</th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון</th>
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון נייד</th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">סטטוס</th>
                     </tr>
                   </thead>

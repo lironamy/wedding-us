@@ -176,7 +176,7 @@ export function GuestForm({ weddingId, guest, onSuccess, onCancel }: GuestFormPr
 
         <div>
           <Input
-            label="מספר טלפון *"
+            label="מספר טלפון נייד *"
             name="phone"
             type="tel"
             dir="ltr"

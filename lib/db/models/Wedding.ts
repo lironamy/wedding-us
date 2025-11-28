@@ -16,6 +16,18 @@ export interface ISeatingSettings {
   enableZonePlacement: boolean; // Use hall zones for placement
 }
 
+export interface IHallElement {
+  id: string;
+  type: string;
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: string;
+  inSidebar: boolean;
+}
+
 export interface IWedding {
   _id: string;
   userId: Types.ObjectId | string;
@@ -56,6 +68,8 @@ export interface IWedding {
   status: 'draft' | 'active' | 'completed' | 'archived';
   // Seating settings
   seatingSettings?: ISeatingSettings;
+  // Hall elements (dance floor, bar, stage, etc.)
+  hallElements?: IHallElement[];
   // Payment fields
   paymentStatus?: 'free' | 'pending' | 'paid' | 'failed';
   paymentDetails?: {
@@ -265,6 +279,17 @@ const WeddingSchema = new Schema<IWedding>(
         default: false,
       },
     },
+    hallElements: [{
+      id: String,
+      type: String,
+      name: String,
+      x: Number,
+      y: Number,
+      width: Number,
+      height: Number,
+      color: String,
+      inSidebar: { type: Boolean, default: false },
+    }],
     maxGuests: {
       type: Number,
       default: 200,

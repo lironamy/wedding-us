@@ -60,26 +60,37 @@ export async function GET(request: NextRequest) {
 
     // Add seatsInTable and simulationSeatsInTable to each guest in each table
     // All calculations done server-side - frontend just displays
-    const tablesWithSeats = tables.map((table: any) => ({
-      ...table,
-      assignedGuests: table.assignedGuests.map((guest: any) => {
-        const key = `${table._id.toString()}_${guest._id.toString()}`;
-        const realSeats = realAssignmentMap.get(key);
-        const simSeats = simulationAssignmentMap.get(key);
+    const tablesWithSeats = tables.map((table: any) => {
+      // Remove duplicate guests (same guest appearing multiple times in assignedGuests)
+      const seenGuestIds = new Set<string>();
+      const uniqueGuests = table.assignedGuests.filter((guest: any) => {
+        const guestId = guest._id.toString();
+        if (seenGuestIds.has(guestId)) return false;
+        seenGuestIds.add(guestId);
+        return true;
+      });
 
-        // Calculate fallback values (when no SeatAssignment exists)
-        const confirmedSeats = (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
-        const pendingSeats = 1; // Pending guests count as 1 in simulation
+      return {
+        ...table,
+        assignedGuests: uniqueGuests.map((guest: any) => {
+          const key = `${table._id.toString()}_${guest._id.toString()}`;
+          const realSeats = realAssignmentMap.get(key);
+          const simSeats = simulationAssignmentMap.get(key);
 
-        return {
-          ...guest,
-          // seatsInTable: for real mode - from SeatAssignment or fallback to actual attendance
-          seatsInTable: realSeats ?? confirmedSeats,
-          // simulationSeatsInTable: for simulation mode - from SeatAssignment or fallback based on rsvp status
-          simulationSeatsInTable: simSeats ?? (guest.rsvpStatus === 'confirmed' ? confirmedSeats : pendingSeats),
-        };
-      }),
-    }));
+          // Calculate fallback values (when no SeatAssignment exists)
+          const confirmedSeats = (guest.adultsAttending || 1) + (guest.childrenAttending || 0);
+          const pendingSeats = 1; // Pending guests count as 1 in simulation
+
+          return {
+            ...guest,
+            // seatsInTable: for real mode - from SeatAssignment or fallback to actual attendance
+            seatsInTable: realSeats ?? confirmedSeats,
+            // simulationSeatsInTable: for simulation mode - from SeatAssignment or fallback based on rsvp status
+            simulationSeatsInTable: simSeats ?? (guest.rsvpStatus === 'confirmed' ? confirmedSeats : pendingSeats),
+          };
+        }),
+      };
+    });
 
     return NextResponse.json({ tables: tablesWithSeats });
   } catch (error) {
@@ -128,7 +139,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the table
+    // Create the table (mode: 'manual' for user-created tables)
     const table = await Table.create({
       weddingId,
       tableName,
@@ -136,6 +147,7 @@ export async function POST(request: NextRequest) {
       capacity,
       tableType: tableType || 'mixed',
       assignedGuests: [],
+      mode: 'manual',
     });
 
     return NextResponse.json({ table }, { status: 201 });

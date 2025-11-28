@@ -30,11 +30,15 @@ export class TablesStore {
   }
 
   // Load tables and statistics (skip if already loaded)
-  async loadTables(forceReload = false) {
+  // silent = true: update data in background without showing loading state
+  async loadTables(forceReload = false, silent = false) {
     if (!this.weddingId) return;
     if (this.isLoaded && !forceReload) return;
 
-    this.loading = true;
+    // Only show loading spinner on initial load, not on silent refreshes
+    if (!silent) {
+      this.loading = true;
+    }
     this.error = null;
 
     try {
@@ -213,10 +217,8 @@ export class TablesStore {
         throw new Error('Failed to delete table');
       }
 
-      runInAction(() => {
-        this.tables = this.tables.filter((t) => t._id !== tableId);
-        this.updateStatistics();
-      });
+      // Reload tables silently to get updated numbers (server renumbers tables after deletion)
+      await this.loadTables(true, true);
 
       return { success: true };
     } catch (error: any) {
@@ -242,16 +244,8 @@ export class TablesStore {
         throw new Error(data.error || 'Failed to assign guest');
       }
 
-      // Get the guest from guestsStore
-      const guest = this.rootStore.guestsStore.guests.find((g) => g._id === guestId);
-
-      runInAction(() => {
-        const table = this.tables.find((t) => t._id === tableId);
-        if (table && guest) {
-          table.assignedGuests.push(guest);
-        }
-        this.updateStatistics();
-      });
+      // Reload tables silently to get updated data with correct seat counts
+      await this.loadTables(true, true);
 
       return {
         success: true,
@@ -279,13 +273,8 @@ export class TablesStore {
         throw new Error('Failed to remove guest');
       }
 
-      runInAction(() => {
-        const table = this.tables.find((t) => t._id === tableId);
-        if (table) {
-          table.assignedGuests = table.assignedGuests.filter((g) => g._id !== guestId);
-        }
-        this.updateStatistics();
-      });
+      // Reload tables silently to get updated data with correct seat counts
+      await this.loadTables(true, true);
 
       return { success: true };
     } catch (error: any) {

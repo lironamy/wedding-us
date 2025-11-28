@@ -223,9 +223,9 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         newErrors.brideName = `שם ה${partnerTypeLabels[formData.partner2Type]} חובה`;
       }
       if (!formData.contactPhone.trim()) {
-        newErrors.contactPhone = 'מספר טלפון חובה';
+        newErrors.contactPhone = 'מספר טלפון נייד חובה';
       } else if (!validateIsraeliPhone(formData.contactPhone)) {
-        newErrors.contactPhone = 'מספר טלפון לא תקין (לדוגמה: 050-1234567)';
+        newErrors.contactPhone = 'מספר טלפון נייד לא תקין (לדוגמה: 050-1234567)';
       }
       if (!formData.eventDate) newErrors.eventDate = 'תאריך האירוע חובה';
       if (!formData.eventTime) newErrors.eventTime = 'שעת האירוע חובה';
@@ -467,7 +467,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
 
                 {/* Contact Phone */}
                 <Input
-                  label="טלפון ליצירת קשר"
+                  label="טלפון נייד ליצירת קשר"
                   name="contactPhone"
                   type="tel"
                   value={formData.contactPhone}

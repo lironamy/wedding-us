@@ -15,7 +15,7 @@ export function TwilioSetup() {
 
   const handleTestMessage = async () => {
     if (!testPhone || !testMessage) {
-      toast.error('נא למלא מספר טלפון והודעה');
+      toast.error('נא למלא מספר טלפון נייד והודעה');
       return;
     }
 
@@ -237,7 +237,7 @@ export function TwilioSetup() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">מספר טלפון (ישראל)</label>
+              <label className="block text-sm font-medium mb-2">מספר טלפון נייד (ישראל)</label>
               <input
                 type="tel"
                 value={testPhone}

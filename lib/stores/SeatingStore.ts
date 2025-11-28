@@ -18,7 +18,7 @@ export class SeatingStore {
     seatsPerTable: 12,
     autoRecalcPolicy: 'onRsvpChangeGroupOnly',
     adjacencyPolicy: 'forbidSameTableOnly',
-    simulationEnabled: false,
+    simulationEnabled: true,
     enableKidsTable: false,
     kidsTableMinAge: 6,
     kidsTableMinCount: 6,
@@ -425,6 +425,33 @@ export class SeatingStore {
     }
   }
 
+  // Save simulation assignments to real (copy simulation to real)
+  async saveSimulationToReal(): Promise<{ success: boolean; saved?: number; error?: string }> {
+    if (!this.weddingId) return { success: false, error: 'No wedding ID' };
+
+    try {
+      const response = await fetch('/api/seating/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weddingId: this.weddingId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save assignments');
+      }
+
+      // Reload tables and assignments to reflect the changes
+      await this.rootStore.tablesStore.loadTables(true, true);
+      await this.loadAssignments('real', true);
+
+      return { success: true, saved: data.saved };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  }
+
   // Load all seating data
   async loadAll() {
     await Promise.all([
@@ -446,7 +473,7 @@ export class SeatingStore {
       seatsPerTable: 12,
       autoRecalcPolicy: 'onRsvpChangeGroupOnly',
       adjacencyPolicy: 'forbidSameTableOnly',
-      simulationEnabled: false,
+      simulationEnabled: true,
       enableKidsTable: false,
       kidsTableMinAge: 6,
       kidsTableMinCount: 6,

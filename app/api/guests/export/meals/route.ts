@@ -91,7 +91,7 @@ export async function GET() {
       .filter(g => (g.regularMeals || 0) + (g.vegetarianMeals || 0) + (g.veganMeals || 0) + (g.otherMeals || 0) > 0)
       .map((guest) => ({
         'שם אורח': guest.name,
-        'טלפון': guest.phone,
+        'טלפון נייד': guest.phone,
         'רגיל': guest.regularMeals || 0,
         'צמחוני': guest.vegetarianMeals || 0,
         'טבעוני': guest.veganMeals || 0,
@@ -105,7 +105,7 @@ export async function GET() {
     const detailedWorksheet = XLSX.utils.json_to_sheet(detailedData);
     detailedWorksheet['!cols'] = [
       { wch: 20 }, // שם אורח
-      { wch: 15 }, // טלפון
+      { wch: 15 }, // טלפון נייד
       { wch: 8 },  // רגיל
       { wch: 8 },  // צמחוני
       { wch: 8 },  // טבעוני
@@ -123,7 +123,7 @@ export async function GET() {
       .filter(g => (g.otherMeals || 0) > 0)
       .map((guest) => ({
         'שם אורח': guest.name,
-        'טלפון': guest.phone,
+        'טלפון נייד': guest.phone,
         'כמות מנות': guest.otherMeals,
         'פירוט הבקשה': guest.otherMealDescription || 'לא צוין פירוט',
         'הערות נוספות': guest.notes || '',
@@ -133,7 +133,7 @@ export async function GET() {
       const otherWorksheet = XLSX.utils.json_to_sheet(otherMealsData);
       otherWorksheet['!cols'] = [
         { wch: 20 }, // שם אורח
-        { wch: 15 }, // טלפון
+        { wch: 15 }, // טלפון נייד
         { wch: 12 }, // כמות מנות
         { wch: 40 }, // פירוט הבקשה
         { wch: 30 }, // הערות נוספות
@@ -147,7 +147,7 @@ export async function GET() {
       .filter(g => (g.vegetarianMeals || 0) > 0)
       .map((guest) => ({
         'שם אורח': guest.name,
-        'טלפון': guest.phone,
+        'טלפון נייד': guest.phone,
         'כמות מנות צמחוניות': guest.vegetarianMeals,
         'הערות': guest.notes || '',
       }));
@@ -164,7 +164,7 @@ export async function GET() {
       .filter(g => (g.veganMeals || 0) > 0)
       .map((guest) => ({
         'שם אורח': guest.name,
-        'טלפון': guest.phone,
+        'טלפון נייד': guest.phone,
         'כמות מנות טבעוניות': guest.veganMeals,
         'הערות': guest.notes || '',
       }));

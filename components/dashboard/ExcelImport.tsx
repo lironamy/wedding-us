@@ -102,7 +102,7 @@ export function ExcelImport({ weddingId }: ExcelImportProps) {
             העמודות הנדרשות:
             <ul className="list-disc list-inside mr-6 mt-1">
               <li>שם מלא (חובה)</li>
-              <li>טלפון (חובה)</li>
+              <li>טלפון נייד (חובה)</li>
               <li>אימייל (אופציונלי)</li>
               <li>קבוצה (אופציונלי)</li>
               <li>מספר מוזמנים (אופציונלי)</li>
@@ -191,7 +191,7 @@ export function ExcelImport({ weddingId }: ExcelImportProps) {
             <thead>
               <tr className="bg-gray-100">
                 <th className="border px-4 py-2">שם מלא</th>
-                <th className="border px-4 py-2">טלפון</th>
+                <th className="border px-4 py-2">טלפון נייד</th>
                 <th className="border px-4 py-2">אימייל</th>
                 <th className="border px-4 py-2">קבוצה</th>
                 <th className="border px-4 py-2">מספר מוזמנים</th>
@@ -203,7 +203,7 @@ export function ExcelImport({ weddingId }: ExcelImportProps) {
                 <td className="border px-4 py-2">0501234567</td>
                 <td className="border px-4 py-2">yossi@example.com</td>
                 <td className="border px-4 py-2">משפחת כהן</td>
-                <td className="border px-4 py-2 text-center">2</td>
+                <td className="border px-4 py-2 text-center"></td>
               </tr>
               <tr>
                 <td className="border px-4 py-2">שרה לוי</td>

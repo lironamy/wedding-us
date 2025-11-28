@@ -36,7 +36,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pr-6 space-y-2">
                 <li><strong>פרטי הרשמה:</strong> שם, כתובת דוא"ל, סיסמה</li>
                 <li><strong>פרטי חתונה:</strong> שמות הזוג, תאריך ומקום האירוע</li>
-                <li><strong>פרטי אורחים:</strong> שמות, מספרי טלפון, כתובות אימייל</li>
+                <li><strong>פרטי אורחים:</strong> שמות, מספרי טלפון נייד, כתובות אימייל</li>
                 <li><strong>מידע תשלום:</strong> פרטי כרטיס אשראי (מטופלים על ידי ספק תשלומים חיצוני מאובטח)</li>
                 <li><strong>תוכן:</strong> תמונות, הודעות ותכנים שאתה מעלה</li>
               </ul>

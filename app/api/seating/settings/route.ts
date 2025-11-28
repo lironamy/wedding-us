@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       seatsPerTable: 12,
       autoRecalcPolicy: 'onRsvpChangeGroupOnly',
       adjacencyPolicy: 'forbidSameTableOnly',
-      simulationEnabled: false,
+      simulationEnabled: true,
       enableKidsTable: false,
       kidsTableMinAge: 6,
       kidsTableMinCount: 6,
@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
       seatsPerTable: settings.seatsPerTable ?? currentSettings.seatsPerTable ?? 12,
       autoRecalcPolicy: settings.autoRecalcPolicy ?? currentSettings.autoRecalcPolicy ?? 'onRsvpChangeGroupOnly',
       adjacencyPolicy: settings.adjacencyPolicy ?? currentSettings.adjacencyPolicy ?? 'forbidSameTableOnly',
-      simulationEnabled: settings.simulationEnabled ?? currentSettings.simulationEnabled ?? false,
+      simulationEnabled: true,
       // New advanced settings
       enableKidsTable: settings.enableKidsTable ?? currentSettings.enableKidsTable ?? false,
       kidsTableMinAge: settings.kidsTableMinAge ?? currentSettings.kidsTableMinAge ?? 6,
