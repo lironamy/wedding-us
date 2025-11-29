@@ -1,24 +1,33 @@
 import nodemailer from 'nodemailer';
 
 // SMTP Configuration from environment variables
+const smtpPort = parseInt(process.env.SMTP_PORT || '465');
 const SMTP_CONFIG = {
   host: process.env.SMTP_HOST || 'smtp.zoho.com',
-  port: parseInt(process.env.SMTP_PORT || '465'),
-  secure: process.env.SMTP_SECURE === 'true',
+  port: smtpPort,
+  // Port 465 = SSL (secure: true), Port 587 = STARTTLS (secure: false)
+  secure: smtpPort === 465,
   auth: {
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
   },
+  // Connection settings
+  connectionTimeout: 30000, // 30 seconds
+  greetingTimeout: 30000,
+  socketTimeout: 60000,
+  // TLS settings for STARTTLS (port 587)
+  ...(smtpPort === 587 && {
+    requireTLS: true,
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: 'TLSv1.2' as const,
+    },
+  }),
 };
 
-// Create reusable transporter
-let transporter: nodemailer.Transporter | null = null;
-
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport(SMTP_CONFIG);
-  }
-  return transporter;
+// Create transporter for each email (avoid stale connections)
+function createTransporter() {
+  return nodemailer.createTransport(SMTP_CONFIG);
 }
 
 export interface EmailOptions {
@@ -48,7 +57,7 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
       throw new Error('SMTP configuration is missing. Please check your environment variables.');
     }
 
-    const transport = getTransporter();
+    const transport = createTransporter();
 
     const mailOptions = {
       from: `"לונסול" <${SMTP_CONFIG.auth.user}>`,
