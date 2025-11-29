@@ -118,6 +118,16 @@ export async function POST(request: NextRequest) {
       payboxPhone: body.payboxPhone || '',
       enableBitGifts: body.enableBitGifts || false,
       bitQrImage: body.bitQrImage || '',
+      askAboutMeals: body.askAboutMeals !== undefined ? body.askAboutMeals : true,
+      mealOptions: body.mealOptions || {
+        regular: true,
+        vegetarian: true,
+        vegan: true,
+        kids: true,
+        glutenFree: true,
+        other: true,
+      },
+      customOtherMealName: body.customOtherMealName || '',
       maxGuests: body.maxGuests || 200,
       seatingSettings: {
         mode: body.seatingMode || 'auto',

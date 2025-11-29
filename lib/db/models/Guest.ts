@@ -26,6 +26,8 @@ export interface IGuest {
   regularMeals?: number;
   vegetarianMeals?: number;
   veganMeals?: number;
+  kidsMeals?: number;
+  glutenFreeMeals?: number;
   otherMeals?: number;
   otherMealDescription?: string;
   // Legacy field - kept for backwards compatibility
@@ -122,6 +124,16 @@ const GuestSchema = new Schema<IGuest>(
       default: 0,
     },
     veganMeals: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    kidsMeals: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    glutenFreeMeals: {
       type: Number,
       min: 0,
       default: 0,

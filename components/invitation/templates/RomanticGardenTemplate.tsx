@@ -62,7 +62,7 @@ const Sparkle = ({ x, y, delay }: { x: string; y: string; delay: number }) => (
   />
 );
 
-export default function RomanticGardenTemplate({ wedding, guest, dateParts, isRSVP }: InvitationTemplateProps) {
+export default function RomanticGardenTemplate({ wedding, guest, dateParts, isRSVP, askAboutMeals }: InvitationTemplateProps) {
   const [petals, setPetals] = useState<Array<{ id: number; delay: number; startX: number; size: number }>>([]);
   const [sparkles, setSparkles] = useState<Array<{ id: number; x: string; y: string; delay: number }>>([]);
 
@@ -351,7 +351,7 @@ export default function RomanticGardenTemplate({ wedding, guest, dateParts, isRS
               className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 mb-8 mx-4"
               style={{ border: '2px solid #E8D5D5' }}
             >
-              <RSVPForm guest={guest} themeColor="#D4A5A5" />
+              <RSVPForm guest={guest} themeColor="#D4A5A5" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
             </motion.div>
           ) : (
             <motion.div

@@ -26,6 +26,8 @@ interface Guest {
   regularMeals?: number;
   vegetarianMeals?: number;
   veganMeals?: number;
+  kidsMeals?: number;
+  glutenFreeMeals?: number;
   otherMeals?: number;
   otherMealDescription?: string;
   // Legacy
@@ -37,22 +39,47 @@ interface Guest {
 }
 
 const MEAL_TYPE_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-  regular: { label: 'רגיל', icon: '🍽️', color: 'bg-gray-100 text-gray-700' },
+  regular: { label: 'רגיל', icon: '🍖', color: 'bg-gray-100 text-gray-700' },
   vegetarian: { label: 'צמחוני', icon: '🥗', color: 'bg-green-100 text-green-700' },
   vegan: { label: 'טבעוני', icon: '🌱', color: 'bg-emerald-100 text-emerald-700' },
-  other: { label: 'אחר', icon: '✏️', color: 'bg-amber-100 text-amber-700' },
+  kids: { label: 'ילדים', icon: '🧒', color: 'bg-blue-100 text-blue-700' },
+  glutenFree: { label: 'ללא גלוטן', icon: '🌾', color: 'bg-yellow-100 text-yellow-700' },
+  other: { label: 'אחר', icon: '🍽️', color: 'bg-amber-100 text-amber-700' },
 };
+
+interface MealSettings {
+  askAboutMeals: boolean;
+  mealOptions: {
+    regular: boolean;
+    vegetarian: boolean;
+    vegan: boolean;
+    kids: boolean;
+    glutenFree: boolean;
+    other: boolean;
+  };
+  customOtherMealName: string;
+}
 
 interface GuestManagementProps {
   weddingId: string;
+  mealSettings?: MealSettings;
 }
 
-// Animated SVG icons for stats
+// Animated SVG icons for stats - animations run once on mount
 const StatIcons: Record<string, React.ReactNode> = {
   guests: (
-    <svg className="w-12 h-12 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <motion.svg
+      className="w-12 h-12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-    </svg>
+    </motion.svg>
   ),
   confirmed: (
     <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -62,7 +89,7 @@ const StatIcons: Record<string, React.ReactNode> = {
         d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
-        transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+        transition={{ duration: 1.5 }}
       />
     </svg>
   ),
@@ -72,9 +99,9 @@ const StatIcons: Record<string, React.ReactNode> = {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        initial={{ scale: 0.8, opacity: 0.5 }}
+        initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+        transition={{ duration: 0.5 }}
       />
     </svg>
   ),
@@ -84,16 +111,26 @@ const StatIcons: Record<string, React.ReactNode> = {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        initial={{ rotate: -90 }}
+        animate={{ rotate: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
         style={{ transformOrigin: "center" }}
       />
     </svg>
   ),
   adults: (
-    <svg className="w-12 h-12 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <motion.svg
+      className="w-12 h-12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-    </svg>
+    </motion.svg>
   ),
   children: (
     <motion.svg
@@ -102,8 +139,9 @@ const StatIcons: Record<string, React.ReactNode> = {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      animate={{ y: [0, -3, 0] }}
-      transition={{ duration: 1, repeat: Infinity }}
+      initial={{ y: 10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25a3 3 0 100-6 3 3 0 000 6zM12 14.25a6 6 0 016 6H6a6 6 0 016-6z" />
       <circle cx="12" cy="5.25" r="1.5" fill="currentColor" opacity="0.3" />
@@ -151,12 +189,18 @@ function MealStatsPopup({
   mealType,
   guests,
   onClose,
+  customOtherMealName,
 }: {
-  mealType: 'regular' | 'vegetarian' | 'vegan' | 'other';
+  mealType: 'regular' | 'vegetarian' | 'vegan' | 'kids' | 'glutenFree' | 'other';
   guests: Guest[];
   onClose: () => void;
+  customOtherMealName?: string;
 }) {
   const config = MEAL_TYPE_LABELS[mealType];
+  // Use custom name for 'other' if provided
+  const displayLabel = mealType === 'other' && customOtherMealName
+    ? customOtherMealName
+    : config.label;
 
   // Filter guests who have this meal type
   const guestsWithMeal = guests.filter((g) => {
@@ -168,6 +212,10 @@ function MealStatsPopup({
         return (g.vegetarianMeals || 0) > 0;
       case 'vegan':
         return (g.veganMeals || 0) > 0;
+      case 'kids':
+        return (g.kidsMeals || 0) > 0;
+      case 'glutenFree':
+        return (g.glutenFreeMeals || 0) > 0;
       case 'other':
         return (g.otherMeals || 0) > 0;
       default:
@@ -183,6 +231,10 @@ function MealStatsPopup({
         return guest.vegetarianMeals || 0;
       case 'vegan':
         return guest.veganMeals || 0;
+      case 'kids':
+        return guest.kidsMeals || 0;
+      case 'glutenFree':
+        return guest.glutenFreeMeals || 0;
       case 'other':
         return guest.otherMeals || 0;
       default:
@@ -194,6 +246,8 @@ function MealStatsPopup({
     regular: 'from-gray-400 to-gray-600',
     vegetarian: 'from-green-400 to-green-600',
     vegan: 'from-emerald-400 to-teal-600',
+    kids: 'from-blue-400 to-blue-600',
+    glutenFree: 'from-yellow-400 to-yellow-600',
     other: 'from-amber-400 to-orange-500',
   };
 
@@ -221,7 +275,7 @@ function MealStatsPopup({
                 {config.icon}
               </div>
               <div>
-                <h3 className="text-white font-bold text-lg">מנות {config.label}</h3>
+                <h3 className="text-white font-bold text-lg">מנות {displayLabel}</h3>
                 <p className="text-white/80 text-sm">{guestsWithMeal.length} אורחים</p>
               </div>
             </div>
@@ -422,6 +476,8 @@ function NotesPopup({
 function GuestRow({
   guest,
   index,
+  isSelected,
+  onSelect,
   onEdit,
   onDelete,
   onCopyLink,
@@ -430,6 +486,8 @@ function GuestRow({
 }: {
   guest: Guest;
   index: number;
+  isSelected: boolean;
+  onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onCopyLink: () => void;
@@ -464,8 +522,26 @@ function GuestRow({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: index * 0.015 }}
-      className="border-t hover:bg-gray-50 transition"
+      className={`border-t transition ${isSelected ? 'bg-purple-100 hover:bg-purple-200' : 'hover:bg-gray-50'}`}
     >
+      <td className="px-3 py-3 text-center">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={onSelect}
+          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+            isSelected
+              ? 'bg-gold border-gold text-zinc-600'
+              : 'border-gray-300 hover:border-gold'
+          }`}
+        >
+          {isSelected && (
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </motion.button>
+      </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-linear-to-br from-gold/80 to-gold flex items-center justify-center text-balance font-semibold text-sm shadow-sm">
@@ -504,7 +580,7 @@ function GuestRow({
             <span className="text-xs text-gray-500">
               {guest.adultsAttending || 0} + {guest.childrenAttending || 0}
             </span>
-            {((guest.vegetarianMeals || 0) > 0 || (guest.veganMeals || 0) > 0 || (guest.otherMeals || 0) > 0) && (
+            {((guest.vegetarianMeals || 0) > 0 || (guest.veganMeals || 0) > 0 || (guest.kidsMeals || 0) > 0 || (guest.glutenFreeMeals || 0) > 0 || (guest.otherMeals || 0) > 0) && (
               <div className="flex flex-wrap gap-1 justify-center mt-1">
                 {(guest.vegetarianMeals || 0) > 0 && (
                   <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">
@@ -514,6 +590,16 @@ function GuestRow({
                 {(guest.veganMeals || 0) > 0 && (
                   <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                     🌱 {guest.veganMeals}
+                  </span>
+                )}
+                {(guest.kidsMeals || 0) > 0 && (
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                    🧒 {guest.kidsMeals}
+                  </span>
+                )}
+                {(guest.glutenFreeMeals || 0) > 0 && (
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                    🌾 {guest.glutenFreeMeals}
                   </span>
                 )}
                 {(guest.otherMeals || 0) > 0 && (
@@ -594,7 +680,7 @@ function GuestRow({
   );
 }
 
-export function GuestManagement({ weddingId }: GuestManagementProps) {
+export function GuestManagement({ weddingId, mealSettings }: GuestManagementProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [filteredGuests, setFilteredGuests] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -602,8 +688,12 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [notesGuest, setNotesGuest] = useState<Guest | null>(null);
-  const [selectedMealType, setSelectedMealType] = useState<'regular' | 'vegetarian' | 'vegan' | 'other' | null>(null);
+  const [selectedMealType, setSelectedMealType] = useState<'regular' | 'vegetarian' | 'vegan' | 'kids' | 'glutenFree' | 'other' | null>(null);
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
+
+  // Multi-select for bulk actions
+  const [selectedGuests, setSelectedGuests] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -755,6 +845,8 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
       }
       return sum;
     }, 0),
+    kids: confirmedGuests.reduce((sum, g) => sum + (g.kidsMeals || 0), 0),
+    glutenFree: confirmedGuests.reduce((sum, g) => sum + (g.glutenFreeMeals || 0), 0),
     other: confirmedGuests.reduce((sum, g) => {
       if (g.otherMeals !== undefined) {
         return sum + (g.otherMeals || 0);
@@ -815,6 +907,74 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
     window.open(whatsappUrl, '_blank');
   };
 
+  // Multi-select handlers
+  const handleSelectGuest = (guestId: string) => {
+    setSelectedGuests(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(guestId)) {
+        newSet.delete(guestId);
+      } else {
+        newSet.add(guestId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedGuests.size === paginatedGuests.length) {
+      // Deselect all on current page
+      setSelectedGuests(new Set());
+    } else {
+      // Select all on current page
+      setSelectedGuests(new Set(paginatedGuests.map(g => g._id)));
+    }
+  };
+
+  const handleSelectAllFiltered = () => {
+    // Select all filtered guests (not just current page)
+    setSelectedGuests(new Set(filteredGuests.map(g => g._id)));
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedGuests.size === 0) return;
+
+    const confirmed = await showConfirm({
+      title: 'מחיקת אורחים',
+      message: `האם אתה בטוח שברצונך למחוק ${selectedGuests.size} אורחים?`,
+      confirmText: 'מחק',
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      const deletePromises = Array.from(selectedGuests).map(guestId =>
+        fetch(`/api/guests/${guestId}`, { method: 'DELETE' })
+      );
+
+      const results = await Promise.all(deletePromises);
+      const failedCount = results.filter(r => !r.ok).length;
+
+      if (failedCount > 0) {
+        toast.error(`נכשלה מחיקת ${failedCount} אורחים`);
+      } else {
+        toast.success(`${selectedGuests.size} אורחים נמחקו בהצלחה`);
+      }
+
+      setSelectedGuests(new Set());
+      loadGuests();
+    } catch (err) {
+      toast.error('שגיאה במחיקת האורחים');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedGuests(new Set());
+  };
+
   return (
     <div className="space-y-8">
       {ConfirmDialogComponent}
@@ -833,11 +993,76 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
             mealType={selectedMealType}
             guests={guests}
             onClose={() => setSelectedMealType(null)}
+            customOtherMealName={mealSettings?.customOtherMealName}
           />
         )}
       </AnimatePresence>
 
-   
+      {/* Selection Toolbar */}
+      <AnimatePresence>
+        {selectedGuests.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 px-6 py-3 flex items-center gap-4"
+          >
+            <div className="flex items-center gap-2 text-gray-700">
+              <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+                <svg className="w-4 h-4 text-gold-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span className="font-medium">{selectedGuests.size} אורחים נבחרו</span>
+            </div>
+
+            <div className="h-6 w-px bg-gray-200" />
+
+            {selectedGuests.size < filteredGuests.length && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSelectAllFiltered}
+                className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              >
+                בחר את כולם ({filteredGuests.length})
+              </motion.button>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+            >
+              {isDeleting ? (
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              )}
+              מחק נבחרים
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={clearSelection}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title="בטל בחירה"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -885,7 +1110,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
         />
       </div>
 
-      {/* Meal Stats */}
+      {/* Meal Stats - always show if there are confirmed guests */}
       {(stats.totalAdults + stats.totalChildren > 0) && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -904,7 +1129,7 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
                 download
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-shadow"
+                className="flex items-center gap-2 px-3 py-1.5 bg-linear-to-r from-emerald-500 to-green-600 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-shadow"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -913,23 +1138,52 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
               </motion.a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {Object.entries(mealStats).map(([type, count]) => {
-                const config = MEAL_TYPE_LABELS[type];
-                return (
-                  <motion.div
-                    key={type}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedMealType(type as 'regular' | 'vegetarian' | 'vegan' | 'other')}
-                    className={`rounded-xl p-3 text-center ${config.color} cursor-pointer transition-shadow hover:shadow-lg`}
-                  >
-                    <span className="text-2xl">{config.icon}</span>
-                    <p className="font-bold text-xl mt-1">{count}</p>
-                    <p className="text-sm opacity-80">{config.label}</p>
-                    <p className="text-xs opacity-60 mt-1">לחץ לצפייה</p>
-                  </motion.div>
-                );
-              })}
+              {/* Always show regular meals */}
+              <motion.div
+                key="regular"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedMealType('regular')}
+                className={`rounded-xl p-3 text-center ${MEAL_TYPE_LABELS.regular.color} cursor-pointer transition-shadow hover:shadow-lg`}
+              >
+                <span className="text-2xl">{MEAL_TYPE_LABELS.regular.icon}</span>
+                <p className="font-bold text-xl mt-1">{mealStats.regular}</p>
+                <p className="text-sm opacity-80">{MEAL_TYPE_LABELS.regular.label}</p>
+                <p className="text-xs opacity-60 mt-1">לחץ לצפייה</p>
+              </motion.div>
+              {/* Show other meal types ONLY if askAboutMeals is true AND (enabled in settings OR has data) */}
+              {mealSettings?.askAboutMeals !== false && Object.entries(mealStats)
+                .filter(([type, count]) => {
+                  if (type === 'regular') return false; // Already shown above
+                  // Show if meal type is enabled in settings
+                  if (mealSettings?.mealOptions) {
+                    const mealKey = type as keyof typeof mealSettings.mealOptions;
+                    if (mealSettings.mealOptions[mealKey]) return true;
+                  }
+                  // Also show if there's existing data (from guests who answered before settings changed)
+                  return (count as number) > 0;
+                })
+                .map(([type, count]) => {
+                  const config = MEAL_TYPE_LABELS[type];
+                  // Use custom name for 'other' if provided
+                  const displayLabel = type === 'other' && mealSettings?.customOtherMealName
+                    ? mealSettings.customOtherMealName
+                    : config.label;
+                  return (
+                    <motion.div
+                      key={type}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setSelectedMealType(type as 'regular' | 'vegetarian' | 'vegan' | 'kids' | 'glutenFree' | 'other')}
+                      className={`rounded-xl p-3 text-center ${config.color} cursor-pointer transition-shadow hover:shadow-lg`}
+                    >
+                      <span className="text-2xl">{config.icon}</span>
+                      <p className="font-bold text-xl mt-1">{count}</p>
+                      <p className="text-sm opacity-80">{displayLabel}</p>
+                      <p className="text-xs opacity-60 mt-1">לחץ לצפייה</p>
+                    </motion.div>
+                  );
+                })}
             </div>
           </AnimatedCard>
         </motion.div>
@@ -1185,6 +1439,28 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-3 py-3 text-center w-12">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleSelectAll}
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                        paginatedGuests.length > 0 && selectedGuests.size === paginatedGuests.length
+                          ? 'bg-gold border-gold text-zinc-600'
+                          : selectedGuests.size > 0
+                          ? 'bg-gold/30 border-gold'
+                          : 'border-gray-300 hover:border-gold'
+                      }`}
+                    >
+                      {paginatedGuests.length > 0 && selectedGuests.size === paginatedGuests.length ? (
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : selectedGuests.size > 0 ? (
+                        <div className="w-2 h-2 bg-gold rounded-sm" />
+                      ) : null}
+                    </motion.button>
+                  </th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">אורח</th>
                   <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">טלפון נייד</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">מוזמנים</th>
@@ -1199,6 +1475,8 @@ export function GuestManagement({ weddingId }: GuestManagementProps) {
                     key={guest._id}
                     guest={guest}
                     index={index}
+                    isSelected={selectedGuests.has(guest._id)}
+                    onSelect={() => handleSelectGuest(guest._id)}
                     onEdit={() => setEditingGuest(guest)}
                     onDelete={() => handleDelete(guest._id)}
                     onCopyLink={() => copyRsvpLink(guest.uniqueToken)}

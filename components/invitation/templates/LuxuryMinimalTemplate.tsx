@@ -41,7 +41,7 @@ const AnimatedLine = ({ delay = 0 }: { delay?: number }) => (
   />
 );
 
-export default function LuxuryMinimalTemplate({ wedding, guest, dateParts, isRSVP }: InvitationTemplateProps) {
+export default function LuxuryMinimalTemplate({ wedding, guest, dateParts, isRSVP, askAboutMeals }: InvitationTemplateProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -231,7 +231,7 @@ export default function LuxuryMinimalTemplate({ wedding, guest, dateParts, isRSV
             className="mb-16"
           >
             <div className="border border-gray-100 p-8">
-              <RSVPForm guest={guest} themeColor="#C9A962" />
+              <RSVPForm guest={guest} themeColor="#C9A962" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
             </div>
           </motion.div>
         ) : (

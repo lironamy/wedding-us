@@ -60,7 +60,7 @@ const BotanicalLeaf = ({ side, delay }: { side: 'left' | 'right'; delay: number 
   </motion.svg>
 );
 
-export default function BotanicalTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function BotanicalTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -377,7 +377,7 @@ export default function BotanicalTemplate({ wedding, guest, dateParts, isRSVP = 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4 }}
           >
-            <RSVPForm guest={guest} themeColor="#228B22" />
+            <RSVPForm guest={guest} themeColor="#228B22" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         )}
 

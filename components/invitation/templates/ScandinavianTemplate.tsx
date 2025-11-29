@@ -21,7 +21,7 @@ const LineIcon = ({ type }: { type: 'leaf' | 'heart' | 'branch' }) => {
   );
 };
 
-export default function ScandinavianTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function ScandinavianTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
@@ -244,6 +244,9 @@ export default function ScandinavianTemplate({ wedding, guest, dateParts, isRSVP
             <RSVPForm
               guest={guest}
               themeColor="#A0896B"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

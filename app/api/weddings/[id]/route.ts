@@ -139,10 +139,15 @@ export async function PUT(
       'payboxPhone',
       'enableBitGifts',
       'bitQrImage',
+      'askAboutMeals',
+      'mealOptions',
+      'customOtherMealName',
       'maxGuests',
       'seatingSettings',
       'status'
     ];
+
+    console.log('=== API: Received askAboutMeals ===', body.askAboutMeals);
 
     allowedFields.forEach((field) => {
       if (body[field] !== undefined) {
@@ -153,9 +158,14 @@ export async function PUT(
         }
         // Mark field as modified for Mongoose to save it
         wedding.markModified(field);
+
+        if (field === 'askAboutMeals') {
+          console.log('=== API: Setting askAboutMeals to ===', body[field]);
+        }
       }
     });
 
+    console.log('=== API: Wedding askAboutMeals before save ===', wedding.askAboutMeals);
     await wedding.save();
 
     // Reload the document to get all fields properly

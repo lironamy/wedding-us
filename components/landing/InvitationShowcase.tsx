@@ -29,8 +29,8 @@ export default function InvitationShowcase() {
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center lg:justify-start">
               <div className="flex items-center gap-2">
-                <span className="text-xl">🎬</span>
-                <span className="text-gray-600">סרטונים מותאמים</span>
+                <span className="text-xl">💕</span>
+                <span className="text-gray-600">מגוון הזמנות</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xl">✨</span>
@@ -60,7 +60,7 @@ export default function InvitationShowcase() {
                   playsInline
                   className="w-full h-full object-contain"
                 >
-                  <source src="https://va.media.tumblr.com/tumblr_t64zyh6W3H1zsx3om.mp4" type="video/mp4" />
+                  <source src="https://va.media.tumblr.com/tumblr_t6gdph3x7a1zsx3om.mp4" type="video/mp4" />
                 </video>
               </div>
 

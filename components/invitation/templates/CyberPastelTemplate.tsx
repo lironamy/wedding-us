@@ -33,7 +33,7 @@ const Bubble = ({ x, size, delay, duration }: { x: string; size: number; delay: 
   />
 );
 
-export default function CyberPastelTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function CyberPastelTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -108,7 +108,7 @@ export default function CyberPastelTemplate({ wedding, guest, dateParts, isRSVP 
               fontFamily: "'Space Grotesk', sans-serif"
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -385,6 +385,9 @@ export default function CyberPastelTemplate({ wedding, guest, dateParts, isRSVP 
             <RSVPForm
               guest={guest}
               themeColor="#DDA0DD"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

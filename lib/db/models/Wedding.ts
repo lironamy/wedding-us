@@ -63,6 +63,16 @@ export interface IWedding {
   payboxPhone?: string;
   bitQrImage?: string;
   enableBitGifts?: boolean;
+  askAboutMeals?: boolean; // Whether to ask guests about meal preferences
+  mealOptions?: {
+    regular: boolean;
+    vegetarian: boolean;
+    vegan: boolean;
+    kids: boolean;
+    glutenFree: boolean;
+    other: boolean;
+  };
+  customOtherMealName?: string; // Custom name for 'other' meal type
   maxGuests: number;
   uniqueUrl: string;
   status: 'draft' | 'active' | 'completed' | 'archived';
@@ -227,6 +237,23 @@ const WeddingSchema = new Schema<IWedding>(
     enableBitGifts: {
       type: Boolean,
       default: false,
+    },
+    askAboutMeals: {
+      type: Boolean,
+      default: true, // Default to asking about meals
+    },
+    mealOptions: {
+      regular: { type: Boolean, default: true },
+      vegetarian: { type: Boolean, default: true },
+      vegan: { type: Boolean, default: true },
+      kids: { type: Boolean, default: true },
+      glutenFree: { type: Boolean, default: true },
+      other: { type: Boolean, default: true },
+    },
+    customOtherMealName: {
+      type: String,
+      trim: true,
+      default: '',
     },
     seatingSettings: {
       mode: {

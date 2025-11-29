@@ -51,7 +51,7 @@ const IceCrystal = ({ x, y, delay }: { x: string; y: string; delay: number }) =>
   </motion.div>
 );
 
-export default function WinterWonderlandTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function WinterWonderlandTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -141,7 +141,7 @@ export default function WinterWonderlandTemplate({ wedding, guest, dateParts, is
                 fontFamily: "'Assistant', sans-serif"
               }}
             >
-              ❄️ {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'} ❄️
+              ❄️ הנכם מוזמנים ❄️
             </span>
           </motion.div>
 
@@ -418,7 +418,7 @@ export default function WinterWonderlandTemplate({ wedding, guest, dateParts, is
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4 }}
           >
-            <RSVPForm guest={guest} themeColor="#4169E1" />
+            <RSVPForm guest={guest} themeColor="#4169E1" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         )}
 

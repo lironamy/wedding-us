@@ -47,7 +47,14 @@
       "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\components\\ui\\IPhone3D.tsx\")",
       "Bash(timeout /t)",
       "Bash(copy \"C:\\Users\\liron\\Downloads\\googleaf8a2ddbe9c3630c.html\" \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\public\\googleaf8a2ddbe9c3630c.html\")",
-      "Bash(dir \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\public\" /b)"
+      "Bash(dir \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\public\" /b)",
+      "Bash(find:*)",
+      "Bash(for file in components/invitation/templates/*.tsx)",
+      "Bash(do if ! grep -q \"customOtherMealName\" \"$file\")",
+      "Bash(then echo \"$file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\app\\favicon.ico\")"
     ],
     "deny": [],
     "ask": []

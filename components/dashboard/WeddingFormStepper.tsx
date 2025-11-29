@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,6 +50,16 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     invitationTemplate: 'classic',
     maxGuests: 200,
     seatingMode: 'auto' as 'auto' | 'manual',
+    askAboutMeals: true,
+    mealOptions: {
+      regular: true,
+      vegetarian: true,
+      vegan: true,
+      kids: true,
+      glutenFree: true,
+      other: true,
+    },
+    customOtherMealName: '',
     theme: {
       primaryColor: '#7950a5',
       secondaryColor: '#2C3E50',
@@ -106,8 +116,19 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     ? [...baseStepsLabels, 'תשלום']
     : baseStepsLabels;
 
+  // Track if initial load happened to prevent re-initialization after save
+  const initialLoadDone = useRef(false);
+  // Track wedding ID to detect if it's a different wedding
+  const loadedWeddingId = useRef<string | null>(null);
+
   useEffect(() => {
-    if (wedding) {
+    // Only initialize formData on first load or if wedding ID changed
+    const currentWeddingId = wedding?._id || null;
+    if (wedding && (!initialLoadDone.current || loadedWeddingId.current !== currentWeddingId)) {
+      console.log('=== Initializing formData from wedding ===');
+      console.log('askAboutMeals from wedding:', wedding.askAboutMeals);
+      initialLoadDone.current = true;
+      loadedWeddingId.current = currentWeddingId;
       setFormData({
         groomName: wedding.groomName || '',
         brideName: wedding.brideName || '',
@@ -132,6 +153,16 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
         invitationTemplate: wedding.invitationTemplate || 'classic',
         maxGuests: wedding.maxGuests || 200,
         seatingMode: wedding.seatingSettings?.mode || 'auto',
+        askAboutMeals: wedding.askAboutMeals !== false, // Default to true
+        mealOptions: wedding.mealOptions || {
+          regular: true,
+          vegetarian: true,
+          vegan: true,
+          kids: true,
+          glutenFree: true,
+          other: true,
+        },
+        customOtherMealName: wedding.customOtherMealName || '',
         theme: wedding.theme || {
           primaryColor: '#7950a5',
           secondaryColor: '#2C3E50',
@@ -185,13 +216,6 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
-  };
-
-  const handleColorChange = (colorType: 'primaryColor' | 'secondaryColor', value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      theme: { ...prev.theme, [colorType]: value }
-    }));
   };
 
   const handleMediaUpload = (url: string, type: 'image' | 'video') => {
@@ -354,7 +378,9 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
   const handleFinalSubmit = async () => {
     console.log('=== handleFinalSubmit ===');
     console.log('Current step:', currentStep);
-    console.log('FormData:', JSON.stringify(formData, null, 2));
+    console.log('=== FormData being saved ===');
+    console.log('askAboutMeals:', formData.askAboutMeals);
+    console.log('Full FormData:', JSON.stringify(formData, null, 2));
 
     if (!validateStep(currentStep)) {
       console.log('Validation failed for step:', currentStep);
@@ -363,7 +389,7 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
 
     setLoading(true);
     try {
-      console.log('Calling onSubmit...');
+      console.log('Calling onSubmit with askAboutMeals =', formData.askAboutMeals);
       // Save the wedding data
       await onSubmit(formData);
       console.log('onSubmit completed successfully');
@@ -764,6 +790,114 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               <p className="text-sm sm:text-base text-gray-500 mt-1">בחרו תבנית והתאימו את העיצוב</p>
             </div>
 
+            {/* Meal Preferences Question */}
+            <div className="bg-gray-50 rounded-xl p-4 sm:p-6 mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                האם תרצו לשאול את האורחים איזה סוג אוכל הם מעוניינים?
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">
+                אם תבחרו כן, האורחים יוכלו לבחור את סוג המנה המועדף עליהם
+              </p>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, askAboutMeals: true }))}
+                  className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all ${
+                    formData.askAboutMeals
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="text-lg mb-1">✓</span>
+                  <span className="block">כן, לשאול</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log('=== Setting askAboutMeals to FALSE ===');
+                    setFormData((prev) => {
+                      console.log('Previous askAboutMeals:', prev.askAboutMeals);
+                      return { ...prev, askAboutMeals: false };
+                    });
+                  }}
+                  className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all ${
+                    !formData.askAboutMeals
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="text-lg mb-1">✕</span>
+                  <span className="block">לא, כולם רגיל</span>
+                </button>
+              </div>
+
+              {/* Meal Type Selection - Only show when askAboutMeals is true */}
+              {formData.askAboutMeals && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm font-medium text-gray-700 mb-3">בחרו אילו סוגי מנות מיוחדות להציג לאורחים:</p>
+                  <p className="text-xs text-gray-500 mb-3">מנה רגילה היא ברירת המחדל - אורחים שלא יבחרו מנה מיוחדת יחושבו כרגיל</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { key: 'vegetarian', label: 'צמחוני', icon: '🥗' },
+                      { key: 'vegan', label: 'טבעוני', icon: '🌱' },
+                      { key: 'kids', label: 'מנת ילדים', icon: '🧒' },
+                      { key: 'glutenFree', label: 'ללא גלוטן', icon: '🌾' },
+                      { key: 'other', label: formData.customOtherMealName || 'אחר', icon: '🍽️' },
+                    ].map((meal) => (
+                      <button
+                        key={meal.key}
+                        type="button"
+                        onClick={() => {
+                          const mealKey = meal.key as keyof typeof formData.mealOptions;
+                          setFormData((prev) => ({
+                            ...prev,
+                            mealOptions: {
+                              ...prev.mealOptions,
+                              [mealKey]: !prev.mealOptions[mealKey],
+                            },
+                            // Clear custom name if unchecking 'other'
+                            ...(mealKey === 'other' && prev.mealOptions.other ? { customOtherMealName: '' } : {}),
+                          }));
+                        }}
+                        className={`flex items-center gap-2 py-2 px-3 rounded-lg border-2 text-sm transition-all ${
+                          formData.mealOptions[meal.key as keyof typeof formData.mealOptions]
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        <span>{meal.icon}</span>
+                        <span>{meal.label}</span>
+                        {formData.mealOptions[meal.key as keyof typeof formData.mealOptions] && (
+                          <svg className="w-4 h-4 mr-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Custom name input for 'other' meal type */}
+                  {formData.mealOptions.other && (
+                    <div className="mt-3">
+                      <Input
+                        type="text"
+                        value={formData.customOtherMealName}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, customOtherMealName: e.target.value }))}
+                        placeholder="הקלידו שם למנה (למשל: כשר למהדרין, ללא לקטוז...)"
+                        className="w-full text-sm"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">השם שתכתבו יוצג לאורחים במקום "אחר"</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!formData.askAboutMeals && (
+                <p className="text-xs text-gray-500 mt-3 text-center">
+                  כל האורחים ייחשבו כמנה רגילה
+                </p>
+              )}
+            </div>
+
             {/* Template Selection */}
             <div className="mb-8">
               <TemplateSelector
@@ -772,98 +906,6 @@ export default function WeddingFormStepper({ wedding, onSubmit, onCancel }: Wedd
               />
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 my-6" />
-
-            {/* Colors */}
-            <div className="grid grid-cols-1 gap-4 sm:gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  צבע ראשי
-                </label>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <input
-                    type="color"
-                    value={formData.theme.primaryColor}
-                    onChange={(e) => handleColorChange('primaryColor', e.target.value)}
-                    className="h-10 sm:h-12 w-16 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                  />
-                  <Input
-                    value={formData.theme.primaryColor}
-                    onChange={(e) => handleColorChange('primaryColor', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  צבע משני
-                </label>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <input
-                    type="color"
-                    value={formData.theme.secondaryColor}
-                    onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
-                    className="h-10 sm:h-12 w-16 sm:w-20 rounded-lg border border-gray-300 cursor-pointer"
-                  />
-                  <Input
-                    value={formData.theme.secondaryColor}
-                    onChange={(e) => handleColorChange('secondaryColor', e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Color Preview */}
-            <div className="p-3 sm:p-4 rounded-xl border border-gray-200 bg-gray-50">
-              <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">תצוגה מקדימה:</p>
-              <div className="flex gap-3 sm:gap-4">
-                <div
-                  className="flex-1 h-12 sm:h-16 rounded-lg shadow-sm"
-                  style={{ backgroundColor: formData.theme.primaryColor }}
-                />
-                <div
-                  className="flex-1 h-12 sm:h-16 rounded-lg shadow-sm"
-                  style={{ backgroundColor: formData.theme.secondaryColor }}
-                />
-              </div>
-            </div>
-
-            {/* Torn Paper Effect */}
-            <div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">אפקט מעבר</h3>
-              <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
-                בחרו אפקט נייר קרוע שיופיע בין התמונה לתוכן ההזמנה
-              </p>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-                {tornPaperEffects.map((effect) => (
-                  <div
-                    key={effect.id}
-                    onClick={() => setFormData((prev) => ({ ...prev, backgroundPattern: effect.url }))}
-                    className={`cursor-pointer rounded-lg sm:rounded-xl border-2 overflow-hidden transition-all ${
-                      formData.backgroundPattern === effect.url
-                        ? 'border-primary ring-2 ring-primary ring-opacity-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    {effect.url ? (
-                      <div
-                        className="h-16 sm:h-20 bg-contain bg-no-repeat bg-bottom bg-gray-800"
-                        style={{ backgroundImage: `url(${effect.url})` }}
-                      />
-                    ) : (
-                      <div className="h-16 sm:h-20 bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                        <span className="text-gray-400 text-xs">ללא</span>
-                      </div>
-                    )}
-                    <div className="p-1.5 sm:p-2 text-center bg-white">
-                      <span className="text-xs font-medium">{effect.name}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </Step>
 

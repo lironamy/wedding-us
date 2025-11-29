@@ -101,7 +101,7 @@ const OliveBranch = ({ side }: { side: 'left' | 'right' }) => (
   </motion.div>
 );
 
-export default function MediterraneanTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function MediterraneanTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -161,7 +161,7 @@ export default function MediterraneanTemplate({ wedding, guest, dateParts, isRSV
               fontFamily: wedding.theme?.fontFamily || 'serif'
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -427,6 +427,9 @@ export default function MediterraneanTemplate({ wedding, guest, dateParts, isRSV
             <RSVPForm
               guest={guest}
               themeColor="#40E0D0"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

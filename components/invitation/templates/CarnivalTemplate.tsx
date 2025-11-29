@@ -59,7 +59,7 @@ const StarDecoration = ({ x, y, delay, size }: { x: string; y: string; delay: nu
   </motion.div>
 );
 
-export default function CarnivalTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function CarnivalTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const [showConfetti, setShowConfetti] = useState(false);
 
   const handleNavigation = () => {
@@ -107,7 +107,7 @@ export default function CarnivalTemplate({ wedding, guest, dateParts, isRSVP = f
               textShadow: '2px 2px 4px rgba(0,0,0,0.2)'
             }}
           >
-            🎉 {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'} 🎉
+            🎉הנכם מוזמנים 🎉
           </span>
         </motion.div>
 
@@ -372,6 +372,9 @@ export default function CarnivalTemplate({ wedding, guest, dateParts, isRSVP = f
               <RSVPForm
                 guest={guest}
                 themeColor="#667eea"
+                askAboutMeals={wedding.askAboutMeals !== false}
+                mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
               />
             </motion.div>
           )}

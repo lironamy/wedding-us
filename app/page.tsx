@@ -198,7 +198,7 @@ function CTASection() {
           מוכנים להתחיל?
         </h2>
         <p className="cursor-target text-xl md:text-2xl text-white/90 mb-12 max-w-2xl mx-auto cta-target px-4 py-2 cursor-none">
-          הצטרפו לאלפי זוגות שכבר מנהלים את החתונה שלהם בקלות ובסטייל
+          הצטרפו לזוגות שכבר מנהלים את החתונה שלהם בקלות ובסטייל
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-center mb-6 sm:mb-8 px-4 sm:px-0">
               <Link href="/register" className="w-full sm:w-auto">

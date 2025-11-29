@@ -40,15 +40,20 @@ export async function GET() {
       .sort({ name: 1 })
       .lean() as any[];
 
+    // Get custom meal name for "other"
+    const customOtherMealName = wedding.customOtherMealName || 'אחר';
+
     // Calculate meal totals
     const mealTotals = {
       regular: guests.reduce((sum, g) => sum + (g.regularMeals || 0), 0),
       vegetarian: guests.reduce((sum, g) => sum + (g.vegetarianMeals || 0), 0),
       vegan: guests.reduce((sum, g) => sum + (g.veganMeals || 0), 0),
+      kids: guests.reduce((sum, g) => sum + (g.kidsMeals || 0), 0),
+      glutenFree: guests.reduce((sum, g) => sum + (g.glutenFreeMeals || 0), 0),
       other: guests.reduce((sum, g) => sum + (g.otherMeals || 0), 0),
     };
 
-    const totalMeals = mealTotals.regular + mealTotals.vegetarian + mealTotals.vegan + mealTotals.other;
+    const totalMeals = mealTotals.regular + mealTotals.vegetarian + mealTotals.vegan + mealTotals.kids + mealTotals.glutenFree + mealTotals.other;
 
     // Create workbook
     const workbook = XLSX.utils.book_new();
@@ -67,15 +72,17 @@ export async function GET() {
       { 'סוג מנה': 'רגיל', 'כמות': mealTotals.regular, 'פירוט': '' },
       { 'סוג מנה': 'צמחוני', 'כמות': mealTotals.vegetarian, 'פירוט': '' },
       { 'סוג מנה': 'טבעוני', 'כמות': mealTotals.vegan, 'פירוט': '' },
-      { 'סוג מנה': 'אחר', 'כמות': mealTotals.other, 'פירוט': '' },
+      { 'סוג מנה': 'ילדים', 'כמות': mealTotals.kids, 'פירוט': '' },
+      { 'סוג מנה': 'ללא גלוטן', 'כמות': mealTotals.glutenFree, 'פירוט': '' },
+      { 'סוג מנה': customOtherMealName, 'כמות': mealTotals.other, 'פירוט': '' },
       { 'סוג מנה': '', 'כמות': '', 'פירוט': '' },
       { 'סוג מנה': 'סה"כ מנות', 'כמות': totalMeals, 'פירוט': '' },
     ];
 
-    // Add other meal descriptions section
-    if (otherMealDescriptions.length > 0) {
+    // Add other meal descriptions section (only if no custom name was set)
+    if (otherMealDescriptions.length > 0 && !wedding.customOtherMealName) {
       summaryData.push({ 'סוג מנה': '', 'כמות': '', 'פירוט': '' });
-      summaryData.push({ 'סוג מנה': '--- פירוט מנות "אחר" ---', 'כמות': '', 'פירוט': '' });
+      summaryData.push({ 'סוג מנה': `--- פירוט מנות "${customOtherMealName}" ---`, 'כמות': '', 'פירוט': '' });
       otherMealDescriptions.forEach(desc => {
         summaryData.push({ 'סוג מנה': desc, 'כמות': '', 'פירוט': '' });
       });
@@ -88,19 +95,24 @@ export async function GET() {
 
     // Sheet 2: Detailed breakdown by guest
     const detailedData = guests
-      .filter(g => (g.regularMeals || 0) + (g.vegetarianMeals || 0) + (g.veganMeals || 0) + (g.otherMeals || 0) > 0)
-      .map((guest) => ({
-        'שם אורח': guest.name,
-        'טלפון נייד': guest.phone,
-        'רגיל': guest.regularMeals || 0,
-        'צמחוני': guest.vegetarianMeals || 0,
-        'טבעוני': guest.veganMeals || 0,
-        'אחר': guest.otherMeals || 0,
-        'פירוט אחר': guest.otherMealDescription || '',
-        'סה"כ מנות': (guest.regularMeals || 0) + (guest.vegetarianMeals || 0) + (guest.veganMeals || 0) + (guest.otherMeals || 0),
-        'הערות': guest.notes || '',
-        'בקשות מיוחדות': guest.specialMealRequests || '',
-      }));
+      .filter(g => (g.regularMeals || 0) + (g.vegetarianMeals || 0) + (g.veganMeals || 0) + (g.kidsMeals || 0) + (g.glutenFreeMeals || 0) + (g.otherMeals || 0) > 0)
+      .map((guest) => {
+        const row: Record<string, any> = {
+          'שם אורח': guest.name,
+          'טלפון נייד': guest.phone,
+          'רגיל': guest.regularMeals || 0,
+          'צמחוני': guest.vegetarianMeals || 0,
+          'טבעוני': guest.veganMeals || 0,
+          'ילדים': guest.kidsMeals || 0,
+          'ללא גלוטן': guest.glutenFreeMeals || 0,
+        };
+        row[customOtherMealName] = guest.otherMeals || 0;
+        row[`פירוט ${customOtherMealName}`] = guest.otherMealDescription || '';
+        row['סה"כ מנות'] = (guest.regularMeals || 0) + (guest.vegetarianMeals || 0) + (guest.veganMeals || 0) + (guest.kidsMeals || 0) + (guest.glutenFreeMeals || 0) + (guest.otherMeals || 0);
+        row['הערות'] = guest.notes || '';
+        row['בקשות מיוחדות'] = guest.specialMealRequests || '';
+        return row;
+      });
 
     const detailedWorksheet = XLSX.utils.json_to_sheet(detailedData);
     detailedWorksheet['!cols'] = [
@@ -109,7 +121,9 @@ export async function GET() {
       { wch: 8 },  // רגיל
       { wch: 8 },  // צמחוני
       { wch: 8 },  // טבעוני
-      { wch: 8 },  // אחר
+      { wch: 8 },  // ילדים
+      { wch: 10 }, // ללא גלוטן
+      { wch: 10 }, // אחר/מותאם
       { wch: 30 }, // פירוט אחר
       { wch: 12 }, // סה"כ מנות
       { wch: 30 }, // הערות
@@ -139,7 +153,9 @@ export async function GET() {
         { wch: 30 }, // הערות נוספות
       ];
       setWorksheetRTL(otherWorksheet);
-      XLSX.utils.book_append_sheet(workbook, otherWorksheet, 'מנות אחר - פירוט');
+      // Use custom name for sheet title (truncate if too long for Excel)
+      const sheetName = `מנות ${customOtherMealName}`.substring(0, 31);
+      XLSX.utils.book_append_sheet(workbook, otherWorksheet, sheetName);
     }
 
     // Sheet 4: Vegetarian meals list
@@ -174,6 +190,40 @@ export async function GET() {
       veganWorksheet['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 30 }];
       setWorksheetRTL(veganWorksheet);
       XLSX.utils.book_append_sheet(workbook, veganWorksheet, 'טבעוני');
+    }
+
+    // Sheet 6: Kids meals list
+    const kidsData = guests
+      .filter(g => (g.kidsMeals || 0) > 0)
+      .map((guest) => ({
+        'שם אורח': guest.name,
+        'טלפון נייד': guest.phone,
+        'כמות מנות ילדים': guest.kidsMeals,
+        'הערות': guest.notes || '',
+      }));
+
+    if (kidsData.length > 0) {
+      const kidsWorksheet = XLSX.utils.json_to_sheet(kidsData);
+      kidsWorksheet['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 30 }];
+      setWorksheetRTL(kidsWorksheet);
+      XLSX.utils.book_append_sheet(workbook, kidsWorksheet, 'ילדים');
+    }
+
+    // Sheet 7: Gluten-free meals list
+    const glutenFreeData = guests
+      .filter(g => (g.glutenFreeMeals || 0) > 0)
+      .map((guest) => ({
+        'שם אורח': guest.name,
+        'טלפון נייד': guest.phone,
+        'כמות מנות ללא גלוטן': guest.glutenFreeMeals,
+        'הערות': guest.notes || '',
+      }));
+
+    if (glutenFreeData.length > 0) {
+      const glutenFreeWorksheet = XLSX.utils.json_to_sheet(glutenFreeData);
+      glutenFreeWorksheet['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 20 }, { wch: 30 }];
+      setWorksheetRTL(glutenFreeWorksheet);
+      XLSX.utils.book_append_sheet(workbook, glutenFreeWorksheet, 'ללא גלוטן');
     }
 
     // Generate buffer

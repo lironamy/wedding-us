@@ -267,34 +267,48 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
   // Keep track of previous table IDs to detect actual changes
   const prevTableIdsRef = useRef<string>('');
 
-  // Initialize table positions - only when tables actually change
+  // Initialize table positions - only for new tables or tables without local position
   useEffect(() => {
-    // Create a stable key for comparison
-    const tableKey = tables.map(t => `${t._id}:${t.positionX}:${t.positionY}`).join(',');
+    // Only check for new tables that don't have a position in our local state
+    const tableIds = tables.map(t => t._id).sort().join(',');
 
-    // Skip if tables haven't actually changed
-    if (tableKey === prevTableIdsRef.current) {
+    // Skip if table list hasn't changed (same IDs)
+    if (tableIds === prevTableIdsRef.current) {
       return;
     }
-    prevTableIdsRef.current = tableKey;
+    prevTableIdsRef.current = tableIds;
 
-    const positions = new Map<string, Position>();
-    tables.forEach((table, index) => {
-      // Use saved position or calculate default grid position
-      if (table.positionX !== undefined && table.positionY !== undefined) {
-        positions.set(table._id, { x: table.positionX, y: table.positionY });
-      } else {
-        // Auto-arrange in grid
-        const cols = 5;
-        const row = Math.floor(index / cols);
-        const col = index % cols;
-        positions.set(table._id, {
-          x: 50 + col * 160,
-          y: 250 + row * 160,
-        });
-      }
+    setTablePositions(prev => {
+      const newPositions = new Map(prev);
+
+      tables.forEach((table, index) => {
+        // Only set position if we don't already have one for this table
+        if (!newPositions.has(table._id)) {
+          if (table.positionX !== undefined && table.positionY !== undefined) {
+            newPositions.set(table._id, { x: table.positionX, y: table.positionY });
+          } else {
+            // Auto-arrange in grid
+            const cols = 5;
+            const row = Math.floor(index / cols);
+            const col = index % cols;
+            newPositions.set(table._id, {
+              x: 50 + col * 160,
+              y: 250 + row * 160,
+            });
+          }
+        }
+      });
+
+      // Remove positions for tables that no longer exist
+      const currentTableIds = new Set(tables.map(t => t._id));
+      newPositions.forEach((_, tableId) => {
+        if (!currentTableIds.has(tableId)) {
+          newPositions.delete(tableId);
+        }
+      });
+
+      return newPositions;
     });
-    setTablePositions(positions);
   }, [tables]);
 
   // Handle mouse down on table
@@ -391,16 +405,16 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
   }, [draggingTable, draggingElement, dragOffset, scale, specialElements]);
 
   // Handle mouse up
-  const handleMouseUp = useCallback(async () => {
-    // Save table position if was dragging table
+  const handleMouseUp = useCallback(() => {
+    // Save table position if was dragging table (in background, don't wait)
     if (lastDraggedPosition.current) {
       const { tableId, pos } = lastDraggedPosition.current;
-      // Save position via store (updates both DB and local state)
-      await tablesStore.updateTablePosition(tableId, pos.x, pos.y);
+      // Save position via store in background - don't await
+      tablesStore.updateTablePosition(tableId, pos.x, pos.y);
       lastDraggedPosition.current = null;
     }
 
-    // Save elements if was dragging an element
+    // Save elements if was dragging an element (in background)
     if (draggingElement) {
       // Use functional setState to get the latest elements and save them
       setSpecialElements(currentElements => {
@@ -409,6 +423,7 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
       });
     }
 
+    // Immediately release the drag state
     setDraggingTable(null);
     setDraggingElement(null);
   }, [tablesStore, draggingElement, saveElementsToServer]);
@@ -512,6 +527,86 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
     setSpecialElements(DEFAULT_SPECIAL_ELEMENTS);
     saveElementsToServer(DEFAULT_SPECIAL_ELEMENTS);
   }, [tables, tablesStore, CANVAS_WIDTH, saveElementsToServer]);
+
+  // Align nearby elements to each other (smart alignment)
+  const alignToGrid = useCallback(() => {
+    // Tolerance for considering items need alignment (small differences)
+    const alignTolerance = 30; // Only align items that are close but not exact
+
+    console.log('=== Starting alignment ===');
+
+    // Collect all items (tables only for now - elements are usually positioned intentionally)
+    interface AlignableItem {
+      id: string;
+      type: 'table' | 'element';
+      x: number;
+      y: number;
+    }
+
+    const items: AlignableItem[] = [];
+
+    // Add tables
+    tablePositions.forEach((pos, tableId) => {
+      items.push({ id: tableId, type: 'table', x: pos.x, y: pos.y });
+    });
+
+    console.log('Tables before alignment:', JSON.parse(JSON.stringify(items)));
+
+    let alignmentsMade = 0;
+
+    // Sort by X to find vertical columns
+    const sortedByX = [...items].sort((a, b) => a.x - b.x);
+
+    // Find pairs/groups that should be aligned vertically (same X)
+    for (let i = 0; i < sortedByX.length - 1; i++) {
+      const current = sortedByX[i];
+      const next = sortedByX[i + 1];
+      const xDiff = Math.abs(current.x - next.x);
+
+      // If they're close in X but not exactly aligned, align them
+      if (xDiff > 0 && xDiff <= alignTolerance) {
+        console.log(`Aligning X: ${next.id.slice(-4)} from x=${next.x} to x=${current.x} (diff was ${xDiff})`);
+        next.x = current.x;
+        alignmentsMade++;
+      }
+    }
+
+    // Sort by Y to find horizontal rows
+    const sortedByY = [...items].sort((a, b) => a.y - b.y);
+
+    // Find pairs/groups that should be aligned horizontally (same Y)
+    for (let i = 0; i < sortedByY.length - 1; i++) {
+      const current = sortedByY[i];
+      const next = sortedByY[i + 1];
+      const yDiff = Math.abs(current.y - next.y);
+
+      // If they're close in Y but not exactly aligned, align them
+      if (yDiff > 0 && yDiff <= alignTolerance) {
+        console.log(`Aligning Y: ${next.id.slice(-4)} from y=${next.y} to y=${current.y} (diff was ${yDiff})`);
+        next.y = current.y;
+        alignmentsMade++;
+      }
+    }
+
+    console.log('Tables after alignment:', JSON.parse(JSON.stringify(items)));
+    console.log('Total alignments made:', alignmentsMade);
+
+    // Apply aligned positions to tables
+    const newPositions = new Map<string, Position>();
+    items.forEach(item => {
+      newPositions.set(item.id, { x: item.x, y: item.y });
+      // Save to database in background
+      tablesStore.updateTablePosition(item.id, item.x, item.y);
+    });
+
+    setTablePositions(newPositions);
+
+    if (alignmentsMade > 0) {
+      toast.success(`יושרו ${alignmentsMade} שולחנות`);
+    } else {
+      toast.success('כל השולחנות כבר מיושרים');
+    }
+  }, [tablePositions, tablesStore]);
 
   // Capture screenshot of the canvas using native canvas drawing
   const captureScreenshot = useCallback(async () => {
@@ -1112,6 +1207,13 @@ export const EventHallCanvas = observer(({ onTableClick, onTableEdit, groups, vi
             title={isFullscreen ? 'יציאה ממסך מלא' : 'מסך מלא'}
           >
             {isFullscreen ? '⛶' : '⛶'}
+          </button>
+          <button
+            onClick={alignToGrid}
+            className="px-3 py-1.5 bg-white shadow rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+            title="יישור לרשת"
+          >
+            ⊞ יישור
           </button>
           <button
             onClick={resetLayout}

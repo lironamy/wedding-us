@@ -68,6 +68,15 @@ const fireCelebration = () => {
   }, 10000);
 };
 
+interface MealOptions {
+  regular: boolean;
+  vegetarian: boolean;
+  vegan: boolean;
+  kids: boolean;
+  glutenFree: boolean;
+  other: boolean;
+}
+
 interface RSVPFormProps {
   guest: {
     _id: string;
@@ -80,15 +89,39 @@ interface RSVPFormProps {
     regularMeals?: number;
     vegetarianMeals?: number;
     veganMeals?: number;
+    kidsMeals?: number;
+    glutenFreeMeals?: number;
     otherMeals?: number;
     otherMealDescription?: string;
-    specialMealRequests?: string;
     notes?: string;
   };
+  askAboutMeals?: boolean;
+  mealOptions?: MealOptions;
+  customOtherMealName?: string;
   themeColor?: string;
 }
 
-export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
+// Meal types with +/- controls (regular is calculated automatically)
+const MEAL_OPTIONS = [
+  { key: 'vegetarian', label: 'צמחוני', icon: '🥗' },
+  { key: 'vegan', label: 'טבעוני', icon: '🌱' },
+  { key: 'kids', label: 'מנת ילדים', icon: '🧒' },
+  { key: 'glutenFree', label: 'ללא גלוטן', icon: '🌾' },
+  { key: 'other', label: 'אחר', icon: '🍽️' },
+] as const;
+
+type MealKey = typeof MEAL_OPTIONS[number]['key'] | 'regular';
+
+const DEFAULT_MEAL_OPTIONS: MealOptions = {
+  regular: true,
+  vegetarian: true,
+  vegan: true,
+  kids: true,
+  glutenFree: true,
+  other: true,
+};
+
+export function RSVPForm({ guest, askAboutMeals = true, mealOptions = DEFAULT_MEAL_OPTIONS, customOtherMealName, themeColor = '#7950a5' }: RSVPFormProps) {
   // If invitedCount is not set or is 0, there's no limit
   const hasLimit = !!(guest.invitedCount && guest.invitedCount > 0);
   const maxGuests: number = hasLimit ? guest.invitedCount! : 99;
@@ -101,38 +134,62 @@ export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
   );
   const [childrenAttending, setChildrenAttending] = useState(guest.childrenAttending || 0);
 
-  // Meal counts - default all to regular (same as initial attendees count)
-  const initialAdults = guest.adultsAttending && guest.adultsAttending > 0 ? guest.adultsAttending : 1;
-  const initialChildren = guest.childrenAttending || 0;
-  const initialTotal = initialAdults + initialChildren;
-
-  const [regularMeals, setRegularMeals] = useState(() => {
-    // If guest already has meal data, use it; otherwise default to total attendees
-    if (guest.regularMeals !== undefined && guest.regularMeals !== null) {
-      return guest.regularMeals;
-    }
-    return initialTotal;
+  // Meal counts - initialize from guest data or 0
+  const [mealCounts, setMealCounts] = useState<Record<MealKey, number>>({
+    regular: guest.regularMeals || 0,
+    vegetarian: guest.vegetarianMeals || 0,
+    vegan: guest.veganMeals || 0,
+    kids: guest.kidsMeals || 0,
+    glutenFree: guest.glutenFreeMeals || 0,
+    other: guest.otherMeals || 0,
   });
-  const [vegetarianMeals, setVegetarianMeals] = useState(guest.vegetarianMeals || 0);
-  const [veganMeals, setVeganMeals] = useState(guest.veganMeals || 0);
-  const [otherMeals, setOtherMeals] = useState(guest.otherMeals || 0);
+
   const [otherMealDescription, setOtherMealDescription] = useState(guest.otherMealDescription || '');
   const [notes, setNotes] = useState(guest.notes || '');
 
-  // Calculate total meals
-  const totalMeals = regularMeals + vegetarianMeals + veganMeals + otherMeals;
   const totalAttendees = adultsAttending + childrenAttending;
-
-  // Auto-adjust regular meals when attendees change
-  const adjustMealsForAttendees = (newTotal: number) => {
-    const specialMeals = vegetarianMeals + veganMeals + otherMeals;
-    const newRegular = Math.max(0, newTotal - specialMeals);
-    setRegularMeals(newRegular);
-  };
+  // Calculate special meals (excluding regular which is auto-calculated)
+  const specialMeals = mealCounts.vegetarian + mealCounts.vegan + mealCounts.kids + mealCounts.glutenFree + mealCounts.other;
+  // Regular meals = total attendees minus special meals
+  const calculatedRegularMeals = Math.max(0, totalAttendees - specialMeals);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  // Reset meals when attendees change
+  const resetMeals = () => {
+    setMealCounts({
+      regular: 0,
+      vegetarian: 0,
+      vegan: 0,
+      kids: 0,
+      glutenFree: 0,
+      other: 0,
+    });
+  };
+
+  const handleMealChange = (mealKey: MealKey, delta: number) => {
+    if (mealKey === 'regular') return; // Regular is auto-calculated
+
+    const currentValue = mealCounts[mealKey];
+    const newValue = Math.max(0, currentValue + delta);
+
+    // Check if we can add more special meals (can't exceed total attendees)
+    if (delta > 0 && specialMeals >= totalAttendees) {
+      return; // Can't add more special meals than attendees
+    }
+
+    setMealCounts(prev => ({
+      ...prev,
+      [mealKey]: newValue,
+    }));
+
+    // Clear other description if reducing to 0
+    if (mealKey === 'other' && newValue === 0) {
+      setOtherMealDescription('');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,7 +215,32 @@ export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
           setLoading(false);
           return;
         }
+        // Validate "other" description if has other meals and no custom name is set
+        if (askAboutMeals && mealCounts.other > 0 && !customOtherMealName && !otherMealDescription.trim()) {
+          setError('נא לציין את סוג המנה המבוקשת בשדה "אחר"');
+          setLoading(false);
+          return;
+        }
       }
+
+      // Calculate meals to send
+      // If askAboutMeals is false, count all as regular
+      // Otherwise, regular = total - special meals (auto-calculated)
+      const mealsToSend = askAboutMeals ? {
+        regular: calculatedRegularMeals,
+        vegetarian: mealCounts.vegetarian,
+        vegan: mealCounts.vegan,
+        kids: mealCounts.kids,
+        glutenFree: mealCounts.glutenFree,
+        other: mealCounts.other,
+      } : {
+        regular: totalAttendees,
+        vegetarian: 0,
+        vegan: 0,
+        kids: 0,
+        glutenFree: 0,
+        other: 0,
+      };
 
       const response = await fetch('/api/guests/rsvp', {
         method: 'POST',
@@ -168,11 +250,13 @@ export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
           rsvpStatus,
           adultsAttending: rsvpStatus === 'confirmed' ? adultsAttending : 0,
           childrenAttending: rsvpStatus === 'confirmed' ? childrenAttending : 0,
-          regularMeals: rsvpStatus === 'confirmed' ? regularMeals : 0,
-          vegetarianMeals: rsvpStatus === 'confirmed' ? vegetarianMeals : 0,
-          veganMeals: rsvpStatus === 'confirmed' ? veganMeals : 0,
-          otherMeals: rsvpStatus === 'confirmed' ? otherMeals : 0,
-          otherMealDescription: rsvpStatus === 'confirmed' ? otherMealDescription : '',
+          regularMeals: rsvpStatus === 'confirmed' ? mealsToSend.regular : 0,
+          vegetarianMeals: rsvpStatus === 'confirmed' ? mealsToSend.vegetarian : 0,
+          veganMeals: rsvpStatus === 'confirmed' ? mealsToSend.vegan : 0,
+          kidsMeals: rsvpStatus === 'confirmed' ? mealsToSend.kids : 0,
+          glutenFreeMeals: rsvpStatus === 'confirmed' ? mealsToSend.glutenFree : 0,
+          otherMeals: rsvpStatus === 'confirmed' ? mealsToSend.other : 0,
+          otherMealDescription: rsvpStatus === 'confirmed' && mealsToSend.other > 0 ? otherMealDescription : '',
           notes: rsvpStatus === 'confirmed' ? notes : '',
         }),
       });
@@ -204,51 +288,19 @@ export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
     const remainingForChildren = Math.max(0, maxGuests - sanitized);
     if (childrenAttending > remainingForChildren) {
       setChildrenAttending(remainingForChildren);
-      adjustMealsForAttendees(sanitized + remainingForChildren);
-    } else {
-      adjustMealsForAttendees(sanitized + childrenAttending);
     }
+    // Reset meals when attendees change
+    resetMeals();
   };
 
   const handleChildrenUpdate = (nextValue: number) => {
     const maxChildren = Math.max(0, maxGuests - adultsAttending);
     const sanitized = clamp(nextValue, 0, maxChildren);
     setChildrenAttending(sanitized);
-    adjustMealsForAttendees(adultsAttending + sanitized);
+    // Reset meals when attendees change
+    resetMeals();
   };
 
-  // Handle meal count updates
-  const handleMealUpdate = (
-    type: 'regular' | 'vegetarian' | 'vegan' | 'other',
-    delta: number
-  ) => {
-    const setters = {
-      regular: setRegularMeals,
-      vegetarian: setVegetarianMeals,
-      vegan: setVeganMeals,
-      other: setOtherMeals,
-    };
-    const values = {
-      regular: regularMeals,
-      vegetarian: vegetarianMeals,
-      vegan: veganMeals,
-      other: otherMeals,
-    };
-
-    const currentValue = values[type];
-    const newValue = Math.max(0, currentValue + delta);
-    const otherMealsTotal = totalMeals - currentValue;
-    const maxAllowed = totalAttendees - otherMealsTotal;
-
-    if (newValue <= maxAllowed) {
-      setters[type](newValue);
-      // Auto-adjust regular meals to make up the difference
-      if (type !== 'regular') {
-        const newTotal = otherMealsTotal + newValue;
-        setRegularMeals(Math.max(0, totalAttendees - (vegetarianMeals + veganMeals + otherMeals + (type === 'vegetarian' ? delta : 0) + (type === 'vegan' ? delta : 0) + (type === 'other' ? delta : 0) - values[type])));
-      }
-    }
-  };
 
   const renderNumberField = ({
     value,
@@ -417,85 +469,76 @@ export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
               {hasLimit && <span> מתוך {guest.invitedCount}</span>}
             </div>
 
-            <div className="space-y-4">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                בחירת סוג מנות ({totalAttendees} מנות סה״כ)
-              </label>
-              <div className="space-y-3">
-                {[
-                  { key: 'regular', label: 'רגיל', icon: '🍽️', value: regularMeals, setter: setRegularMeals },
-                  { key: 'vegetarian', label: 'צמחוני', icon: '🥗', value: vegetarianMeals, setter: setVegetarianMeals },
-                  { key: 'vegan', label: 'טבעוני', icon: '🌱', value: veganMeals, setter: setVeganMeals },
-                  { key: 'other', label: 'אחר', icon: '✏️', value: otherMeals, setter: setOtherMeals },
-                ].map((meal) => (
-                  <div key={meal.key} className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{meal.icon}</span>
-                      <span className="font-medium text-gray-700">{meal.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (meal.value > 0) {
-                            meal.setter(meal.value - 1);
-                            if (meal.key !== 'regular') {
-                              setRegularMeals((prev: number) => Math.min(prev + 1, totalAttendees));
-                            }
-                          }
-                        }}
-                        disabled={meal.value <= 0}
-                        className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        −
-                      </button>
-                      <span className="w-8 text-center font-semibold text-lg">{meal.value}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (totalMeals < totalAttendees || meal.key === 'regular') {
-                            if (meal.key === 'regular') {
-                              // For regular, can only add if there's room
-                              if (totalMeals < totalAttendees) {
-                                meal.setter(meal.value + 1);
-                              }
-                            } else {
-                              // For special meals, take from regular
-                              if (regularMeals > 0) {
-                                meal.setter(meal.value + 1);
-                                setRegularMeals((prev: number) => prev - 1);
-                              } else if (totalMeals < totalAttendees) {
-                                meal.setter(meal.value + 1);
-                              }
-                            }
-                          }
-                        }}
-                        disabled={totalMeals >= totalAttendees && (meal.key === 'regular' || regularMeals <= 0)}
-                        className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {totalMeals !== totalAttendees && (
-                <p className="text-sm text-red-500 text-center">
-                  סה״כ מנות ({totalMeals}) חייב להיות שווה למספר המגיעים ({totalAttendees})
+            {/* Meal Preferences - Only show if askAboutMeals is true */}
+            {askAboutMeals && (
+              <div className="space-y-4">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  האם יש מישהו עם העדפת מנה מיוחדת?
+                </label>
+                <p className="text-xs text-gray-500 -mt-2 mb-3">
+                  מי שלא מסומן יקבל מנה רגילה
                 </p>
-              )}
-              {otherMeals > 0 && (
-                <div className="animate-in slide-in-from-top-2 duration-200">
-                  <Input
-                    type="text"
-                    value={otherMealDescription}
-                    onChange={(e) => setOtherMealDescription(e.target.value)}
-                    placeholder="פרט את הבקשה (למשל: ללא גלוטן, אלרגיה לבוטנים...)"
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30"
-                  />
+                <div className="space-y-3">
+                  {MEAL_OPTIONS.filter((meal) => mealOptions[meal.key as keyof MealOptions]).map((meal) => {
+                    // Use custom name for 'other' if provided
+                    const displayLabel = meal.key === 'other' && customOtherMealName
+                      ? customOtherMealName
+                      : meal.label;
+                    return (
+                    <div key={meal.key}>
+                      <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{meal.icon}</span>
+                          <span className="font-medium text-gray-700">{displayLabel}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleMealChange(meal.key, -1)}
+                            disabled={mealCounts[meal.key] <= 0}
+                            className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            −
+                          </button>
+                          <span className="w-8 text-center font-semibold text-lg">{mealCounts[meal.key]}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleMealChange(meal.key, 1)}
+                            disabled={specialMeals >= totalAttendees}
+                            className="h-8 w-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      {/* Show text input when "other" has count > 0 and no custom name provided */}
+                      {meal.key === 'other' && mealCounts.other > 0 && !customOtherMealName && (
+                        <div className="mt-2 mr-8 animate-in slide-in-from-top-2 duration-200">
+                          <Input
+                            type="text"
+                            value={otherMealDescription}
+                            onChange={(e) => setOtherMealDescription(e.target.value)}
+                            placeholder="פרט את הבקשה (חובה)"
+                            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            required
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                  })}
                 </div>
-              )}
-            </div>
+                {/* Show regular meals count */}
+                <div className="bg-gray-50 rounded-xl px-4 py-3 text-center">
+                  <p className="text-sm text-gray-600">
+                    🍖 מנות רגילות: <span className="font-semibold text-gray-900">{calculatedRegularMeals}</span>
+                    {specialMeals > 0 && (
+                      <span className="text-gray-500"> | מנות מיוחדות: {specialMeals}</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -518,7 +561,7 @@ export function RSVPForm({ guest, themeColor = '#7950a5' }: RSVPFormProps) {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full py-5 text-base font-medium tracking-wide shadow-sm transition hover:shadow"
+            className="w-full rounded-full py-5 text-base font-medium tracking-wide shadow-sm transition hover:shadow disabled:opacity-50 disabled:cursor-not-allowed"
             variant="outline"
             >
             {loading ? 'שולח...' : 'שלח אישור הגעה'}

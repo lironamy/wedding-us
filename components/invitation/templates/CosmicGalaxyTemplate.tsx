@@ -81,7 +81,7 @@ const Nebula = ({ color, x, y, size }: { color: string; x: string; y: string; si
   />
 );
 
-export default function CosmicGalaxyTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function CosmicGalaxyTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -152,7 +152,7 @@ export default function CosmicGalaxyTemplate({ wedding, guest, dateParts, isRSVP
               textShadow: '0 0 10px rgba(0,217,255,0.5)'
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -451,6 +451,9 @@ export default function CosmicGalaxyTemplate({ wedding, guest, dateParts, isRSVP
             <RSVPForm
               guest={guest}
               themeColor="#00D9FF"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

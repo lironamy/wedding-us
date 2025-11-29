@@ -95,18 +95,18 @@ export default function MessagesPageContent({ weddingId }: MessagesPageContentPr
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-linear-to-br from-green-500 via-emerald-500 to-teal-600 p-8 text-white shadow-2xl"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-6 md:p-8 text-white"
       >
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-32 -translate-y-32" />
+        {/* Background decorations */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-16 -translate-y-16" />
         <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/10 rounded-full translate-x-24 translate-y-24" />
         <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-white/5 rounded-full" />
 
-        {/* WhatsApp Icon */}
+        {/* Icon */}
         <motion.div
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
+          transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
           className="absolute top-6 left-6 w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center"
         >
           <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
