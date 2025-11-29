@@ -133,8 +133,11 @@ export function ModernDatePicker({ label, value, onChange, error, required, name
 
   const handleChange = (date: Date | null) => {
     if (date) {
-      // Format as YYYY-MM-DD
-      const formatted = date.toISOString().split('T')[0];
+      // Format as YYYY-MM-DD using local date components (not UTC)
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const formatted = `${year}-${month}-${day}`;
       onChange(formatted);
     }
   };
@@ -150,7 +153,11 @@ export function ModernDatePicker({ label, value, onChange, error, required, name
       const [, day, month, year] = match;
       const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       if (!isNaN(date.getTime())) {
-        const formatted = date.toISOString().split('T')[0];
+        // Format as YYYY-MM-DD using local date components (not UTC)
+        const formattedYear = date.getFullYear();
+        const formattedMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+        const formattedDay = date.getDate().toString().padStart(2, '0');
+        const formatted = `${formattedYear}-${formattedMonth}-${formattedDay}`;
         onChange(formatted);
       }
     }

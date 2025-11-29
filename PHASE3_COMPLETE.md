@@ -62,7 +62,7 @@ Location: `/lib/utils/excel.ts`
 - שם מלא (Full Name) - Required
 - טלפון נייד (Phone) - Required
 - אימייל (Email) - Optional
-- קבוצה משפחתית (Family Group) - Optional
+- קבוצה (Family Group) - Optional
 - מספר מוזמנים (Invited Count) - Optional (default: 1)
 
 ### 4. Guest Management Page ✅

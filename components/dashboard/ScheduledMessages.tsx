@@ -143,6 +143,7 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
   const [messageLogs, setMessageLogs] = useState<MessageLogEntry[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [retryingGuests, setRetryingGuests] = useState<Set<string>>(new Set());
+  const [refreshingStatuses, setRefreshingStatuses] = useState(false);
 
   const loadScheduledMessages = async () => {
     try {
@@ -284,6 +285,33 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
         newSet.delete(guestId);
         return newSet;
       });
+    }
+  };
+
+  const handleRefreshStatuses = async () => {
+    if (!selectedSchedule) return;
+
+    try {
+      setRefreshingStatuses(true);
+      const response = await fetch(`/api/message-logs/refresh?scheduledMessageId=${selectedSchedule._id}&weddingId=${weddingId}`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(`עודכנו ${data.updated || 0} סטטוסים`);
+        // Refresh the logs
+        handleOpenDetails(selectedSchedule);
+        // Also refresh the scheduled messages list to update counts
+        loadScheduledMessages();
+      } else {
+        toast.error(data.error || 'שגיאה בעדכון סטטוסים');
+      }
+    } catch (error) {
+      toast.error('שגיאה בעדכון סטטוסים');
+    } finally {
+      setRefreshingStatuses(false);
     }
   };
 
@@ -958,12 +986,36 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
                     <span className="text-sm font-medium text-gray-700">סה״כ: {selectedSchedule.totalGuests}</span>
                   </div>
 
+                  {/* Refresh statuses button */}
+                  <Button
+                    onClick={handleRefreshStatuses}
+                    disabled={refreshingStatuses}
+                    size="sm"
+                    variant="outline"
+                    className="mr-auto"
+                  >
+                    <motion.svg
+                      animate={refreshingStatuses ? { rotate: 360 } : {}}
+                      transition={{ repeat: refreshingStatuses ? Infinity : 0, duration: 1, ease: 'linear' }}
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="ml-1"
+                    >
+                      <path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                      <path d="M21 3v5h-5" />
+                    </motion.svg>
+                    {refreshingStatuses ? 'מעדכן...' : 'רענן סטטוסים'}
+                  </Button>
+
                   {/* Retry all failed button */}
                   {messageLogs.some(log => log.deliveryStatus === 'failed' || log.deliveryStatus === 'undelivered') && (
                     <Button
                       onClick={handleRetryAllFailed}
                       size="sm"
-                      className="mr-auto"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-1">
                         <path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />

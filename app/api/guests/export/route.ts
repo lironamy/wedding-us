@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       'שם': guest.name,
       'טלפון נייד': guest.phone,
       'אימייל': guest.email || '',
-      'קבוצה משפחתית': guest.familyGroup || '',
+      'קבוצה': guest.familyGroup || '',
       'מספר מוזמנים': guest.invitedCount,
       'סטטוס': guest.rsvpStatus === 'confirmed' ? 'אישר' : guest.rsvpStatus === 'declined' ? 'סירב' : 'ממתין',
       'מבוגרים מגיעים': guest.adultsAttending || 0,
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       { wch: 20 }, // שם
       { wch: 15 }, // טלפון נייד
       { wch: 25 }, // אימייל
-      { wch: 15 }, // קבוצה משפחתית
+      { wch: 15 }, // קבוצה
       { wch: 12 }, // מספר מוזמנים
       { wch: 10 }, // סטטוס
       { wch: 15 }, // מבוגרים מגיעים

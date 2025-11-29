@@ -70,7 +70,7 @@ export function parseGuestExcel(buffer: Buffer): {
         '';
 
       const familyGroup =
-        row['קבוצה משפחתית'] ||
+        row['קבוצה'] ||
         row['משפחה'] ||
         row['Family Group'] ||
         row['Family'] ||
@@ -145,14 +145,14 @@ export function generateGuestTemplate(): Buffer {
       'שם מלא': 'יוסי כהן',
       'טלפון נייד': '0501234567',
       'אימייל': 'yossi@example.com',
-      'קבוצה משפחתית': 'משפחת כהן',
+      'קבוצה': 'משפחת כהן',
       'מספר מוזמנים': '',
     },
     {
       'שם מלא': 'שרה לוי',
       'טלפון נייד': '0527654321',
       'אימייל': '',
-      'קבוצה משפחתית': 'משפחת לוי',
+      'קבוצה': 'משפחת לוי',
       'מספר מוזמנים': 4,
     },
   ];
@@ -164,7 +164,7 @@ export function generateGuestTemplate(): Buffer {
     { wch: 20 }, // שם מלא
     { wch: 15 }, // טלפון נייד
     { wch: 25 }, // אימייל
-    { wch: 20 }, // קבוצה משפחתית
+    { wch: 20 }, // קבוצה
     { wch: 15 }, // מספר מוזמנים
   ];
 
