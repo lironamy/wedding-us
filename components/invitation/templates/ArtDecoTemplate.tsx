@@ -78,7 +78,7 @@ const GeometricBorder = () => (
   </motion.svg>
 );
 
-export default function ArtDecoTemplate({ wedding, guest, dateParts, isRSVP }: InvitationTemplateProps) {
+export default function ArtDecoTemplate({ wedding, guest, dateParts, isRSVP, askAboutMeals }: InvitationTemplateProps) {
   const theme = wedding.theme || {
     primaryColor: '#D4AF37',
     secondaryColor: '#1C1C1C',
@@ -324,7 +324,7 @@ export default function ArtDecoTemplate({ wedding, guest, dateParts, isRSVP }: I
               transition={{ delay: 1.6, duration: 0.6 }}
               className="mb-10 bg-white/5 border border-[#D4AF37]/30 p-6"
             >
-              <RSVPForm guest={guest} themeColor="#D4AF37" />
+              <RSVPForm guest={guest} themeColor="#D4AF37" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
             </motion.div>
           ) : (
             <motion.div

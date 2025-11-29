@@ -68,7 +68,7 @@ const NeonText = ({ children, color, delay }: { children: React.ReactNode; color
   </motion.span>
 );
 
-export default function JazzClubTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function JazzClubTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -133,7 +133,7 @@ export default function JazzClubTemplate({ wedding, guest, dateParts, isRSVP = f
               textShadow: '0 0 10px rgba(255,215,0,0.5)'
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -422,6 +422,9 @@ export default function JazzClubTemplate({ wedding, guest, dateParts, isRSVP = f
             <RSVPForm
               guest={guest}
               themeColor="#FFD700"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

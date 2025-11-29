@@ -18,7 +18,7 @@ export default function WhatsAppShowcase() {
   return (
     <section ref={ref} className="md:py-20 overflow-hidden bg-[#f8f5f2]">
       <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-16">
+        <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-16 pb-[35px] lg:pb-0">
           {/* Text Content */}
           <motion.div
             className="flex-1 text-center lg:text-right"

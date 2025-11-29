@@ -70,7 +70,7 @@ const EdisonBulb = ({ x, delay }: { x: string; delay: number }) => (
   </motion.div>
 );
 
-export default function IndustrialChicTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function IndustrialChicTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -124,7 +124,7 @@ export default function IndustrialChicTemplate({ wedding, guest, dateParts, isRS
               fontFamily: "'Rubik Mono One', monospace"
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -368,7 +368,7 @@ export default function IndustrialChicTemplate({ wedding, guest, dateParts, isRS
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4 }}
           >
-            <RSVPForm guest={guest} themeColor="#B87333" />
+            <RSVPForm guest={guest} themeColor="#B87333" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         )}
 

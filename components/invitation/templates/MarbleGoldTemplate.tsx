@@ -26,7 +26,7 @@ const GoldLine = ({ delay, width }: { delay: number; width: string }) => (
   </motion.div>
 );
 
-export default function MarbleGoldTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function MarbleGoldTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -116,7 +116,7 @@ export default function MarbleGoldTemplate({ wedding, guest, dateParts, isRSVP =
               fontFamily: "'Cinzel', serif"
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -376,6 +376,9 @@ export default function MarbleGoldTemplate({ wedding, guest, dateParts, isRSVP =
             <RSVPForm
               guest={guest}
               themeColor="#C9A962"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

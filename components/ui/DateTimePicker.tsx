@@ -70,8 +70,8 @@ const CustomInput = forwardRef<HTMLInputElement, {
         ref={ref}
         value={value || ''}
         onClick={onClick}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
+        onChange={readOnly ? undefined : onChange}
+        onKeyDown={readOnly ? (e) => e.preventDefault() : onKeyDown}
         readOnly={readOnly}
         className={`
           w-full px-4 pl-11 py-3.5

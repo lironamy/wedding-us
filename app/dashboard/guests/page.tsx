@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
 import { GuestManagement } from '@/components/dashboard/GuestManagement';
+import GuestsPageHeader from '@/components/dashboard/GuestsPageHeader';
 
 export default async function GuestsPage() {
   const session = await getServerSession(authOptions);
@@ -41,16 +42,24 @@ export default async function GuestsPage() {
 
   const weddingId = wedding._id.toString();
 
+  // Prepare meal settings to pass to GuestManagement
+  const mealSettings = {
+    askAboutMeals: wedding.askAboutMeals !== false, // Default to true
+    mealOptions: wedding.mealOptions || {
+      regular: true,
+      vegetarian: true,
+      vegan: true,
+      kids: true,
+      glutenFree: true,
+      other: true,
+    },
+    customOtherMealName: wedding.customOtherMealName || '',
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">ניהול אורחים</h1>
-        <p className="text-gray-600">
-          הוסף, ערוך ונהל את רשימת האורחים לחתונה שלך
-        </p>
-      </div>
-
-      <GuestManagement weddingId={weddingId} />
+      <GuestsPageHeader />
+      <GuestManagement weddingId={weddingId} mealSettings={mealSettings} />
     </div>
   );
 }

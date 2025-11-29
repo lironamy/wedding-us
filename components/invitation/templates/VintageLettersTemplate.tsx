@@ -41,7 +41,7 @@ const LaceBorder = ({ position }: { position: 'top' | 'bottom' }) => (
   />
 );
 
-export default function VintageLettersTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function VintageLettersTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -339,6 +339,9 @@ export default function VintageLettersTemplate({ wedding, guest, dateParts, isRS
               <RSVPForm
                 guest={guest}
                 themeColor="#C4A77D"
+                askAboutMeals={wedding.askAboutMeals !== false}
+                mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
               />
             </motion.div>
           )}

@@ -66,7 +66,7 @@ const FloatingFlower = ({ x, delay, color }: { x: string; delay: number; color: 
   </motion.div>
 );
 
-export default function TropicalParadiseTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function TropicalParadiseTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -137,7 +137,7 @@ export default function TropicalParadiseTemplate({ wedding, guest, dateParts, is
               className="text-lg font-bold text-white"
               style={{ fontFamily: "'Karantina', sans-serif", letterSpacing: '0.1em' }}
             >
-              🌺 {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'} 🌺
+              🌺 הנכם מוזמנים 🌺
             </span>
           </div>
 
@@ -369,7 +369,7 @@ export default function TropicalParadiseTemplate({ wedding, guest, dateParts, is
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4 }}
           >
-            <RSVPForm guest={guest} themeColor="#20E3B2" />
+            <RSVPForm guest={guest} themeColor="#20E3B2" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         )}
 

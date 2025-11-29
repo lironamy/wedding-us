@@ -321,6 +321,7 @@ async function processScheduledMessage(scheduledMessage: any) {
 
 /**
  * Send WhatsApp notification to the couple after messages are sent
+ * Uses the text-only template for reliable delivery
  */
 async function notifyCouple(scheduledMessage: any, result: any) {
   try {
@@ -342,28 +343,29 @@ async function notifyCouple(scheduledMessage: any, result: any) {
       return;
     }
 
+    // Get text-only template Content SID
+    const contentSid = process.env.TWILIO_CONTENT_SID_TEXT_ONLY;
+    if (!contentSid) {
+      console.error('TWILIO_CONTENT_SID_TEXT_ONLY not configured - cannot notify couple');
+      return;
+    }
+
     const config = MESSAGE_SCHEDULE_CONFIG[messageType as ScheduledMessageType];
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const dashboardUrl = `${appUrl}/dashboard/messages/history`;
+    const dashboardUrl = `${appUrl}/dashboard`;
 
-    // Send notification (freeform message - should work if couple has messaged before)
+    // Build notification message for the couple
     // Note: At this point we only know how many were accepted by Twilio,
     // not how many were actually delivered. Delivery status comes via webhook.
-    const message = `שלום ${wedding.groomName} ו${wedding.brideName}! 📬
+    const notificationMessage = `${config.description} נשלחה בהצלחה! | נשלח: ${result.sentCount} | נכשל: ${result.failedCount} | סה"כ אורחים: ${result.totalGuests} | סטטוס המסירה יתעדכן בדקות הקרובות | לצפייה באישורי הגעה: ${dashboardUrl}`;
 
-${config.description} נשלחה!
+    // Use text-only template with named variables
+    const variables = {
+      'name': `${wedding.groomName} ו${wedding.brideName}`,
+      'message': notificationMessage,
+    };
 
-📊 סיכום ראשוני:
-📤 נשלח לעיבוד: ${result.sentCount}
-❌ נכשל בשליחה: ${result.failedCount}
-📋 סה"כ אורחים: ${result.totalGuests}
-
-💡 סטטוס המסירה האמיתי יתעדכן בדקות הקרובות
-
-לצפייה בתגובות:
-${dashboardUrl}`;
-
-    await twilioService.sendMessage(user.phone, message);
+    await twilioService.sendMessageWithTemplate(user.phone, contentSid, variables);
 
     // Update that couple was notified
     await ScheduledMessage.updateOne(

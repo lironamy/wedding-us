@@ -23,17 +23,33 @@ interface Wedding {
   description?: string;
   mediaUrl?: string;
   mediaType?: 'image' | 'video';
+  mediaPosition?: { x: number; y: number };
   theme?: {
     primaryColor: string;
     secondaryColor: string;
     fontFamily: string;
   };
   backgroundPattern?: string;
+  invitationTemplate?: string;
   bitPhone?: string;
   payboxPhone?: string;
   enableBitGifts?: boolean;
   bitQrImage?: string;
+  bitPaymentLink?: string;
+  askAboutMeals?: boolean;
+  mealOptions?: {
+    regular: boolean;
+    vegetarian: boolean;
+    vegan: boolean;
+    kids: boolean;
+    glutenFree: boolean;
+    other: boolean;
+  };
+  customOtherMealName?: string;
   maxGuests?: number;
+  seatingSettings?: {
+    mode: 'auto' | 'manual';
+  };
   uniqueUrl: string;
   status: string;
 }
@@ -62,9 +78,9 @@ export default function SettingsPage() {
 
       console.log('=== fetchWedding result ===');
       console.log('Total weddings returned:', weddings.length);
-      console.log('All weddings:', weddings.map((w: Wedding) => ({ userId: w.userId, contactPhone: w.contactPhone, status: w.status })));
-      console.log('Active wedding contactPhone:', activeWedding?.contactPhone);
-      console.log('Active wedding userId:', activeWedding?.userId);
+      console.log('All weddings:', weddings.map((w: Wedding) => ({ _id: w._id, userId: w.userId, status: w.status })));
+      console.log('Active wedding _id:', activeWedding?._id);
+      console.log('Active wedding askAboutMeals:', activeWedding?.askAboutMeals);
       setWedding(activeWedding || null);
     } catch (err) {
       console.error('Error fetching wedding:', err);

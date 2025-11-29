@@ -92,7 +92,7 @@ const Shell = ({ side, top }: { side: 'left' | 'right'; top: string }) => (
   </motion.svg>
 );
 
-export default function BeachShellsTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function BeachShellsTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -160,7 +160,7 @@ export default function BeachShellsTemplate({ wedding, guest, dateParts, isRSVP 
               fontFamily: "'Cormorant Garamond', serif"
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+           הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -428,6 +428,9 @@ export default function BeachShellsTemplate({ wedding, guest, dateParts, isRSVP 
             <RSVPForm
               guest={guest}
               themeColor="#40E0D0"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

@@ -49,10 +49,8 @@ export default async function MessagesPage() {
   const weddingId = wedding._id.toString();
 
   return (
-    <div className="min-h- ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <MessagesPageContent weddingId={weddingId} />
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <MessagesPageContent weddingId={weddingId} />
     </div>
   );
 }

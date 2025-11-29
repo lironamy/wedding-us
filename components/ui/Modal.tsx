@@ -15,6 +15,8 @@ export interface ModalProps {
   closeOnEscape?: boolean;
   footer?: React.ReactNode;
   className?: string;
+  /** Custom container element for portal - if null, uses document.body or fullscreen element */
+  portalContainer?: HTMLElement | null;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -29,6 +31,7 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnEscape = true,
   footer,
   className = '',
+  portalContainer,
 }) => {
   // Handle escape key
   const handleEscape = useCallback((e: KeyboardEvent) => {
@@ -133,8 +136,11 @@ export const Modal: React.FC<ModalProps> = ({
   );
 
   // Use portal to render modal at document body level
+  // When in fullscreen mode, render inside the fullscreen element so modal is visible
   if (typeof window !== 'undefined') {
-    return createPortal(modalContent, document.body);
+    // Priority: custom container > fullscreen element > document.body
+    const container = portalContainer || document.fullscreenElement || document.body;
+    return createPortal(modalContent, container as HTMLElement);
   }
 
   return modalContent;

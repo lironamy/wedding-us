@@ -91,7 +91,7 @@ const Moon = () => (
   </motion.div>
 );
 
-export default function StarryNightTemplate({ wedding, guest, dateParts, isRSVP }: InvitationTemplateProps) {
+export default function StarryNightTemplate({ wedding, guest, dateParts, isRSVP, askAboutMeals }: InvitationTemplateProps) {
   const [stars, setStars] = useState<Array<{ id: number; x: number; y: number; size: number; delay: number }>>([]);
   const [dustParticles, setDustParticles] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
 
@@ -391,7 +391,7 @@ export default function StarryNightTemplate({ wedding, guest, dateParts, isRSVP 
               border: '1px solid rgba(255, 215, 0, 0.2)',
             }}
           >
-            <RSVPForm guest={guest} themeColor="#FFD700" />
+            <RSVPForm guest={guest} themeColor="#FFD700" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         ) : (
           <motion.div

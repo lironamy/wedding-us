@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
       regularMeals,
       vegetarianMeals,
       veganMeals,
+      kidsMeals,
+      glutenFreeMeals,
       otherMeals,
       otherMealDescription,
       // Legacy fields
@@ -73,6 +75,8 @@ export async function POST(request: NextRequest) {
       updateData.regularMeals = regularMeals ?? 0;
       updateData.vegetarianMeals = vegetarianMeals ?? 0;
       updateData.veganMeals = veganMeals ?? 0;
+      updateData.kidsMeals = kidsMeals ?? 0;
+      updateData.glutenFreeMeals = glutenFreeMeals ?? 0;
       updateData.otherMeals = otherMeals ?? 0;
       updateData.otherMealDescription = otherMealDescription ?? '';
       // Legacy fields
@@ -101,6 +105,8 @@ export async function POST(request: NextRequest) {
         regularMeals: updateData.regularMeals,
         vegetarianMeals: updateData.vegetarianMeals,
         veganMeals: updateData.veganMeals,
+        kidsMeals: updateData.kidsMeals,
+        glutenFreeMeals: updateData.glutenFreeMeals,
         otherMeals: updateData.otherMeals,
         otherMealDescription: updateData.otherMealDescription,
       });

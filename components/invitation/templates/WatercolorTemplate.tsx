@@ -46,7 +46,7 @@ const BrushStroke = ({ delay, color }: { delay: number; color: string }) => (
   </motion.svg>
 );
 
-export default function WatercolorTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function WatercolorTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -105,7 +105,7 @@ export default function WatercolorTemplate({ wedding, guest, dateParts, isRSVP =
               fontFamily: "'Frank Ruhl Libre', serif"
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -354,7 +354,7 @@ export default function WatercolorTemplate({ wedding, guest, dateParts, isRSVP =
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.7 }}
           >
-            <RSVPForm guest={guest} themeColor="#DAA520" />
+            <RSVPForm guest={guest} themeColor="#DAA520" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         )}
 

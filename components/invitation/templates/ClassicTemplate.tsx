@@ -5,7 +5,7 @@ import { RSVPForm } from '@/components/invitation/RSVPForm';
 import { getGenderText, type PartnerType } from '@/lib/utils/genderText';
 import type { InvitationTemplateProps } from './types';
 
-export default function ClassicTemplate({ wedding, guest, dateParts, isRSVP }: InvitationTemplateProps) {
+export default function ClassicTemplate({ wedding, guest, dateParts, isRSVP, askAboutMeals }: InvitationTemplateProps) {
   const theme = wedding.theme || {
     primaryColor: '#7950a5',
     secondaryColor: '#2C3E50',
@@ -209,6 +209,9 @@ export default function ClassicTemplate({ wedding, guest, dateParts, isRSVP }: I
                 <RSVPForm
                   guest={guest}
                   themeColor={theme.primaryColor}
+                  askAboutMeals={wedding.askAboutMeals !== false}
+                  mealOptions={wedding.mealOptions}
+                  customOtherMealName={wedding.customOtherMealName}
                 />
               </div>
             </motion.div>

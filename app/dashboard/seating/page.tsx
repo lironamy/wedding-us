@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth/auth-options';
 import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
 import { SeatingDashboard } from '@/components/dashboard/SeatingDashboard';
+import SeatingPageHeader from '@/components/dashboard/SeatingPageHeader';
 
 export const metadata = {
   title: 'ניהול שיבוץ לשולחנות | לונסול',
@@ -29,7 +30,7 @@ export default async function SeatingPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-4">ניהול שיבוץ לשולחנות</h1>
+          <h1 className="text-3xl font-bold mb-4">סידור ישיבה</h1>
           <p className="text-gray-600 mb-6">
             עליך ליצור חתונה לפני שתוכל לנהל שיבוץ לשולחנות
           </p>
@@ -48,13 +49,7 @@ export default async function SeatingPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">ניהול שיבוץ לשולחנות</h1>
-        <p className="text-gray-600">
-          צור שולחנות ושבץ אורחים לפי משפחות וקבוצות
-        </p>
-      </div>
-
+      <SeatingPageHeader />
       <SeatingDashboard weddingId={weddingId} />
     </div>
   );

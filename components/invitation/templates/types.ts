@@ -1,5 +1,14 @@
 // Shared types for all invitation templates
 
+export interface MealOptions {
+  regular: boolean;
+  vegetarian: boolean;
+  vegan: boolean;
+  kids: boolean;
+  glutenFree: boolean;
+  other: boolean;
+}
+
 export interface WeddingData {
   _id: string;
   groomName: string;
@@ -28,6 +37,9 @@ export interface WeddingData {
   payboxPhone?: string;
   bitQrImage?: string;
   enableBitGifts?: boolean;
+  askAboutMeals?: boolean;
+  mealOptions?: MealOptions;
+  customOtherMealName?: string;
   maxGuests?: number;
   uniqueUrl: string;
   status: string;
@@ -41,12 +53,12 @@ export interface GuestData {
   rsvpStatus: 'pending' | 'confirmed' | 'declined';
   adultsAttending: number;
   childrenAttending: number;
-  regularMeals?: number;
   vegetarianMeals?: number;
   veganMeals?: number;
+  kidsMeals?: number;
+  glutenFreeMeals?: number;
   otherMeals?: number;
   otherMealDescription?: string;
-  specialMealRequests?: string;
   notes?: string;
 }
 
@@ -64,6 +76,9 @@ export interface InvitationTemplateProps {
   guest?: GuestData;
   dateParts: DateParts;
   isRSVP?: boolean;
+  askAboutMeals?: boolean;
+  mealOptions?: MealOptions;
+  customOtherMealName?: string;
 }
 
 // Template metadata for selection

@@ -164,13 +164,13 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
     );
   }
 
-  // Convert to proper format
-  const weddingData = {
+  // Convert to proper format - serialize all MongoDB ObjectIds
+  const weddingData = JSON.parse(JSON.stringify({
     ...wedding,
     _id: wedding._id.toString(),
     userId: wedding.userId.toString(),
     eventDate: wedding.eventDate.toISOString()
-  };
+  }));
 
   const guestData = {
     _id: guest._id.toString(),
@@ -180,14 +180,26 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
     rsvpStatus: guest.rsvpStatus,
     adultsAttending: guest.adultsAttending || 0,
     childrenAttending: guest.childrenAttending || 0,
-    regularMeals: guest.regularMeals,
     vegetarianMeals: guest.vegetarianMeals || 0,
     veganMeals: guest.veganMeals || 0,
+    kidsMeals: guest.kidsMeals || 0,
+    glutenFreeMeals: guest.glutenFreeMeals || 0,
     otherMeals: guest.otherMeals || 0,
     otherMealDescription: guest.otherMealDescription || '',
-    specialMealRequests: guest.specialMealRequests || '',
     notes: guest.notes || '',
   };
+
+  // Get meal settings from wedding
+  const askAboutMeals = weddingData.askAboutMeals !== false;
+  const mealOptions = weddingData.mealOptions || {
+    regular: true,
+    vegetarian: true,
+    vegan: true,
+    kids: true,
+    glutenFree: true,
+    other: true,
+  };
+  const customOtherMealName = weddingData.customOtherMealName || '';
 
   const dateParts = getDateParts(weddingData.eventDate);
 
@@ -197,6 +209,9 @@ export default async function RSVPPage({ params }: RSVPPageProps) {
       guest={guestData}
       dateParts={dateParts}
       isRSVP={true}
+      askAboutMeals={askAboutMeals}
+      mealOptions={mealOptions}
+      customOtherMealName={customOtherMealName}
     />
   );
 }

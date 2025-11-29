@@ -88,7 +88,7 @@ const FairyDust = ({ delay }: { delay: number }) => (
   </motion.div>
 );
 
-export default function FairytaleTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function FairytaleTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -159,7 +159,7 @@ export default function FairytaleTemplate({ wedding, guest, dateParts, isRSVP = 
               fontFamily: "'Suez One', serif"
             }}
           >
-            ✨ {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'} ✨
+            ✨ הנכם מוזמנים ✨
           </span>
         </motion.div>
 
@@ -399,7 +399,7 @@ export default function FairytaleTemplate({ wedding, guest, dateParts, isRSVP = 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4 }}
           >
-            <RSVPForm guest={guest} themeColor="#9B59B6" />
+            <RSVPForm guest={guest} themeColor="#9B59B6" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         )}
 

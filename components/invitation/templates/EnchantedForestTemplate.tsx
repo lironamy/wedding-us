@@ -82,7 +82,7 @@ const Branch = ({ side }: { side: 'left' | 'right' }) => (
   </motion.svg>
 );
 
-export default function EnchantedForestTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function EnchantedForestTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -138,7 +138,7 @@ export default function EnchantedForestTemplate({ wedding, guest, dateParts, isR
               fontFamily: "'Bellefair', serif"
             }}
           >
-            {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+            הנכם מוזמנים
           </span>
         </motion.div>
 
@@ -398,6 +398,9 @@ export default function EnchantedForestTemplate({ wedding, guest, dateParts, isR
             <RSVPForm
               guest={guest}
               themeColor="#A8C5A8"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

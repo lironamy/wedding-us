@@ -32,13 +32,16 @@ async function getDashboardData(userId: string) {
     totalGifts: guests.reduce((sum, g) => sum + (g.giftAmount || 0), 0)
   };
 
+  // Convert to plain object to avoid MongoDB ObjectId serialization issues
+  const plainWedding = JSON.parse(JSON.stringify({
+    ...wedding,
+    _id: wedding._id.toString(),
+    userId: wedding.userId.toString(),
+    eventDate: wedding.eventDate ? wedding.eventDate.toISOString() : null
+  }));
+
   return {
-    wedding: {
-      ...wedding,
-      _id: wedding._id.toString(),
-      userId: wedding.userId.toString(),
-      eventDate: wedding.eventDate.toISOString()
-    },
+    wedding: plainWedding,
     stats
   };
 }

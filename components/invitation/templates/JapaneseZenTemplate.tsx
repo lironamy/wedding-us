@@ -44,7 +44,7 @@ const RedSeal = ({ delay }: { delay: number }) => (
   </motion.div>
 );
 
-export default function JapaneseZenTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function JapaneseZenTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -312,6 +312,9 @@ export default function JapaneseZenTemplate({ wedding, guest, dateParts, isRSVP 
             <RSVPForm
               guest={guest}
               themeColor="#1A1A1A"
+              askAboutMeals={wedding.askAboutMeals !== false}
+              mealOptions={wedding.mealOptions}
+              customOtherMealName={wedding.customOtherMealName}
             />
           </motion.div>
         )}

@@ -128,7 +128,7 @@ const PaperMountains = () => (
   </div>
 );
 
-export default function PaperCutTemplate({ wedding, guest, dateParts, isRSVP = false }: InvitationTemplateProps) {
+export default function PaperCutTemplate({ wedding, guest, dateParts, isRSVP = false, askAboutMeals }: InvitationTemplateProps) {
   const handleNavigation = () => {
     if (wedding.venueCoordinates) {
       const { lat, lng } = wedding.venueCoordinates;
@@ -184,7 +184,7 @@ export default function PaperCutTemplate({ wedding, guest, dateParts, isRSVP = f
                 fontFamily: "'Varela Round', sans-serif"
               }}
             >
-              {guest ? `${guest.name} מוזמנים` : 'הנכם מוזמנים'}
+              הנכם מוזמנים
             </span>
           </div>
         </motion.div>
@@ -475,7 +475,7 @@ export default function PaperCutTemplate({ wedding, guest, dateParts, isRSVP = f
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4 }}
           >
-            <RSVPForm guest={guest} themeColor="#5C8A9E" />
+            <RSVPForm guest={guest} themeColor="#5C8A9E" askAboutMeals={wedding.askAboutMeals !== false} mealOptions={wedding.mealOptions} customOtherMealName={wedding.customOtherMealName} />
           </motion.div>
         )}
 
