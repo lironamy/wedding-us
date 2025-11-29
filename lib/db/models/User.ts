@@ -4,6 +4,7 @@ export interface IUser {
   _id: string;
   email: string;
   name: string;
+  phone?: string;
   googleId?: string;
   password?: string;
   role: 'couple' | 'admin';
@@ -29,6 +30,10 @@ const UserSchema = new Schema<IUser>(
       // Ensure proper UTF-8 encoding
       set: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
       get: (value: string) => Buffer.from(value, 'utf8').toString('utf8'),
+    },
+    phone: {
+      type: String,
+      trim: true,
     },
     googleId: {
       type: String,

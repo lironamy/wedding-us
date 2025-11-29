@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import Wedding from '@/lib/db/models/Wedding';
 import Guest from '@/lib/db/models/Guest';
-import User from '@/lib/db/models/User';
 import Table from '@/lib/db/models/Table';
 import SeatAssignment from '@/lib/db/models/SeatAssignment';
 import ScheduledMessage, {
@@ -326,13 +325,24 @@ async function processScheduledMessage(scheduledMessage: any) {
 async function notifyCouple(scheduledMessage: any, result: any) {
   try {
     const { weddingId, messageType } = scheduledMessage;
+    console.log(`📱 [CRON] notifyCouple: Starting for wedding ${weddingId}, messageType: ${messageType}`);
 
-    // Get wedding and user
+    // Get wedding details
     const wedding = await Wedding.findById(weddingId).lean() as any;
-    if (!wedding) return;
+    if (!wedding) {
+      console.log(`⚠️ [CRON] notifyCouple: Wedding not found for ${weddingId}`);
+      return;
+    }
+    console.log(`📱 [CRON] notifyCouple: Wedding found, contactPhone: ${wedding.contactPhone || 'missing'}`);
 
-    const user = await User.findById(wedding.userId).lean() as any;
-    if (!user?.phone) return;
+    // Use wedding's contactPhone for notifications
+    if (!wedding.contactPhone) {
+      console.log(`⚠️ [CRON] notifyCouple: Wedding has no contactPhone set. Please add a phone number in wedding settings.`);
+      return;
+    }
+
+    const couplePhone = wedding.contactPhone;
+    console.log(`📱 [CRON] notifyCouple: Using wedding contactPhone: ${couplePhone}`);
 
     // Get Twilio service
     let twilioService;
@@ -345,6 +355,7 @@ async function notifyCouple(scheduledMessage: any, result: any) {
 
     // Get text-only template Content SID
     const contentSid = process.env.TWILIO_CONTENT_SID_TEXT_ONLY;
+    console.log(`📱 [CRON] notifyCouple: TWILIO_CONTENT_SID_TEXT_ONLY: ${contentSid ? 'configured' : 'MISSING'}`);
     if (!contentSid) {
       console.error('TWILIO_CONTENT_SID_TEXT_ONLY not configured - cannot notify couple');
       return;
@@ -365,7 +376,10 @@ async function notifyCouple(scheduledMessage: any, result: any) {
       'message': notificationMessage,
     };
 
-    await twilioService.sendMessageWithTemplate(user.phone, contentSid, variables);
+    console.log(`📱 [CRON] notifyCouple: Sending notification to ${couplePhone} with message: ${notificationMessage.substring(0, 50)}...`);
+
+    const sendResult = await twilioService.sendMessageWithTemplate(couplePhone, contentSid, variables);
+    console.log(`📱 [CRON] notifyCouple: Twilio send result:`, sendResult);
 
     // Update that couple was notified
     await ScheduledMessage.updateOne(
@@ -373,9 +387,9 @@ async function notifyCouple(scheduledMessage: any, result: any) {
       { coupleNotified: true, coupleNotifiedAt: new Date() }
     );
 
-    console.log(`📱 [CRON] Couple notified for wedding ${weddingId}`);
+    console.log(`✅ [CRON] Couple notified successfully for wedding ${weddingId}`);
   } catch (error) {
-    console.error('Error notifying couple:', error);
+    console.error('❌ [CRON] Error notifying couple:', error);
     // Don't throw - notification failure shouldn't fail the whole process
   }
 }
