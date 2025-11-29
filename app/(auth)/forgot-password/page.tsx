@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, Alert } from '@/components/ui';
-import { sendPasswordResetEmail } from '@/lib/email/emailjs';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -18,7 +17,6 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // First, check if user exists
       const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -33,19 +31,7 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      // Only send email if we got a reset token (user exists)
-      if (data.resetToken) {
-        const resetLink = `${window.location.origin}/reset-password?token=${data.resetToken}`;
-        const emailResult = await sendPasswordResetEmail(email, email.split('@')[0], resetLink);
-
-        if (!emailResult.success) {
-          setError(emailResult.message || 'אירעה שגיאה בשליחת האימייל');
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // Always show success for security (don't reveal if email exists)
+      // Email is sent from the server, just show success
       setSuccess(true);
       setEmail('');
     } catch (err) {

@@ -54,7 +54,8 @@
       "Bash(then echo \"$file\")",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\app\\favicon.ico\")"
+      "Bash(del \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\app\\favicon.ico\")",
+      "Bash(copy \"c:\\Users\\liron\\Downloads\\bimi-logo.svg\" \"C:\\Users\\liron\\Desktop\\חתונה\\wedding-platform\\public\\bimi-logo.svg\")"
     ],
     "deny": [],
     "ask": []
