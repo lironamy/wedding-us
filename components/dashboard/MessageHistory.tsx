@@ -17,9 +17,9 @@ export function MessageHistory({ weddingId }: MessageHistoryProps) {
     loadMessages();
   }, [weddingId, filter]);
 
-  const loadMessages = async () => {
+  const loadMessages = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const params = new URLSearchParams({ weddingId });
       if (filter !== 'all') {
         params.append('messageType', filter);
@@ -34,7 +34,7 @@ export function MessageHistory({ weddingId }: MessageHistoryProps) {
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 

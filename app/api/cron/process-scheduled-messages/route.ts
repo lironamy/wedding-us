@@ -363,12 +363,10 @@ async function notifyCouple(scheduledMessage: any, result: any) {
 
     const config = MESSAGE_SCHEDULE_CONFIG[messageType as ScheduledMessageType];
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const dashboardUrl = `${appUrl}/dashboard`;
+    const dashboardUrl = `${appUrl}/dashboard/messages`;
 
-    // Build notification message for the couple
-    // Note: At this point we only know how many were accepted by Twilio,
-    // not how many were actually delivered. Delivery status comes via webhook.
-    const notificationMessage = `${config.description} נשלחה בהצלחה! | נשלח: ${result.sentCount} | נכשל: ${result.failedCount} | סה"כ אורחים: ${result.totalGuests} | סטטוס המסירה יתעדכן בדקות הקרובות | לצפייה באישורי הגעה: ${dashboardUrl}`;
+    // Build notification message for the couple - simple and clean
+    const notificationMessage = `${config.description} נשלחה בהצלחה! סטטוס המסירה יתעדכן בדקות הקרובות🥳 | לצפייה באישורי הגעה: ${dashboardUrl}`;
 
     // Use text-only template with named variables
     const variables = {

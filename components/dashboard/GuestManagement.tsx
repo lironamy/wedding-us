@@ -707,9 +707,9 @@ export function GuestManagement({ weddingId, mealSettings }: GuestManagementProp
   const GUESTS_PER_PAGE = 25;
 
   // Load guests
-  const loadGuests = async () => {
+  const loadGuests = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const response = await fetch(`/api/guests?weddingId=${weddingId}`);
       const data = await response.json();
 
@@ -722,7 +722,7 @@ export function GuestManagement({ weddingId, mealSettings }: GuestManagementProp
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -886,7 +886,7 @@ export function GuestManagement({ weddingId, mealSettings }: GuestManagementProp
         throw new Error('Failed to delete guest');
       }
 
-      loadGuests();
+      loadGuests(false);
       toast.success('האורח נמחק בהצלחה');
     } catch (err: any) {
       toast.error('שגיאה במחיקת האורח');
@@ -963,7 +963,7 @@ export function GuestManagement({ weddingId, mealSettings }: GuestManagementProp
       }
 
       setSelectedGuests(new Set());
-      loadGuests();
+      loadGuests(false);
     } catch (err) {
       toast.error('שגיאה במחיקת האורחים');
     } finally {
@@ -1250,7 +1250,7 @@ export function GuestManagement({ weddingId, mealSettings }: GuestManagementProp
             onSuccess={() => {
               setShowAddForm(false);
               setEditingGuest(null);
-              loadGuests();
+              loadGuests(false);
             }}
             onCancel={() => {
               setShowAddForm(false);

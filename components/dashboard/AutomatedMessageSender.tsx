@@ -109,9 +109,9 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
   };
 
   // Load guests
-  const loadGuests = async () => {
+  const loadGuests = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const response = await fetch(`/api/guests?weddingId=${weddingId}`);
       const data = await response.json();
       if (response.ok) {
@@ -120,7 +120,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
     } catch (error) {
       console.error('Error loading guests:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -222,7 +222,7 @@ export function AutomatedMessageSender({ weddingId }: AutomatedMessageSenderProp
       );
 
       setSelectedGuests([]);
-      loadGuests();
+      loadGuests(false);
     } catch (error: any) {
       toast.error(error.message || 'שגיאה בשליחת הודעות');
       setProgress(null);
