@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/lib/db/models/User';
+import { sendWelcomeEmail } from '@/lib/email/smtp';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -81,13 +82,29 @@ export const authOptions: NextAuthOptions = {
         if (!existingUser) {
           // Create new user for Google sign-in
           const isSuperAdmin = user.email === process.env.SUPER_ADMIN_EMAIL;
+          const userName = user.name || profile?.name || 'משתמש';
 
           existingUser = await User.create({
             email: user.email,
-            name: user.name || profile?.name,
+            name: userName,
             googleId: account.providerAccountId,
             role: isSuperAdmin ? 'admin' : 'couple',
           });
+
+          // Send welcome email to new user (in background)
+          if (user.email) {
+            sendWelcomeEmail(user.email, userName)
+              .then(result => {
+                if (result.success) {
+                  console.log(`[Google SignIn] Welcome email sent to ${user.email}`);
+                } else {
+                  console.error(`[Google SignIn] Failed to send welcome email:`, result.message);
+                }
+              })
+              .catch(err => {
+                console.error(`[Google SignIn] Error sending welcome email:`, err);
+              });
+          }
         } else if (!existingUser.googleId) {
           // Link Google account to existing email user
           existingUser.googleId = account.providerAccountId;

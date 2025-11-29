@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import emailjs from '@emailjs/browser';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
@@ -123,51 +122,28 @@ export default function RefundRequestModal({
 
       console.log('Validation PASSED - Guest count OK');
 
-      // Step 2: Send email to admin
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_REFUND_TEMPLATE_ID || process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-
-      if (!serviceId || !templateId || !publicKey) {
-        throw new Error('EmailJS configuration missing');
-      }
-
-      const templateParams = {
-        to_email: process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'agathario91@gmail.com',
-        to_name: 'מנהל המערכת',
-        from_name: formData.fullName,
-        from_email: formData.email,
-        subject: `בקשת החזר כספי - ${formData.fullName} - ₪${refundAmount}`,
-        message: `
-בקשת החזר כספי חדשה
-
-פרטי המבקש:
-━━━━━━━━━━━━━━━━━━━━━━━━
-שם מלא: ${formData.fullName}
-אימייל: ${formData.email}
-טלפון נייד: ${formData.phone}
-
-פרטי התשלום:
-━━━━━━━━━━━━━━━━━━━━━━━━
-מזהה חתונה: ${weddingId}
-חבילה נוכחית: ${currentPackage} מוזמנים
-חבילה מבוקשת: ${requestedPackage} מוזמנים
-סכום ששולם: ₪${paidAmount}
-סכום החזר מבוקש: ₪${refundAmount}
-
-אופן ההחזר:
-━━━━━━━━━━━━━━━━━━━━━━━━
-זיכוי לכרטיס האשראי שאיתו בוצע התשלום (עד 14 ימי עסקים)
-
-סיבת הבקשה:
-━━━━━━━━━━━━━━━━━━━━━━━━
-${formData.reason || 'לא צוינה סיבה'}
-        `.trim(),
-        reply_to: formData.email,
-      };
-
+      // Step 2: Send email to admin via SMTP API
       console.log('Step 2: Sending email to admin...');
-      await emailjs.send(serviceId, templateId, templateParams, publicKey);
+      const emailResponse = await fetch('/api/refund-request/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          weddingId,
+          currentPackage,
+          requestedPackage,
+          paidAmount,
+          refundAmount,
+          reason: formData.reason,
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        const emailError = await emailResponse.json();
+        throw new Error(emailError.error || 'Failed to send email');
+      }
       console.log('Email sent successfully!');
 
       // Step 3: Update wedding package in database

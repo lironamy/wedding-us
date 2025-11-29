@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/lib/db/models/User';
+import { sendWelcomeEmail } from '@/lib/email/smtp';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,6 +47,19 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role: isSuperAdmin ? 'admin' : 'couple',
     });
+
+    // Send welcome email (don't await - send in background)
+    sendWelcomeEmail(email, name)
+      .then(result => {
+        if (result.success) {
+          console.log(`[Register] Welcome email sent to ${email}`);
+        } else {
+          console.error(`[Register] Failed to send welcome email to ${email}:`, result.message);
+        }
+      })
+      .catch(err => {
+        console.error(`[Register] Error sending welcome email to ${email}:`, err);
+      });
 
     return NextResponse.json(
       {

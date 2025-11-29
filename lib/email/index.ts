@@ -1,9 +1,11 @@
-// Export EmailJS utilities
+// Export SMTP email utilities
 export {
   sendEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendRSVPConfirmationEmail,
-} from './emailjs';
+  sendSupportEmail,
+  sendRefundRequestEmail,
+} from './smtp';
 
-export type { EmailParams } from './emailjs';
+export type { EmailOptions } from './smtp';

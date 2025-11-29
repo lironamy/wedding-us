@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/lib/db/models/User';
 import { generateUUID } from '@/lib/utils';
+import { sendPasswordResetEmail } from '@/lib/email/smtp';
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,13 +38,26 @@ export async function POST(request: NextRequest) {
     user.resetTokenExpiry = resetTokenExpiry;
     await user.save();
 
-    // Verify it was saved
-    const verifyUser = await User.findById(user._id);
+    // Build reset link
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const resetLink = `${appUrl}/reset-password?token=${resetToken}`;
+
+    // Send password reset email via SMTP
+    const emailResult = await sendPasswordResetEmail(
+      email,
+      user.name || email.split('@')[0],
+      resetLink
+    );
+
+    if (!emailResult.success) {
+      console.error('[ForgotPassword] Failed to send email:', emailResult.message);
+      // Still return success to not reveal if email exists
+    } else {
+      console.log(`[ForgotPassword] Reset email sent to ${email}`);
+    }
+
     return NextResponse.json(
-      {
-        message: 'אם האימייל קיים במערכת, נשלח אליו קישור לאיפוס סיסמה',
-        resetToken: resetToken, // Return token for client to send email
-      },
+      { message: 'אם האימייל קיים במערכת, נשלח אליו קישור לאיפוס סיסמה' },
       { status: 200 }
     );
   } catch (error) {
