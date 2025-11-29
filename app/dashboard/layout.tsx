@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth/get-session';
 import DashboardNav from '@/components/dashboard/DashboardNav';
 
+// Force dynamic rendering to ensure session is always fresh
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {

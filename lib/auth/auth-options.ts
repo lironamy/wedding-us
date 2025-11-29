@@ -173,13 +173,14 @@ export const authOptions: NextAuthOptions = {
     },
     csrfToken: {
       name: process.env.NODE_ENV === 'production'
-        ? `__Host-next-auth.csrf-token`
+        ? `__Secure-next-auth.csrf-token`
         : `next-auth.csrf-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        maxAge: 365 * 24 * 60 * 60, // 1 year - persistent cookie
       },
     },
   },

@@ -2,7 +2,14 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from './auth-options';
 
 export async function getSession() {
-  return await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
+
+  // Debug logging for session issues
+  if (process.env.NODE_ENV === 'development' || process.env.DEBUG_AUTH === 'true') {
+    console.log('[getSession] Session result:', session ? `User: ${session.user?.email}` : 'null');
+  }
+
+  return session;
 }
 
 export async function getCurrentUser() {
