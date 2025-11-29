@@ -1,0 +1,352 @@
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/Button';
+
+// FAQ Data
+const FAQ_ITEMS = [
+  {
+    id: 'upload-guests',
+    question: 'העלאת אורחים: כיצד ניתן להעלות את רשימת האורחים לטבלה בחשבון שלי?',
+    answer: `ניתן להעלות את רשימת האורחים בכמה דרכים:
+
+1. **העלאת קובץ אקסל** - לכו לעמוד "ניהול אורחים" ולחצו על "ייבוא מאקסל". העלו קובץ Excel עם העמודות: שם, טלפון, מספר אורחים.
+
+2. **הוספה ידנית** - לחצו על כפתור "הוסף אורח" והזינו את הפרטים ידנית.
+
+3. **העתק-הדבק** - תוכלו להעתיק רשימה מאקסל ולהדביק ישירות בטבלה.`,
+  },
+  {
+    id: 'send-invitations',
+    question: 'שליחת הזמנות: כיצד ניתן לשתף את ההזמנה עם האורחים כדי שיאשרו הגעה?',
+    answer: `יש כמה דרכים לשתף את ההזמנה:
+
+1. **שליחה אוטומטית בוואטסאפ** - אם הגדרתם את שירות הוואטסאפ האוטומטי, לכו לעמוד "הודעות" ותזמנו שליחה לכל האורחים או לחלק מהם.
+
+2. **שליחה ידנית** - בעמוד "ניהול אורחים", לחצו על אייקון הוואטסאפ ליד כל אורח כדי לשלוח לו הזמנה ישירות.
+
+3. **שיתוף קישור** - העתיקו את הקישור להזמנה ושתפו אותו בכל דרך שתרצו.`,
+  },
+  {
+    id: 'upload-image',
+    question: 'תמונת הזמנה: יש לי תמונת הזמנה מוכנה, כיצד ניתן להעלות אותה?',
+    answer: `להעלאת תמונת הזמנה מותאמת אישית:
+
+1. לכו לעמוד "הגדרות" בדשבורד
+2. גללו לאזור "תמונת הזמנה"
+3. לחצו על "העלאת תמונה" ובחרו את הקובץ מהמחשב
+4. התמונה תופיע בהזמנה שתשלח לאורחים
+
+**טיפ:** מומלץ להעלות תמונה באיכות גבוהה בפורמט JPG או PNG.`,
+  },
+  {
+    id: 'whatsapp-desktop',
+    question: 'שליחה בווטצסאפ מהמחשב: ניסיתי לשלוח הודעת ווטצסאפ מהמחשב וקיבלתי מסך לבן',
+    answer: `אם אתם מקבלים מסך לבן כשמנסים לשלוח הודעת וואטסאפ מהמחשב:
+
+1. **בדקו שוואטסאפ Web מחובר** - ודאו שאתם מחוברים לוואטסאפ Web בדפדפן
+2. **נסו דפדפן אחר** - לפעמים Chrome עובד טוב יותר מדפדפנים אחרים
+3. **השתמשו באפליקציית וואטסאפ למחשב** - הורידו את האפליקציה הרשמית של וואטסאפ למחשב
+
+**פתרון מומלץ:** השתמשו בשירות הוואטסאפ האוטומטי שלנו - הוא עובד ישירות מהשרת ולא דורש שהמחשב יהיה פתוח.`,
+  },
+  {
+    id: 'link-not-clickable',
+    question: 'קישור לא לחיץ בווטצסאפ: שלחתי הזמנה לאורחים מהווטצסאפ האישי שלי והם לא מצליחים ללחוץ על הקישור',
+    answer: `זו בעיה נפוצה שקורה כשמעתיקים קישורים ידנית. הנה כמה פתרונות:
+
+1. **ודאו שאין רווחים מיותרים** - לפעמים רווח בתחילת או בסוף הקישור הופך אותו ללא לחיץ
+2. **שלחו את הקישור בשורה נפרדת** - אל תוסיפו טקסט צמוד לקישור
+3. **השתמשו בשירות האוטומטי** - ההודעות שנשלחות דרך המערכת שלנו תמיד כוללות קישורים לחיצים
+
+**טיפ:** בקשו מהאורח להעתיק את הקישור ולהדביק אותו בדפדפן אם הלחיצה לא עובדת.`,
+  },
+  {
+    id: 'auto-whatsapp',
+    question: 'ווטצסאפ אוטומטי: מה זה בעצם אומר ווטצסאפ אוטומטי?',
+    answer: `וואטסאפ אוטומטי הוא שירות שמאפשר לשלוח הודעות וואטסאפ לכל האורחים בלחיצת כפתור, בלי לשלוח ידנית לכל אחד.
+
+**היתרונות:**
+- חיסכון עצום בזמן - שלחו הזמנות למאות אורחים בדקות
+- תזמון אוטומטי - קבעו מראש מתי לשלוח תזכורות
+- מעקב סטטוס - ראו מי קיבל ומי קרא את ההודעה
+- קישורים אישיים - כל אורח מקבל קישור ייחודי לאישור הגעה
+
+**איך זה עובד:**
+המערכת שולחת הודעות דרך שירות וואטסאפ עסקי מאושר, כך שההודעות מגיעות ישירות לאורחים.`,
+  },
+  {
+    id: 'new-event',
+    question: 'אירוע חדש: האירוע שלי הסתיים, כיצד יוצרים אירוע חדש?',
+    answer: `ליצירת אירוע חדש לאחר שהאירוע הקודם הסתיים:
+
+1. פנו אלינו בוואטסאפ או במייל
+2. נעזור לכם לארכב את האירוע הקיים (כולל גיבוי של כל הנתונים)
+3. ניצור עבורכם אירוע חדש עם חשבון נקי
+
+**שימו לב:** אנחנו שומרים את כל הנתונים של האירוע הקודם, כך שתמיד תוכלו לחזור ולצפות בהם.`,
+  },
+];
+
+// Support WhatsApp number from env
+const SUPPORT_WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || '972501234567';
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@lunsoul.com';
+
+export default function HelpPage() {
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const handleWhatsAppClick = () => {
+    const message = encodeURIComponent('שלום, אני צריך/ה עזרה עם המערכת');
+    window.open(`https://wa.me/${SUPPORT_WHATSAPP}?text=${message}`, '_blank');
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailMessage.trim()) {
+      toast.error('יש להזין הודעה');
+      return;
+    }
+
+    try {
+      setSendingEmail(true);
+
+      const response = await fetch('/api/support/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: emailSubject || 'פנייה מהמערכת',
+          message: emailMessage,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('ההודעה נשלחה בהצלחה! נחזור אליך בהקדם');
+        setEmailSubject('');
+        setEmailMessage('');
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'שגיאה בשליחת ההודעה');
+      }
+    } catch (error) {
+      toast.error('שגיאה בשליחת ההודעה');
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center"
+      >
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">עזרה ותמיכה</h1>
+        <p className="text-gray-600">כל הדרכים ליצור איתנו קשר ולקבל עזרה</p>
+      </motion.div>
+
+      {/* Quick Contact Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* WhatsApp Card */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+        >
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#25D366">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">פנייה מהירה בוואטסאפ</h2>
+              <p className="text-sm text-gray-500">תשובה תוך דקות בשעות הפעילות</p>
+            </div>
+          </div>
+          <Button
+            onClick={handleWhatsAppClick}
+            className="w-full bg-green-500 hover:bg-green-600 text-white"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="ml-2">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            שלחו לנו הודעה בוואטסאפ
+          </Button>
+        </motion.div>
+
+        {/* Email Card */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+        >
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">פנייה במייל</h2>
+              <p className="text-sm text-gray-500">נחזור אליכם תוך 24 שעות</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="נושא הפנייה (אופציונלי)"
+              value={emailSubject}
+              onChange={(e) => setEmailSubject(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+            />
+            <textarea
+              placeholder="מה תרצו לשאול או לספר לנו?"
+              value={emailMessage}
+              onChange={(e) => setEmailMessage(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-none"
+            />
+            <Button
+              onClick={handleSendEmail}
+              disabled={sendingEmail || !emailMessage.trim()}
+              className="w-full"
+            >
+              {sendingEmail ? (
+                <motion.span
+                  animate={{ opacity: [1, 0.5, 1] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                >
+                  שולח...
+                </motion.span>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                  שלחו הודעה
+                </>
+              )}
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* FAQ Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9333EA" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">יש לי שאלה</h2>
+            <p className="text-sm text-gray-500">שאלות נפוצות ותשובות</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {FAQ_ITEMS.map((faq, index) => (
+            <motion.div
+              key={faq.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + index * 0.05 }}
+              className="border border-gray-100 rounded-xl overflow-hidden"
+            >
+              <button
+                onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
+                className="w-full flex items-center justify-between p-4 text-right hover:bg-gray-50 transition-colors"
+              >
+                <span className="font-medium text-gray-900 flex-1 text-right">
+                  {faq.question}
+                </span>
+                <motion.svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-gray-400 flex-shrink-0 mr-3"
+                  animate={{ rotate: openFaq === faq.id ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <polyline points="6 9 12 15 18 9"/>
+                </motion.svg>
+              </button>
+
+              <AnimatePresence>
+                {openFaq === faq.id && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 pt-0">
+                      <div className="bg-gray-50 rounded-lg p-4 text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                        {faq.answer}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Additional Help */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="bg-gradient-to-r from-primary/10 to-pink-100 rounded-2xl p-6 text-center"
+      >
+        <h3 className="text-lg font-bold text-gray-900 mb-2">לא מצאתם תשובה?</h3>
+        <p className="text-gray-600 mb-4">
+          אנחנו כאן בשבילכם! פנו אלינו בוואטסאפ או במייל ונשמח לעזור
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button onClick={handleWhatsAppClick} variant="outline" className="bg-white">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366" className="ml-2">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            וואטסאפ
+          </Button>
+          <Button
+            onClick={() => window.location.href = `mailto:${SUPPORT_EMAIL}`}
+            variant="outline"
+            className="bg-white"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ml-2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            {SUPPORT_EMAIL}
+          </Button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

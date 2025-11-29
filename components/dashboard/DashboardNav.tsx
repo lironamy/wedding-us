@@ -297,6 +297,36 @@ const NavIcons = {
     </svg>
   ),
 
+  // Help icon - question mark in circle
+  help: ({ isActive }: { isActive: boolean }) => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <motion.circle
+        cx="12" cy="12" r="10"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="none"
+        animate={{ scale: isActive ? [1, 1.05, 1] : 1 }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.path
+        d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        animate={{ y: isActive ? [0, -1, 0] : 0 }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      />
+      <motion.circle
+        cx="12" cy="17" r="1"
+        fill="currentColor"
+        animate={{ scale: isActive ? [1, 1.3, 1] : 1 }}
+        transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+      />
+    </svg>
+  ),
+
   // Admin icon - wrench tool
   admin: ({ isActive }: { isActive: boolean }) => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -351,6 +381,7 @@ export default function DashboardNav({ user }: DashboardNavProps) {
     { href: '/dashboard/seating', label: 'סידורי ישיבה', iconType: 'seating' as NavIconKey },
     { href: '/dashboard/gifts', label: 'מתנות', iconType: 'gifts' as NavIconKey },
     { href: '/dashboard/settings', label: 'הגדרות', iconType: 'settings' as NavIconKey },
+    { href: '/dashboard/help', label: 'עזרה', iconType: 'help' as NavIconKey },
   ];
 
   const adminNavItems = [

@@ -145,9 +145,9 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
   const [retryingGuests, setRetryingGuests] = useState<Set<string>>(new Set());
   const [refreshingStatuses, setRefreshingStatuses] = useState(false);
 
-  const loadScheduledMessages = async () => {
+  const loadScheduledMessages = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const response = await fetch(`/api/scheduled-messages?weddingId=${weddingId}`);
       const data = await response.json();
 
@@ -159,7 +159,7 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
     } catch (error) {
       console.error('Error loading scheduled messages:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -227,12 +227,13 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
     }
   };
 
-  const handleOpenDetails = async (schedule: ScheduledMessage) => {
+  const handleOpenDetails = async (schedule: ScheduledMessage, skipRefresh = false) => {
     setSelectedSchedule(schedule);
     setShowDetailsPopup(true);
     setLoadingLogs(true);
 
     try {
+      // First load the logs immediately so user sees something
       const response = await fetch(`/api/message-logs?scheduledMessageId=${schedule._id}&weddingId=${weddingId}`);
       const data = await response.json();
 
@@ -247,6 +248,31 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
       setMessageLogs([]);
     } finally {
       setLoadingLogs(false);
+    }
+
+    // Then refresh statuses from Twilio in the background (unless skipped)
+    if (!skipRefresh && (schedule.status === 'completed' || schedule.status === 'sending')) {
+      try {
+        setRefreshingStatuses(true);
+        const refreshResponse = await fetch(`/api/message-logs/refresh?scheduledMessageId=${schedule._id}&weddingId=${weddingId}`, {
+          method: 'POST',
+        });
+
+        if (refreshResponse.ok) {
+          // Reload logs with updated statuses
+          const logsResponse = await fetch(`/api/message-logs?scheduledMessageId=${schedule._id}&weddingId=${weddingId}`);
+          const logsData = await logsResponse.json();
+          if (logsResponse.ok) {
+            setMessageLogs(logsData.logs || []);
+          }
+          // Refresh the main list in background without showing loading
+          loadScheduledMessages(false);
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing statuses:', refreshError);
+      } finally {
+        setRefreshingStatuses(false);
+      }
     }
   };
 
@@ -301,10 +327,10 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
 
       if (response.ok) {
         toast.success(`עודכנו ${data.updated || 0} סטטוסים`);
-        // Refresh the logs
-        handleOpenDetails(selectedSchedule);
-        // Also refresh the scheduled messages list to update counts
-        loadScheduledMessages();
+        // Refresh the logs (skip auto-refresh since we just refreshed)
+        handleOpenDetails(selectedSchedule, true);
+        // Also refresh the scheduled messages list to update counts (without loading)
+        loadScheduledMessages(false);
       } else {
         toast.error(data.error || 'שגיאה בעדכון סטטוסים');
       }
@@ -1028,13 +1054,24 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-6">
-                {loadingLogs ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <LottieAnimation animation="loading" size={60} />
-                    <p className="text-gray-500 mt-4">טוען פרטים...</p>
+              <div className="flex-1 overflow-y-auto p-6 relative min-h-[200px]">
+                {/* Loading overlay for initial load */}
+                {loadingLogs && (
+                  <div className="absolute inset-0 bg-white z-10 flex flex-col items-center justify-center">
+                    <LottieAnimation animation="loading" size={50} />
+                    <p className="text-gray-500 mt-2 text-sm">טוען פרטים...</p>
                   </div>
-                ) : messageLogs.length === 0 ? (
+                )}
+
+                {/* Refreshing overlay - semi-transparent, shown on top of existing content */}
+                {refreshingStatuses && !loadingLogs && (
+                  <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center">
+                    <LottieAnimation animation="loading" size={40} />
+                    <p className="text-gray-500 mt-2 text-sm">מרענן סטטוסים...</p>
+                  </div>
+                )}
+
+                {messageLogs.length === 0 && !loadingLogs ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                       <span className="text-3xl">📭</span>
@@ -1042,7 +1079,7 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
                     <p className="text-gray-500">אין פרטי הודעות זמינים</p>
                     <p className="text-sm text-gray-400 mt-1">הפרטים יהיו זמינים רק להודעות שנשלחו אחרי העדכון האחרון</p>
                   </div>
-                ) : (
+                ) : messageLogs.length > 0 ? (
                   <div className="space-y-2">
                     {messageLogs.map((log) => {
                       const statusDisplay = getStatusDisplay(log.deliveryStatus);
@@ -1097,7 +1134,7 @@ export function ScheduledMessages({ weddingId }: ScheduledMessagesProps) {
                       );
                     })}
                   </div>
-                )}
+                ) : null}
               </div>
             </motion.div>
           </motion.div>

@@ -52,9 +52,9 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
   });
 
   // Load data
-  const loadData = async () => {
+  const loadData = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const [giftsRes, guestsRes] = await Promise.all([
         fetch(`/api/gifts?weddingId=${weddingId}`),
         fetch(`/api/guests?weddingId=${weddingId}`),
@@ -74,7 +74,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
     } catch (error) {
       console.error('Error loading gifts data:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -104,7 +104,7 @@ export function GiftsDashboard({ weddingId, bitPhone, payboxPhone }: GiftsDashbo
 
       setShowAddModal(false);
       setGiftForm({ guestId: '', amount: 0, method: 'bit' });
-      loadData();
+      loadData(false);
     } catch (error: any) {
       toast.error(error.message || 'שגיאה בהוספת מתנה');
     }

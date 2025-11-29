@@ -7,6 +7,9 @@ import { Toaster } from "react-hot-toast";
 import Footer from "@/components/layout/Footer";
 import AccessibilityWidget from "@/components/accessibility/AccessibilityWidget";
 
+// Force dynamic rendering to ensure session is always checked fresh
+export const dynamic = 'force-dynamic';
+
 const rubik = Rubik({
   subsets: ["hebrew", "latin"],
   weight: ["300", "400", "500", "600", "700", "800", "900"],
